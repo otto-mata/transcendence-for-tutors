@@ -1,43 +1,4 @@
 services:
-
-  transcendence-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: development
-    container_name: transcendence-dev
-    ports:
-      - '${APP_PORT:-3000}:3000' # API server
-    environment:
-      NODE_ENV: development
-      DOCKER_ENV: 'true'
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-db}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      ALLOWED_ORIGINS: '${ALLOWED_ORIGINS:-http://localhost:3000}'
-    volumes:
-      - ./src:/app/src:ro
-      - ./package.json:/app/package.json
-      - ./prisma.config.ts:/app/prisma.config.ts:ro
-      - ./prisma:/app/prisma:ro
-    depends_on:
-      - postgres
-    develop:
-      watch:
-        - action: sync
-          path: ./src
-          target: /app/src
-          ignore:
-            - '**/*.test.*'
-            - '**/__tests__/**'
-        - action: rebuild
-          path: ./package.json
-    restart: unless-stopped
-    networks:
-      - postgres-network
-
   postgres:
     container_name: postgres
     image: postgres
@@ -45,12 +6,13 @@ services:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-db}
+      PGDATA: /data/postgres
     volumes:
-      - postgres_data:/var/lib/postgresql
+       - postgres:/data/postgres
     ports:
       - "5432:5432"
     networks:
-      - postgres-network
+      - postgres
 
   pgadmin:
     container_name: pgadmin
@@ -65,13 +27,13 @@ services:
     ports:
       - "${PGADMIN_PORT:-5050}:80"
     networks:
-      - postgres-network
+      - postgres
     restart: unless-stopped
 
 networks:
-  postgres-network:
+  postgres:
     driver: bridge
 
 volumes:
-    postgres_data:
+    postgres:
     pgadmin:
