@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
 	Home,
@@ -14,8 +14,16 @@ import {
 	PlusCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function DesktopSidebar() {
+	const pathname = usePathname();
+
+	function isActive(href: string) {
+		if (!pathname) return false;
+		if (href === '/') return pathname === '/';
+		return pathname.startsWith(href);
+	}
 	return (
 		<aside className="sticky left-0 top-0 h-screen w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-600 p-6 flex flex-col">
 			{/* Logo */}
@@ -27,15 +35,15 @@ export default function DesktopSidebar() {
 
 			{/* Navigation */}
 			<nav className="flex-1 space-y-2">
-				<SidebarLink href="/" icon={<Home />} label="Home" />
-				<SidebarLink href="/explore" icon={<Compass />} label="Explore" active />
-				<SidebarLink href="/notifications" icon={<Bell />} label="Notifications" badge={12} />
-				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" badge={3} />
-				<SidebarLink href="/profile" icon={<User />} label="Profile" />
-				<SidebarLink href="/bookmarks" icon={<Bookmark />} label="Bookmarks" />
-				<SidebarLink href="/likes" icon={<Heart />} label="Likes" />
-				<SidebarLink href="/trending" icon={<TrendingUp />} label="Trending" />
-				<SidebarLink href="/settings" icon={<Settings />} label="Settings" />
+				<SidebarLink href="/" icon={<Home />} label="Home" active={isActive('/')} />
+				<SidebarLink href="/explore" icon={<Compass />} label="Explore" active={isActive('/explore')} />
+				<SidebarLink href="/notifications" icon={<Bell />} label="Notifications" badge={12} active={isActive('/notifications')} />
+				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" badge={3} active={isActive('/messages')} />
+				<SidebarLink href="/profile" icon={<User />} label="Profile" active={isActive('/profile')} />
+				<SidebarLink href="/bookmarks" icon={<Bookmark />} label="Bookmarks" active={isActive('/bookmarks')} />
+				<SidebarLink href="/likes" icon={<Heart />} label="Likes" active={isActive('/likes')} />
+				<SidebarLink href="/trending" icon={<TrendingUp />} label="Trending" active={isActive('/trending')} />
+				<SidebarLink href="/settings" icon={<Settings />} label="Settings" active={isActive('/settings')} />
 			</nav>
 
 			{/* Create Post Button */}
