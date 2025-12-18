@@ -18,10 +18,18 @@ import {
 	Sun
 } from 'lucide-react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDark, setIsDark] = useState(false);
+	const pathname = usePathname();
+
+	function isActive(href: string) {
+		if (!pathname) return false;
+		if (href === '/') return pathname === '/';
+		return pathname.startsWith(href);
+	}
 
 	const toggleMenu = () => setIsOpen(!isOpen);
 	const closeMenu = () => setIsOpen(false);
@@ -83,17 +91,13 @@ export default function MobileNav() {
 				{/* Navigation Links */}
 				<nav className="flex-1 overflow-y-auto py-4">
 					<div className="space-y-1 px-3">
-						<NavLink
-							href="/"
-							icon={<Home className="w-5 h-5" />}
-							label="Home"
-							onClick={closeMenu}
-						/>
+						<NavLink href="/" icon={<Home className="w-5 h-5" />} label="Home" onClick={closeMenu} active={isActive('/')} />
 						<NavLink
 							href="/explore"
 							icon={<Compass className="w-5 h-5" />}
 							label="Explore"
 							onClick={closeMenu}
+							active={isActive('/explore')}
 						/>
 						<NavLink
 							href="/notifications"
@@ -101,6 +105,7 @@ export default function MobileNav() {
 							label="Notifications"
 							badge={12}
 							onClick={closeMenu}
+							active={isActive('/notifications')}
 						/>
 						<NavLink
 							href="/messages"
@@ -108,12 +113,14 @@ export default function MobileNav() {
 							label="Messages"
 							badge={3}
 							onClick={closeMenu}
+							active={isActive('/messages')}
 						/>
 						<NavLink
 							href="/profile"
 							icon={<User className="w-5 h-5" />}
 							label="Profile"
 							onClick={closeMenu}
+							active={isActive('/profile')}
 						/>
 					</div>
 
@@ -121,36 +128,16 @@ export default function MobileNav() {
 					<div className="my-4 border-t border-gray-200 dark:border-gray-700 " />
 
 					<div className="space-y-1 px-3">
-						<NavLink
-							href="/bookmarks"
-							icon={<Bookmark className="w-5 h-5" />}
-							label="Bookmarks"
-							onClick={closeMenu}
-						/>
-						<NavLink
-							href="/likes"
-							icon={<Heart className="w-5 h-5" />}
-							label="Likes"
-							onClick={closeMenu}
-						/>
-						<NavLink
-							href="/trending"
-							icon={<TrendingUp className="w-5 h-5" />}
-							label="Trending"
-							onClick={closeMenu}
-						/>
+						<NavLink href="/bookmarks" icon={<Bookmark className="w-5 h-5" />} label="Bookmarks" onClick={closeMenu} active={isActive('/bookmarks')} />
+						<NavLink href="/likes" icon={<Heart className="w-5 h-5" />} label="Likes" onClick={closeMenu} active={isActive('/likes')} />
+						<NavLink href="/trending" icon={<TrendingUp className="w-5 h-5" />} label="Trending" onClick={closeMenu} active={isActive('/trending')} />
 					</div>
 
 					{/* Divider */}
 					<div className="my-4 border-t border-gray-200 dark:border-gray-700 " />
 
 					<div className="space-y-1 px-3">
-						<NavLink
-							href="/settings"
-							icon={<Settings className="w-5 h-5" />}
-							label="Settings"
-							onClick={closeMenu}
-						/>
+						<NavLink href="/settings" icon={<Settings className="w-5 h-5" />} label="Settings" onClick={closeMenu} active={isActive('/settings')} />
 
 						{/* Dark Mode Toggle */}
 						<button
@@ -187,21 +174,23 @@ function NavLink({
 	icon,
 	label,
 	badge,
-	onClick
+	onClick,
+	active
 }: {
 	href: string;
 	icon: React.ReactNode;
 	label: string;
 	badge?: number;
 	onClick?: () => void;
+	active?: boolean;
 }) {
 	return (
 		<Link
 			href={href}
 			onClick={onClick}
-			className="flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors group relative"
+			className={`flex items-center gap-4 px-4 py-3 rounded-xl transition-colors group relative ${active ? 'bg-linear-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 text-blue-500' : 'text-gray-700 hover:bg-gray-100'}`}
 		>
-			<div className="text-gray-600 group-hover:text-blue-500 transition-colors">
+			<div className={`${active ? 'text-blue-500' : 'text-gray-600 group-hover:text-blue-500'} transition-colors`}>
 				{icon}
 			</div>
 			<span className="font-medium flex-1">{label}</span>

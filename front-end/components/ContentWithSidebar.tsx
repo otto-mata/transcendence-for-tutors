@@ -1,12 +1,16 @@
+import DesktopSidebar from "./DesktopSidebar";
+
 export const WithSidebar = ({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) => {
   return (
-    <div className="flex justify-center xl:grid xl:grid-cols-[0.1fr_0.9fr]">
-      <div className="hidden xl:block bg-amber-400">sidebar</div>
-      <div className="md:w-3xl xl:mx-auto xl:w-6xl">{children}</div>
+    <div className="flex justify-center xl:grid xl:grid-cols-[auto_1fr]">
+      <div className="hidden xl:block">
+        <DesktopSidebar />
+      </div>
+      <div className="w-full max-w-3xl mx-auto xl:max-w-6xl">{children}</div>
     </div>
   );
 };
