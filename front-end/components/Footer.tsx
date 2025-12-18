@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const Footer = () => {
   return (
-    <div className="w-full footer bg-gray-950 text-gray-50 p-4 flex flex-col md:flex-row">
+    <div className="w-full footer bg-gray-100 dark:bg-gray-950 p-4 flex flex-col md:flex-row">
       <div>
         <p className="uppercase text-sm md:text-md font-bold">Legal terms</p>
         <div className="flex text-xs gap-3 md:text-sm md:flex-col md:gap-0.5">

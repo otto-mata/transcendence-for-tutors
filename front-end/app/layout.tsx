@@ -27,8 +27,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script src="https://kit.fontawesome.com/57bdc28014.js" crossOrigin="anonymous"></script>
+      </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen text-sm`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen text-sm xl:text-base`}
       >
         <Header />
         <WithSidebar>{children}</WithSidebar>
