@@ -31,13 +31,13 @@ export default function MobileNav() {
 			{/* Burger Menu Button - Fixed to top */}
 			<button
 				onClick={toggleMenu}
-				className="fixed top-4 left-4 z-50 p-3 bg-white rounded-full shadow-lg hover:shadow-xl transition-all lg:hidden"
+				className="fixed top-4 left-4 z-50 p-3 bg-white dark:bg-gray-900 rounded-full shadow-lg hover:shadow-xl transition-all lg:hidden"
 				aria-label="Toggle menu"
 			>
 				{isOpen ? (
-					<X className="w-6 h-6 text-gray-700" />
+					<X className="w-6 h-6 text-gray-700 dark:text-gray-300" />
 				) : (
-					<Menu className="w-6 h-6 text-gray-700" />
+					<Menu className="w-6 h-6 text-gray-700 dark:text-gray-300" />
 				)}
 			</button>
 
@@ -51,7 +51,7 @@ export default function MobileNav() {
 
 			{/* Sidebar */}
 			<div
-				className={`fixed top-0 left-0 h-full w-80 bg-white shadow-2xl z-40 transform transition-transform duration-300 ease-in-out lg:hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'
+				className={`fixed top-0 left-0 h-full w-80 bg-white dark:bg-gray-900 shadow-2xl z-40 transform transition-transform duration-300 ease-in-out lg:hidden ${isOpen ? 'translate-x-0' : '-translate-x-full'
 					}`}
 			>
 				{/* Profile Section */}
@@ -118,7 +118,7 @@ export default function MobileNav() {
 					</div>
 
 					{/* Divider */}
-					<div className="my-4 border-t border-gray-200" />
+					<div className="my-4 border-t border-gray-200 dark:border-gray-700 " />
 
 					<div className="space-y-1 px-3">
 						<NavLink
@@ -142,7 +142,7 @@ export default function MobileNav() {
 					</div>
 
 					{/* Divider */}
-					<div className="my-4 border-t border-gray-200" />
+					<div className="my-4 border-t border-gray-200 dark:border-gray-700 " />
 
 					<div className="space-y-1 px-3">
 						<NavLink
@@ -170,7 +170,7 @@ export default function MobileNav() {
 				</nav>
 
 				{/* Logout Button */}
-				<div className="p-4 border-t border-gray-200">
+				<div className="p-4 border-t border-gray-200 dark:bg-gray-700 ">
 					<button className="w-full flex items-center justify-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium">
 						<LogOut className="w-5 h-5" />
 						<span>Logout</span>
