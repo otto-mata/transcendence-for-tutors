@@ -15,10 +15,14 @@ datasource db {
 }
 
 model User {
-  id    Int     @default(autoincrement()) @id
-  email String  @unique
-  name  String?
-  posts Post[]
+  id            Int     @default(autoincrement()) @id
+  email         String  @unique
+  login         String  @unique
+  display_name  String  @unique
+  age           Int
+  password      String
+  jwt           String?
+  posts         Post[]
 }
 
 model Post {

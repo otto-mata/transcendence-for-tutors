@@ -1,4 +1,7 @@
-import { PrismaClient, Prisma } from "../src/generated/prisma/client";
+//To_do : All the file, it was for the previous migration, database changed since
+
+/*
+ import { PrismaClient, Prisma } from "../src/generated/prisma/client";
 import { PrismaPg } from '@prisma/adapter-pg'
 import 'dotenv/config'
 
@@ -50,3 +53,4 @@ export async function main() {
 }
 
 main();
+*/
