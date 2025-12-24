@@ -5,9 +5,10 @@ import { useState } from "react";
 interface ChatWindowProps {
   user: User;
   onBack: () => void;
+  showBackAlways?: boolean;
 }
 
-export function ChatWindow({ user, onBack }: ChatWindowProps) {
+export function ChatWindow({ user, onBack, showBackAlways }: ChatWindowProps) {
   const [message, setMessage] = useState("");
 
   return (
@@ -15,19 +16,18 @@ export function ChatWindow({ user, onBack }: ChatWindowProps) {
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3">
-          <button onClick={onBack} className="md:hidden p-2 hover:bg-gray-100 rounded-full">
+          <button onClick={onBack} className={`${showBackAlways ? 'flex' : 'md:hidden'} p-2 hover:bg-gray-100 rounded-full`}>
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="relative">
             <div className={`w-10 h-10 rounded-full ${user.avatar}`} />
             <div
-              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${
-                user.status === "online"
+              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${user.status === "online"
                   ? "bg-green-500"
                   : user.status === "away"
-                  ? "bg-yellow-500"
-                  : "bg-gray-500"
-              }`}
+                    ? "bg-yellow-500"
+                    : "bg-gray-500"
+                }`}
             />
           </div>
           <div>
