@@ -84,7 +84,7 @@ RUN mkdir -p /app/node_modules/.vite && \
 USER nodejs
 
 # Expose ports
-EXPOSE 3000 5173 9229
+EXPOSE 3000
 
 # Start development server
 CMD ["npm", "run", "start:dev"]
