@@ -10,6 +10,14 @@ import { IsEmail,
         Max,
         Length} from 'class-validator';
 
+export class LoginUserDto {
+  @Length(4, 20)
+  login : string;
+
+  @Length(8, 30)
+  password : string;
+}
+
 export class CreateUserDto {
   @IsInt()
   @Min(0)

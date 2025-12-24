@@ -85,10 +85,8 @@ RUN mkdir -p /app/node_modules/.vite && \
 USER nodejs
 
 # Initiate the DB
-RUN npx prisma migrate dev
+RUN npx prisma migrate dev --name dev
 
-# Fill with try values in "seed.ts"
-RUN npx prisma db seed
 
 # Expose ports
 EXPOSE 3000
