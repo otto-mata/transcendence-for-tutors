@@ -46,8 +46,8 @@ export default function NotificationsPage() {
 
 				{/* Notifications List */}
 				<div className="divide-y divide-gray-200 dark:divide-gray-700">
-					{notifications.map((notification, index) => (
-						<NotificationItem key={index} notification={notification} />
+					{notifications.map((notification) => (
+						<NotificationItem key={notification.id} notification={notification} />
 					))}
 				</div>
 			</div>
@@ -129,6 +129,7 @@ function NotificationItem({ notification }: { notification: Notification }) {
 type NotificationType = 'like' | 'comment' | 'follow' | 'repost' | 'mention' | 'achievement' | 'trending';
 
 interface Notification {
+	id: string;
 	type: NotificationType;
 	author: string;
 	username: string;
@@ -141,6 +142,7 @@ interface Notification {
 // Sample data
 const notifications: Notification[] = [
 	{
+		id: '1',
 		type: 'like',
 		author: 'Alex Chen',
 		username: 'alexchen',
@@ -150,6 +152,7 @@ const notifications: Notification[] = [
 		read: false,
 	},
 	{
+		id: '2',
 		type: 'comment',
 		author: 'Sarah Kim',
 		username: 'sarahkim',
@@ -159,6 +162,7 @@ const notifications: Notification[] = [
 		read: false,
 	},
 	{
+		id: '3',
 		type: 'follow',
 		author: 'Mike Johnson',
 		username: 'mikejohnson',
@@ -167,6 +171,7 @@ const notifications: Notification[] = [
 		read: false,
 	},
 	{
+		id: '4',
 		type: 'mention',
 		author: 'Emma Davis',
 		username: 'emmadavis',
@@ -176,6 +181,7 @@ const notifications: Notification[] = [
 		read: true,
 	},
 	{
+		id: '5',
 		type: 'like',
 		author: 'James Wilson',
 		username: 'jameswilson',
@@ -185,6 +191,7 @@ const notifications: Notification[] = [
 		read: true,
 	},
 	{
+		id: '6',
 		type: 'repost',
 		author: 'Olivia Brown',
 		username: 'oliviabrown',
@@ -194,6 +201,7 @@ const notifications: Notification[] = [
 		read: true,
 	},
 	{
+		id: '7',
 		type: 'achievement',
 		author: 'ft_transcendence',
 		username: 'system',
@@ -203,6 +211,7 @@ const notifications: Notification[] = [
 		read: true,
 	},
 	{
+		id: '8',
 		type: 'trending',
 		author: 'ft_transcendence',
 		username: 'system',
@@ -212,6 +221,7 @@ const notifications: Notification[] = [
 		read: true,
 	},
 	{
+		id: '9',
 		type: 'follow',
 		author: 'Lucas Garcia',
 		username: 'lucasgarcia',
@@ -220,6 +230,7 @@ const notifications: Notification[] = [
 		read: true,
 	},
 	{
+		id: '10',
 		type: 'like',
 		author: 'Sophia Lee',
 		username: 'sophialee',
@@ -229,6 +240,7 @@ const notifications: Notification[] = [
 		read: true,
 	},
 	{
+		id: '11',
 		type: 'comment',
 		author: 'Noah Martinez',
 		username: 'noahmartinez',

@@ -381,18 +381,18 @@ function ToggleSwitch({
 	defaultChecked?: boolean;
 	onChange?: (value: boolean) => void;
 }) {
-	const [isChecked, setIsChecked] = useState(checked !== undefined ? checked : defaultChecked ?? false);
+	const [internalChecked, setInternalChecked] = useState(defaultChecked ?? false);
+	
+	// Use controlled value if provided, otherwise use internal state
+	const isChecked = checked !== undefined ? checked : internalChecked;
 
 	const handleToggle = () => {
 		const newValue = !isChecked;
-		setIsChecked(newValue);
+		if (checked === undefined) {
+			setInternalChecked(newValue);
+		}
 		onChange?.(newValue);
 	};
-
-	// Update internal state when controlled checked prop changes
-	if (checked !== undefined && checked !== isChecked) {
-		setIsChecked(checked);
-	}
 
 	return (
 		<button
