@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import ResponsiveNav from "@/components/ResponsiveNav";
+import ChatPopup from "@/components/Chat/ChatPopup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +32,7 @@ export default function RootLayout({
       >
         <ResponsiveNav />
         {children}
+        <ChatPopup />
       </body>
     </html>
   );
