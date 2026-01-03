@@ -1,10 +1,10 @@
-import { IsString, IsOptional, MaxLength, IsUrl } from 'class-validator';
+import { IsString, IsOptional, IsDateString, MaxLength, IsUrl } from 'class-validator';
 
 export class UpdateUserDto {
   @IsOptional()
   @IsString()
   @MaxLength(30)
-  displayName?: string;
+  username?: string;
 
   @IsOptional()
   @IsString()
@@ -16,6 +16,10 @@ export class UpdateUserDto {
   location?: string;
 
   @IsOptional()
+  @IsDateString()
+  birthday?: string;
+
+  @IsOptional()
   @IsUrl()
-  website?: string;
+  avatarUrl?: string;
 }
