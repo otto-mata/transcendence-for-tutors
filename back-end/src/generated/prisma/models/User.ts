@@ -43,7 +43,6 @@ export type UserMinAggregateOutputType = {
   display_name: string | null
   age: number | null
   password: string | null
-  jwt: string | null
 }
 
 export type UserMaxAggregateOutputType = {
@@ -53,7 +52,6 @@ export type UserMaxAggregateOutputType = {
   display_name: string | null
   age: number | null
   password: string | null
-  jwt: string | null
 }
 
 export type UserCountAggregateOutputType = {
@@ -63,7 +61,6 @@ export type UserCountAggregateOutputType = {
   display_name: number
   age: number
   password: number
-  jwt: number
   _all: number
 }
 
@@ -85,7 +82,6 @@ export type UserMinAggregateInputType = {
   display_name?: true
   age?: true
   password?: true
-  jwt?: true
 }
 
 export type UserMaxAggregateInputType = {
@@ -95,7 +91,6 @@ export type UserMaxAggregateInputType = {
   display_name?: true
   age?: true
   password?: true
-  jwt?: true
 }
 
 export type UserCountAggregateInputType = {
@@ -105,7 +100,6 @@ export type UserCountAggregateInputType = {
   display_name?: true
   age?: true
   password?: true
-  jwt?: true
   _all?: true
 }
 
@@ -202,7 +196,6 @@ export type UserGroupByOutputType = {
   display_name: string
   age: number
   password: string
-  jwt: string | null
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -235,7 +228,6 @@ export type UserWhereInput = {
   display_name?: Prisma.StringFilter<"User"> | string
   age?: Prisma.IntFilter<"User"> | number
   password?: Prisma.StringFilter<"User"> | string
-  jwt?: Prisma.StringNullableFilter<"User"> | string | null
   posts?: Prisma.PostListRelationFilter
 }
 
@@ -246,7 +238,6 @@ export type UserOrderByWithRelationInput = {
   display_name?: Prisma.SortOrder
   age?: Prisma.SortOrder
   password?: Prisma.SortOrder
-  jwt?: Prisma.SortOrderInput | Prisma.SortOrder
   posts?: Prisma.PostOrderByRelationAggregateInput
 }
 
@@ -260,7 +251,6 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.UserWhereInput | Prisma.UserWhereInput[]
   age?: Prisma.IntFilter<"User"> | number
   password?: Prisma.StringFilter<"User"> | string
-  jwt?: Prisma.StringNullableFilter<"User"> | string | null
   posts?: Prisma.PostListRelationFilter
 }, "id" | "email" | "login" | "display_name">
 
@@ -271,7 +261,6 @@ export type UserOrderByWithAggregationInput = {
   display_name?: Prisma.SortOrder
   age?: Prisma.SortOrder
   password?: Prisma.SortOrder
-  jwt?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -289,7 +278,6 @@ export type UserScalarWhereWithAggregatesInput = {
   display_name?: Prisma.StringWithAggregatesFilter<"User"> | string
   age?: Prisma.IntWithAggregatesFilter<"User"> | number
   password?: Prisma.StringWithAggregatesFilter<"User"> | string
-  jwt?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
 }
 
 export type UserCreateInput = {
@@ -298,7 +286,6 @@ export type UserCreateInput = {
   display_name: string
   age: number
   password: string
-  jwt?: string | null
   posts?: Prisma.PostCreateNestedManyWithoutAuthorInput
 }
 
@@ -309,7 +296,6 @@ export type UserUncheckedCreateInput = {
   display_name: string
   age: number
   password: string
-  jwt?: string | null
   posts?: Prisma.PostUncheckedCreateNestedManyWithoutAuthorInput
 }
 
@@ -319,7 +305,6 @@ export type UserUpdateInput = {
   display_name?: Prisma.StringFieldUpdateOperationsInput | string
   age?: Prisma.IntFieldUpdateOperationsInput | number
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  jwt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posts?: Prisma.PostUpdateManyWithoutAuthorNestedInput
 }
 
@@ -330,7 +315,6 @@ export type UserUncheckedUpdateInput = {
   display_name?: Prisma.StringFieldUpdateOperationsInput | string
   age?: Prisma.IntFieldUpdateOperationsInput | number
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  jwt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   posts?: Prisma.PostUncheckedUpdateManyWithoutAuthorNestedInput
 }
 
@@ -341,7 +325,6 @@ export type UserCreateManyInput = {
   display_name: string
   age: number
   password: string
-  jwt?: string | null
 }
 
 export type UserUpdateManyMutationInput = {
@@ -350,7 +333,6 @@ export type UserUpdateManyMutationInput = {
   display_name?: Prisma.StringFieldUpdateOperationsInput | string
   age?: Prisma.IntFieldUpdateOperationsInput | number
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  jwt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -360,7 +342,6 @@ export type UserUncheckedUpdateManyInput = {
   display_name?: Prisma.StringFieldUpdateOperationsInput | string
   age?: Prisma.IntFieldUpdateOperationsInput | number
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  jwt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -370,7 +351,6 @@ export type UserCountOrderByAggregateInput = {
   display_name?: Prisma.SortOrder
   age?: Prisma.SortOrder
   password?: Prisma.SortOrder
-  jwt?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
@@ -385,7 +365,6 @@ export type UserMaxOrderByAggregateInput = {
   display_name?: Prisma.SortOrder
   age?: Prisma.SortOrder
   password?: Prisma.SortOrder
-  jwt?: Prisma.SortOrder
 }
 
 export type UserMinOrderByAggregateInput = {
@@ -395,7 +374,6 @@ export type UserMinOrderByAggregateInput = {
   display_name?: Prisma.SortOrder
   age?: Prisma.SortOrder
   password?: Prisma.SortOrder
-  jwt?: Prisma.SortOrder
 }
 
 export type UserSumOrderByAggregateInput = {
@@ -420,10 +398,6 @@ export type IntFieldUpdateOperationsInput = {
   divide?: number
 }
 
-export type NullableStringFieldUpdateOperationsInput = {
-  set?: string | null
-}
-
 export type UserCreateNestedOneWithoutPostsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutPostsInput, Prisma.UserUncheckedCreateWithoutPostsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutPostsInput
@@ -446,7 +420,6 @@ export type UserCreateWithoutPostsInput = {
   display_name: string
   age: number
   password: string
-  jwt?: string | null
 }
 
 export type UserUncheckedCreateWithoutPostsInput = {
@@ -456,7 +429,6 @@ export type UserUncheckedCreateWithoutPostsInput = {
   display_name: string
   age: number
   password: string
-  jwt?: string | null
 }
 
 export type UserCreateOrConnectWithoutPostsInput = {
@@ -481,7 +453,6 @@ export type UserUpdateWithoutPostsInput = {
   display_name?: Prisma.StringFieldUpdateOperationsInput | string
   age?: Prisma.IntFieldUpdateOperationsInput | number
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  jwt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 export type UserUncheckedUpdateWithoutPostsInput = {
@@ -491,7 +462,6 @@ export type UserUncheckedUpdateWithoutPostsInput = {
   display_name?: Prisma.StringFieldUpdateOperationsInput | string
   age?: Prisma.IntFieldUpdateOperationsInput | number
   password?: Prisma.StringFieldUpdateOperationsInput | string
-  jwt?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
 
@@ -532,7 +502,6 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   display_name?: boolean
   age?: boolean
   password?: boolean
-  jwt?: boolean
   posts?: boolean | Prisma.User$postsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
@@ -544,7 +513,6 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   display_name?: boolean
   age?: boolean
   password?: boolean
-  jwt?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -554,7 +522,6 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   display_name?: boolean
   age?: boolean
   password?: boolean
-  jwt?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -564,10 +531,9 @@ export type UserSelectScalar = {
   display_name?: boolean
   age?: boolean
   password?: boolean
-  jwt?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "login" | "display_name" | "age" | "password" | "jwt", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "email" | "login" | "display_name" | "age" | "password", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   posts?: boolean | Prisma.User$postsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -587,7 +553,6 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     display_name: string
     age: number
     password: string
-    jwt: string | null
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -1018,7 +983,6 @@ export interface UserFieldRefs {
   readonly display_name: Prisma.FieldRef<"User", 'String'>
   readonly age: Prisma.FieldRef<"User", 'Int'>
   readonly password: Prisma.FieldRef<"User", 'String'>
-  readonly jwt: Prisma.FieldRef<"User", 'String'>
 }
     
 

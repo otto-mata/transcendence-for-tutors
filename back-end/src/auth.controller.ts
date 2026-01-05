@@ -22,6 +22,7 @@ export class AuthController {
     catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError){
       //creer une fonction pour savoir quelle erreure c'est tehe
+      console.log(e);
       return 'Nah bud, wrong sh**';
     }
     else { throw e }

@@ -28,8 +28,8 @@ export class AuthService{
       login : user['login'],
       password : user['password']}
     return {
-      access_token : await this.jwtService.signAsync(payload
-    )};
+      access_token : await this.jwtService.signAsync(payload)
+    };
   }
   
   async RefreshToken (

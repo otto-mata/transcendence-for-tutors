@@ -21,7 +21,6 @@ model User {
   display_name  String  @unique
   age           Int
   password      String
-  jwt           String?
   posts         Post[]
 }
 

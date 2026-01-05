@@ -22,7 +22,7 @@ export class AppController {
   async getUser(
     //UserWhereUniqueInput : Prisma.UserWhereUniqueInput
   ) : Promise<User | null> {
-    return this.appService.getUser({ id : 1 });
+    return this.appService.getUser({ id : 2 });
   }
 
 }
