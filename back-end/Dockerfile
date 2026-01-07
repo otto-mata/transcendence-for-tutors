@@ -44,8 +44,9 @@ RUN --mount=type=cache,target=/root/.npm,sharing=locked \
     npm cache clean --force
 
 # Create necessary directories and set permissions
-RUN mkdir -p /app/node_modules/.vite && \
-    chown -R nodejs:nodejs /app
+RUN mkdir -p /app/node_modules/.vite
+
+#RUN  chown -R nodejs:nodejs /app Already done up ??
 
 # ========================================
 # Build
@@ -82,6 +83,10 @@ RUN mkdir -p /app/node_modules/.vite && \
 
 # Switch to non-root user
 USER nodejs
+
+# Initiate the DB
+RUN npx prisma migrate dev --name dev
+
 
 # Expose ports
 EXPOSE 3000
