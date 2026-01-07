@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AuthController } from './auth.controller';
+import { NotificationsController } from './notifications.controller';
 import { AppService } from './app.service';
 import { AuthService } from './auth.service';
 import { PrismaService } from './prisma.service';
@@ -13,7 +14,7 @@ import "dotenv/config";
     secret : process.env.JWT_SECRET, //We need to have an actual secret here. like encrypt it ?
     signOptions : {expiresIn : '60s'},
   })],
-  controllers: [AppController, AuthController],
+  controllers: [AppController, AuthController, NotificationsController],
   providers: [AppService, AuthService, PrismaService],
 })
 export class AppModule {}

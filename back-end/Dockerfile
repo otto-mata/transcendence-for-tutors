@@ -84,10 +84,6 @@ RUN mkdir -p /app/node_modules/.vite && \
 # Switch to non-root user
 USER nodejs
 
-# Initiate the DB
-RUN npx prisma migrate dev --name dev
-
-
 # Expose ports
 EXPOSE 3000
 

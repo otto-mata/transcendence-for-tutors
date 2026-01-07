@@ -19,11 +19,37 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDark, setIsDark] = useState(false);
 	const pathname = usePathname();
+
+	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
+
+	useEffect(() => {
+		let mounted = true;
+		(async () => {
+			try {
+				const res = await fetch('/api/notifications');
+				if (!mounted) return;
+				if (!res.ok) { setNotifCount(0); return; }
+				const data = await res.json();
+				if (Array.isArray(data)) {
+					const unread = data.filter((n: any) => n && n.read === false).length;
+					setNotifCount(unread);
+				} else {
+					setNotifCount(0);
+				}
+			} catch (e) {
+				console.error('Failed to fetch notifications count', e);
+				if (mounted) setNotifCount(0);
+			}
+		})();
+
+		return () => { mounted = false; };
+	}, []);
 
 	function isActive(href: string) {
 		if (!pathname) return false;
@@ -103,7 +129,7 @@ export default function MobileNav() {
 							href="/notifications"
 							icon={<Bell className="w-5 h-5" />}
 							label="Notifications"
-							badge={12}
+							badge={notifCount}
 							onClick={closeMenu}
 							active={isActive('/notifications')}
 						/>

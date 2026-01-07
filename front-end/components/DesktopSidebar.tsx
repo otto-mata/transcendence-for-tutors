@@ -15,9 +15,38 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 export default function DesktopSidebar() {
 	const pathname = usePathname();
+
+	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
+
+	useEffect(() => {
+		let mounted = true;
+		(async () => {
+			try {
+				const res = await fetch('/api/notifications');
+				if (!mounted) return;
+				if (!res.ok) {
+					setNotifCount(0);
+					return;
+				}
+				const data = await res.json();
+				if (Array.isArray(data)) {
+					const unread = data.filter((n: any) => n && n.read === false).length;
+					setNotifCount(unread);
+				} else {
+					setNotifCount(0);
+				}
+			} catch (e) {
+				console.error('Failed to fetch notifications count', e);
+				if (mounted) setNotifCount(0);
+			}
+		})();
+
+		return () => { mounted = false; };
+	}, []);
 
 	function isActive(href: string) {
 		if (!pathname) return false;
@@ -37,7 +66,7 @@ export default function DesktopSidebar() {
 			<nav className="flex-1 space-y-2">
 				<SidebarLink href="/" icon={<Home />} label="Home" active={isActive('/')} />
 				<SidebarLink href="/explore" icon={<Compass />} label="Explore" active={isActive('/explore')} />
-				<SidebarLink href="/notifications" icon={<Bell />} label="Notifications" badge={12} active={isActive('/notifications')} />
+				<SidebarLink href="/notifications" icon={<Bell />} label="Notifications" badge={notifCount} active={isActive('/notifications')} />
 				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" badge={3} active={isActive('/messages')} />
 				<SidebarLink href="/profile" icon={<User />} label="Profile" active={isActive('/profile')} />
 				<SidebarLink href="/bookmarks" icon={<Bookmark />} label="Bookmarks" active={isActive('/bookmarks')} />
