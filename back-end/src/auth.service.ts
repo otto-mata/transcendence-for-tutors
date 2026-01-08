@@ -25,18 +25,18 @@ export class AuthService{
     if (user == null || user['password'] !== password)
       throw new UnauthorizedException();
     const payload = {
-      login : user['login'],
-      password : user['password']}
+      login : user['login']
+    }
     return {
       access_token : await this.jwtService.signAsync(payload)
     };
   }
   
   async RefreshToken (
-    tokken : string
+    token : string
   ) : Promise<{ access_token : string }> {
     try {
-    const data = await this.jwtService.verifyAsync(tokken, {
+    const data = await this.jwtService.verifyAsync(token, {
          secret : process.env.JWT_SECRET 
      });
       if(!data || !data['password'] || !data['login'])

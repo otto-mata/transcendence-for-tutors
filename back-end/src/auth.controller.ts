@@ -20,12 +20,12 @@ export class AuthController {
       await this.authService.createUser(data);
     }
     catch (e) {
-    if (e instanceof Prisma.PrismaClientKnownRequestError){
+      if (e instanceof Prisma.PrismaClientKnownRequestError){
       //creer une fonction pour savoir quelle erreure c'est tehe
-      console.log(e);
-      return 'Nah bud, wrong sh**';
-    }
-    else { throw e }
+        console.log(e);
+        return 'Nah bud, wrong sh**';
+      }
+      else { throw e }
     }
     return 'Registered successfully';
   }

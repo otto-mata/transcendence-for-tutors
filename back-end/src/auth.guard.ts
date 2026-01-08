@@ -15,11 +15,11 @@ export class AuthGuard implements CanActivate {
   async canActivate ( context : ExecutionContext
   ) : Promise<boolean> {
     const request = context.switchToHttp().getRequest();
-    const tokken = this.ExtractTokken(request);
-    if (!tokken)
+    const token = this.ExtractTokken(request);
+    if (!token)
       throw new UnauthorizedException();
     try {
-      const data = await this.jwtService.verifyAsync(tokken, {
+      const data = await this.jwtService.verifyAsync(token, {
           secret : process.env.JWT_SECRET //Vrimanet il faut que je gere ce mdp :33333 
       });
       request['login'] = data;
@@ -32,7 +32,7 @@ export class AuthGuard implements CanActivate {
 
   private ExtractTokken( request : Request
   ) : string | undefined  {
-    const [type, tokken] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? tokken : undefined;
+    const [type, token] = request.headers.authorization?.split(' ') ?? [];
+    return type === 'Bearer' ? token : undefined;
   }
 }

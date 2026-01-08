@@ -10,8 +10,8 @@ import "dotenv/config";
 @Module({
   imports: [JwtModule.register({
     global : true,
-    secret : process.env.JWT_SECRET, //We need to have an actual secret here. like encrypt it ?
-    signOptions : {expiresIn : '60s'},
+    secret : process.env.JWT_SECRET,
+    signOptions : {expiresIn : '15min'},
   })],
   controllers: [AppController, AuthController],
   providers: [AppService, AuthService, PrismaService],
