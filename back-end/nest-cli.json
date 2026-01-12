@@ -5,10 +5,10 @@
   "compilerOptions": {
     "deleteOutDir": true,
     "webpack": true,
-    "tsConfigPath": "apps/back-end/tsconfig.app.json"
+    "tsConfigPath": "./apps/back-end/tsconfig.app.json"
   },
   "monorepo": true,
-  "root": "apps/back-end",
+  "root": "./",
   "projects": {
     "auth": {
       "type": "application",
@@ -16,7 +16,7 @@
       "entryFile": "main",
       "sourceRoot": "apps/auth/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/auth/tsconfig.app.json"
+        "tsConfigPath": "apps/auth/tsconfig.dev.json"
       }
     },
     "back-end": {
@@ -25,7 +25,7 @@
       "entryFile": "main",
       "sourceRoot": "apps/back-end/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/back-end/tsconfig.app.json"
+        "tsConfigPath": "apps/back-end/tsconfig.dev.json"
       }
     }
   }

@@ -6,12 +6,12 @@ import { JwtModule } from '@nestjs/jwt';
 import "dotenv/config";
 
 @Module({
-  imports: [Jwtmodule.register({
+  imports: [JwtModule.register({
     global : true,
     secret : process.env.jwt_secret,
-    signoptions : {expiresin : '15m'},
+    signOptions : {expiresIn : '15m'},
   })],
-  controllers: [Appcontroller],
-  providers: [Appservice, Prismaservice],
+  controllers: [AppController],
+  providers: [AppService, PrismaService],
 })
 export class AppModule {}

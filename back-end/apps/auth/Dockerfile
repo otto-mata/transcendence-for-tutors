@@ -20,10 +20,12 @@ FROM base AS deps
 # Copy package files
 COPY package*.json ./
 
+
 # Install production dependencies
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
     npm ci --omit=dev && \
     npm cache clean --force
+
 
 # Set proper ownership
 RUN chown -R nodejs:nodejs /app
@@ -37,11 +39,17 @@ FROM base AS build-deps
 
 # Copy package files
 COPY package*.json ./
+COPY tsconfig.json ./
+COPY prisma ./prisma
 
 # Install all dependencies with build optimizations
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
     npm ci --no-audit --no-fund && \
     npm cache clean --force
+
+#build prisma module
+
+RUN npm install ./prisma/dist
 
 # Create necessary directories and set permissions
 RUN mkdir -p /app/node_modules/.vite
@@ -54,11 +62,12 @@ RUN mkdir -p /app/node_modules/.vite
 
 FROM build-deps AS build
 
-# Copy only necessary files for building (respects .dockerignore)
-COPY --chown=nodejs:nodejs . .
+# Copy source files
+COPY apps/auth/ ./auth
 
 # Build the application
-RUN npm run build
+RUN npx tsc -p ./auth/tsconfig.app.json
+#  RUN npm run build
 
 # Set proper ownership
 RUN chown -R nodejs:nodejs /app
@@ -67,14 +76,11 @@ RUN chown -R nodejs:nodejs /app
 # Dev Stage
 # ========================================
 
-FROM build-deps AS development
+FROM build AS development
 
 # Set environment
 ENV NODE_ENV=development \
     NPM_CONFIG_LOGLEVEL=warn
-
-# Copy source files
-COPY . .
 
 # Ensure all directories have proper permissions
 RUN mkdir -p /app/node_modules/.vite && \
@@ -84,15 +90,11 @@ RUN mkdir -p /app/node_modules/.vite && \
 # Switch to non-root user
 USER nodejs
 
-# Initiate the DB
-RUN npx prisma migrate dev --name dev
-
-
 # Expose ports
-EXPOSE 3000
+EXPOSE 3001
 
 # Start development server
-CMD ["npm", "run", "start:dev"]
+CMD ["node", "dist/main.js"]
 
 # ========================================
 # Production Stage

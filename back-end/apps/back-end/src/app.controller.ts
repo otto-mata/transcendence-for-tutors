@@ -5,7 +5,7 @@ import { Controller,
         UseGuards
   } from '@nestjs/common';
 import { AppService } from './app.service';
-import { User, Prisma } from '.prisma/client';
+import { User, Prisma } from 'prisma-client/client';
 import { AuthGuard } from './auth.guard';
 
 @Controller()
@@ -22,7 +22,7 @@ export class AppController {
   async getUser(
     //UserWhereUniqueInput : Prisma.UserWhereUniqueInput
   ) : Promise<User | null> {
-    return this.appService.getUser({ id : 2 });
+    return this.appService.getUser({ id : 1 });
   }
 
 }
