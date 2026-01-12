@@ -15,21 +15,31 @@ export class AuthController {
   @Post('register')
   async createUser(
     @Body() data : CreateUserDto
-  ) : Promise<string> {
+  ) : Promise<{message:string}
+    |         {error:string, code:string, message:string}> {
    try {
       await this.authService.createUser(data);
     }
     catch (e) {
       if (e instanceof Prisma.PrismaClientKnownRequestError){
-      //creer une fonction pour savoir quelle erreure c'est tehe
-        console.log(e);
-        return 'Nah bud, wrong sh**';
+      //handle other errors
+        if (e.code == 'P2002'){
+          const message = typeof e.message.split(/\r?\n/).pop() === 'string' ?
+            e.message.split(/\r?\n/).pop() as string : "duplicate key";
+          return ({
+            "error"   : "Cannot create User",
+            "code"    : "P2002",
+            "message" : message
+          });
+        }
       }
       else {
         throw e
       }
     }
-    return 'Registered successfully';
+    return ({
+      "message":'Registered successfully'
+    });
   }
 
   @Post('login')
