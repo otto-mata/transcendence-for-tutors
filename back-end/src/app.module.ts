@@ -1,20 +1,19 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AuthController } from './auth.controller';
-import { NotificationsController } from './notifications.controller';
 import { AppService } from './app.service';
-import { AuthService } from './auth.service';
-import { PrismaService } from './prisma.service';
-import { JwtModule } from '@nestjs/jwt';
-import "dotenv/config";
+import { ConfigModule } from '@nestjs/config';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [JwtModule.register({
-    global : true,
-    secret : process.env.JWT_SECRET, //We need to have an actual secret here. like encrypt it ?
-    signOptions : {expiresIn : '60s'},
-  })],
-  controllers: [AppController, AuthController, NotificationsController],
-  providers: [AppService, AuthService, PrismaService],
+  imports: [
+    PrismaModule,
+    ConfigModule.forRoot({
+      isGlobal: true, // Makes ConfigModule available globally
+      envFilePath: '.env', // Path to your .env file
+      cache: true, // Cache environment variables for better performance
+    }),
+  ],
+  controllers: [AppController],
+  providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
