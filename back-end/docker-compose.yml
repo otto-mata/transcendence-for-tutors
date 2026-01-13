@@ -19,9 +19,6 @@ services:
       ALLOWED_ORIGINS: '${ALLOWED_ORIGINS:-http://localhost:3000}'
       DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-db}"
       JWT_SECRET: ${JWT_SECRET:-thisisasecret}
-    volumes:
-      - ./apps/back-end/src/:/app/back-end/src:ro
-      - ./prisma:/app/prisma:ro
     depends_on:
       - postgres #:
         #condition: service_healthy

@@ -9,28 +9,6 @@ RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs && \
     chown -R nodejs:nodejs /app
 
-
-
-# ========================================
-# dependencies
-# ========================================
-
-FROM base AS deps
-
-# Copy package files
-COPY package*.json ./
-
-
-# Install production dependencies
-RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-    npm ci --omit=dev && \
-    npm cache clean --force
-
-
-# Set proper ownership
-RUN chown -R nodejs:nodejs /app
-
-
 # ========================================
 # Build dependencies
 # ========================================
@@ -38,9 +16,9 @@ RUN chown -R nodejs:nodejs /app
 FROM base AS build-deps
 
 # Copy package files
-COPY package*.json ./
-COPY tsconfig.json ./
-COPY prisma ./prisma
+COPY --chown=nodejs:nodejs package*.json ./
+COPY --chown=nodejs:nodejs tsconfig.json ./
+COPY --chown=nodejs:nodejs prisma ./prisma
 
 # Install all dependencies with build optimizations
 RUN --mount=type=cache,target=/root/.npm,sharing=locked \
@@ -63,14 +41,14 @@ RUN mkdir -p /app/node_modules/.vite
 FROM build-deps AS build
 
 # Copy source files
-COPY apps/auth/ ./auth
+COPY --chown=nodejs:nodejs apps/auth/ ./auth
 
 # Build the application
 RUN npx tsc -p ./auth/tsconfig.app.json
 #  RUN npm run build
 
 # Set proper ownership
-RUN chown -R nodejs:nodejs /app
+#RUN chown -R nodejs:nodejs /app
 
 # ========================================
 # Dev Stage
@@ -84,8 +62,9 @@ ENV NODE_ENV=development \
 
 # Ensure all directories have proper permissions
 RUN mkdir -p /app/node_modules/.vite && \
-    chown -R nodejs:nodejs /app && \
-    chmod -R 755 /app
+    chmod -R 755 /app/dist
+#     chown -R nodejs:nodejs /app && \
+
 
 # Switch to non-root user
 USER nodejs
