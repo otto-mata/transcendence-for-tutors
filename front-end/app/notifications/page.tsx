@@ -12,7 +12,7 @@ type Notification = {
 
 async function fetchNotifications(): Promise<Notification[]> {
   try {
-  const base = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:8080';
+  const base = 'http://localhost:8080';
   const res = await fetch(`${base}/api/notifications`);
     if (!res.ok) return [];
     const data = await res.json();
