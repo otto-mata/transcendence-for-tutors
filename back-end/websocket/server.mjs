@@ -28,7 +28,6 @@ const sendUpdate = (userId, status) => {
 
 server.on('connection', (socket) => {
 	socket.on('message', (data) => {
-		// socket.send('pong');
 		let msg;
 
 		try {
@@ -54,6 +53,8 @@ server.on('connection', (socket) => {
 			if (!watchers.has(userId))
 				watchers.set(userId, new Set());
 			watchers.get(userId).add(socket);
+			const status = users.has(userId) ? 'online' : 'offline';
+			socket.send(JSON.stringify({type: 'status', userId, status}));
 		}
 		show_connections();
 	});
