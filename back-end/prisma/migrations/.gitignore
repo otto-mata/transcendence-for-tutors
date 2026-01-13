@@ -1,0 +1,5 @@
+#ignore all
+*
+# except this
+!.gitignore
+# It's so we can push a empty folder
