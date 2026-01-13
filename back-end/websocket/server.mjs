@@ -38,6 +38,8 @@ server.on('connection', (socket) => {
 			const { userId } = msg;
 			if (userId == undefined)
 				return ;
+			if (sockets.has(socket))
+				return socket.send(JSON.stringify( { type: 'auth_err', error: 'Already logged in !'} ));
 			if (!users.has(userId))
 				users.set(userId, new Set());
 			users.get(userId).add(socket);
