@@ -6,12 +6,12 @@ import { User, Prisma } from '$prisma';
 export class UserRepository {
 	constructor(private readonly prisma: PrismaService) { }
 
-	async findById(id: number): Promise<User> {
+	async findById(id: string): Promise<User> {
 		return this.prisma.user.findFirstOrThrow({ where: { id } });
 	}
 
-	async findByLogin(login: string): Promise<User> {
-		return this.prisma.user.findFirstOrThrow({ where: { login } });
+	async findByLogin(username: string): Promise<User> {
+		return this.prisma.user.findFirstOrThrow({ where: { username } });
 	}
 
 	async findByEmail(email: string): Promise<User> {
@@ -30,14 +30,14 @@ export class UserRepository {
 		return this.prisma.user.create({ data });
 	}
 
-	async update(id: number, data: Prisma.UserUpdateInput): Promise<User> {
+	async update(id: string, data: Prisma.UserUpdateInput): Promise<User> {
 		return this.prisma.user.update({
 			where: { id },
 			data,
 		});
 	}
 
-	async delete(id: number): Promise<User> {
+	async delete(id: string): Promise<User> {
 		return this.prisma.user.delete({
 			where: { id },
 		});

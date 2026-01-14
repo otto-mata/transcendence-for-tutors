@@ -6,7 +6,7 @@ import { Post, Prisma } from '$prisma';
 export class PostRepository {
 	constructor(private readonly prisma: PrismaService) { }
 
-	async findById(id: number): Promise<Post> {
+	async findById(id: string): Promise<Post> {
 		return this.prisma.post.findFirstOrThrow({ where: { id } });
 	}
 
@@ -22,14 +22,14 @@ export class PostRepository {
 		return this.prisma.post.create({ data });
 	}
 
-	async update(id: number, data: Prisma.PostUpdateInput): Promise<Post> {
+	async update(id: string, data: Prisma.PostUpdateInput): Promise<Post> {
 		return this.prisma.post.update({
 			where: { id },
 			data,
 		});
 	}
 
-	async delete(id: number): Promise<Post> {
+	async delete(id: string): Promise<Post> {
 		return this.prisma.post.delete({
 			where: { id },
 		});

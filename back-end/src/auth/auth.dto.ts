@@ -4,38 +4,40 @@
 //still can be used to do some "CreateUserVerif" for exemple
 //rajouter une verification que le user existe pas deja ? Est ce que la protectrion est deja faite au niveau de prisma ? mhhh
 //
-import { IsEmail,
-        IsInt,
-        Min,
-        Max,
-        Length} from 'class-validator';
+import {
+  IsEmail,
+  IsInt,
+  Min,
+  Max,
+  Length
+} from 'class-validator';
 
 export class LoginUserDto {
   @Length(4, 20)
-  login : string;
+  username: string;
 
   @Length(8, 30)
-  password : string;
+  passwordHash: string;
 }
 
 export class CreateUserDto {
   @IsInt()
   @Min(0)
   @Max(150)
-  age : number;
+  age: number;
 
   @IsEmail()
-  email : string;
+  email: string;
 
   @Length(8, 30)
-  password : string;
+  passwordHash: string;
 
 
   @Length(4, 20)
-  login : string;
-  
+  username: string;
+
   @Length(4, 25)
-  display_name : string;
+  displayName: string;
 }
 
 

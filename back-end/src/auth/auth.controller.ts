@@ -45,7 +45,7 @@ export class AuthController {
 	@Post('login')
 	LoginUser(
 		@Body() data: LoginUserDto) {
-		return this.authService.LoginUser(data.login, data.password);
+		return this.authService.LoginUser(data.username, data.passwordHash);
 	}
 
 	@Post('refresh')
