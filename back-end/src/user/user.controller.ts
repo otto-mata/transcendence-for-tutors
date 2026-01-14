@@ -6,25 +6,24 @@ import {
 	Get,
 	HttpStatus,
 	Param,
-	Post,
 	Put,
 	Query,
 	Res,
 	UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { PostService } from './post.service';
+import { UserService } from './user.service';
 import { AuthGuard } from '@/guards/auth.guard';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import type { CurrentUserType } from '@/decorators/current-user.decorator';
 
-@Controller('post')
+@Controller('user')
 @UseGuards(AuthGuard)
-export class PostController {
-	constructor(private readonly postService: PostService) { }
+export class UserController {
+	constructor(private readonly userService: UserService) { }
 
 	@Get()
-	async getAllPosts(
+	async getAllUsers(
 		@Query('skip') skip?: string,
 		@Query('take') take?: string,
 		@Res({ passthrough: true }) res?: Response,
@@ -32,30 +31,28 @@ export class PostController {
 		try {
 			const skipNum = skip ? parseInt(skip) : 0;
 			const takeNum = take ? parseInt(take) : 10;
-			const posts = await this.postService.findAll(skipNum, takeNum);
-			return JSON.stringify(posts);
+			const users = await this.userService.findAll(skipNum, takeNum);
+			return JSON.stringify(users);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving posts', error });
+			return JSON.stringify({ message: 'Error retrieving users', error });
 		}
 	}
 
-	@Get('/:id')
-	async getPostById(
-		@Param() params: { id: string },
+	@Get('/profile/:login')
+	async getUserByLogin(
+		@Param() params: { login: string },
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const { id } = params;
-			let idNum = parseInt(id);
-			if (Number.isNaN(idNum)) idNum = -1;
-			const post = await this.postService.findById(idNum);
-			return JSON.stringify(post);
+			const { login } = params;
+			const user = await this.userService.findByLogin(login);
+			return JSON.stringify(user);
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				res.status(HttpStatus.NOT_FOUND);
 				return JSON.stringify({
-					message: `Cannot GET /post/${params.id}`,
+					message: `Cannot GET /user/profile/${params.login}`,
 					error: 'Not Found',
 					statusCode: 404,
 				});
@@ -65,49 +62,39 @@ export class PostController {
 		}
 	}
 
-	@Post()
-	async createPost(
-		@Body() data: Prisma.PostCreateInput,
+	@Get('/me')
+	async getCurrentUser(
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			// You can now use the current user data
-			console.log('Creating post for user:', user);
-			const post = await this.postService.create({ ...data, author: { connect: { login: user.login } } });
-			res.status(HttpStatus.CREATED);
-			return JSON.stringify(post);
+			const currentUser = await this.userService.findByLogin(user.login);
+			return JSON.stringify(currentUser);
 		} catch (error) {
-			if (error instanceof Prisma.PrismaClientValidationError) {
-				res.status(HttpStatus.BAD_REQUEST);
-				return JSON.stringify({
-					message: 'Invalid post data',
-					error: 'Bad Request',
-					statusCode: 400,
-				});
-			}
-			res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify(error);
+			res.status(HttpStatus.NOT_FOUND);
+			return JSON.stringify({
+				message: 'User not found',
+				error: 'Not Found',
+				statusCode: 404,
+			});
 		}
 	}
 
-	@Put('/:id')
-	async updatePost(
-		@Param() params: { id: string },
-		@Body() data: Prisma.PostUpdateInput,
+	@Put('/me')
+	async updateCurrentUser(
+		@Body() data: Prisma.UserUpdateInput,
+		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const { id } = params;
-			let idNum = parseInt(id);
-			if (Number.isNaN(idNum)) idNum = -1;
-			const post = await this.postService.update(idNum, data);
-			return JSON.stringify(post);
+			const currentUser = await this.userService.findByLogin(user.login);
+			const updatedUser = await this.userService.update(currentUser.id, data);
+			return JSON.stringify(updatedUser);
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				res.status(HttpStatus.NOT_FOUND);
 				return JSON.stringify({
-					message: `Cannot PUT /post/${params.id}`,
+					message: 'User not found',
 					error: 'Not Found',
 					statusCode: 404,
 				});
@@ -115,7 +102,7 @@ export class PostController {
 			if (error instanceof Prisma.PrismaClientValidationError) {
 				res.status(HttpStatus.BAD_REQUEST);
 				return JSON.stringify({
-					message: 'Invalid post data',
+					message: 'Invalid user data',
 					error: 'Bad Request',
 					statusCode: 400,
 				});
@@ -125,22 +112,20 @@ export class PostController {
 		}
 	}
 
-	@Delete('/:id')
-	async deletePost(
-		@Param() params: { id: string },
+	@Delete('/me')
+	async deleteCurrentUser(
+		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const { id } = params;
-			let idNum = parseInt(id);
-			if (Number.isNaN(idNum)) idNum = -1;
-			const post = await this.postService.delete(idNum);
-			return JSON.stringify(post);
+			const currentUser = await this.userService.findByLogin(user.login);
+			const deletedUser = await this.userService.delete(currentUser.id);
+			return JSON.stringify(deletedUser);
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
 				res.status(HttpStatus.NOT_FOUND);
 				return JSON.stringify({
-					message: `Cannot DELETE /post/${params.id}`,
+					message: 'User not found',
 					error: 'Not Found',
 					statusCode: 404,
 				});
@@ -150,4 +135,3 @@ export class PostController {
 		}
 	}
 }
-
