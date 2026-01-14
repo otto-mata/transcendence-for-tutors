@@ -69,7 +69,7 @@ services:
 
   ws_online:
     container_name: ws_online
-    build: websocket/
+    build: ../websocket/
     ports:
       - 8081:8081
     environment:
