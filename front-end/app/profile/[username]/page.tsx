@@ -1,7 +1,34 @@
+"use client"
 import Image from 'next/image';
 import { MapPin, Link as LinkIcon, Calendar, MoreHorizontal, Settings, Share2, Bell, BellOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function ProfilePage({ params }: { params: { username: string } }) {
+		const [login, setlogin] = useState('');
+		const [name, setName] = useState('');
+	
+		useEffect(() =>{
+		async function fetchLogin(){
+			try {
+				const authorization = 'Bearer ' + localStorage.getItem('access_token');
+				const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+				const res = await fetch(`${api}/profile/${(await params).username}`, {
+					method: 'GET',
+					headers: { 'Content-Type': 'application/json',
+								"Authorization":authorization}
+				});
+		  const body = await res.json();
+		//   if (!res.ok) throw new Error(body.message || 'Bad Token');
+		  if (body.login) setlogin(body.login);
+		  if (body.display_name) setName(body.display_name);
+		  } catch (err: any){
+			console.log(err);
+			// setErrors({ general: err.message || String(err) });
+		}
+		}
+		fetchLogin();
+		}, []);
+	
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Cover Photo */}
@@ -36,8 +63,8 @@ export default function ProfilePage({ params }: { params: { username: string } }
 
 				{/* Profile Info */}
 				<div className="mt-4 mb-6">
-					<h1 className="text-3xl font-bold text-gray-900 mb-1">Sarah Anderson</h1>
-					<p className="text-gray-500 mb-3">@{params.username}</p>
+					<h1 className="text-3xl font-bold text-gray-900 mb-1">{name ? `${name}` : 'Loading...'}</h1>
+					<p className="text-gray-500 mb-3">{login ? `${login}` : 'Loading...'}</p>
 
 					<p className="text-gray-700 mb-4 max-w-2xl">
 						Digital creator & designer 🎨 | Coffee enthusiast ☕ | Sharing my journey through pixels and code

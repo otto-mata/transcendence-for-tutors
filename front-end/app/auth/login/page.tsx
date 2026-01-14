@@ -2,18 +2,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+// const loginRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [login, setlogin] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const [errors, setErrors] = useState<{ login?: string; password?: string; general?: string }>({});
 
   function validate() {
     const e: typeof errors = {};
-    if (!emailRegex.test(email)) e.email = 'Please enter a valid email address';
+    // if (!loginRegex.test(login)) e.login = 'Please enter a valid login address';
     if (!password) e.password = 'Password is required';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -25,15 +25,16 @@ export default function LoginPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+      const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
       const res = await fetch(`${api}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ login, password }),
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Login failed');
-      if (body.token) localStorage.setItem('token', body.token);
+      if (body.access_token)localStorage.setItem('access_token', body.access_token);
+      console.log(localStorage.getItem('access_token'));
       router.push('/');
     } catch (err: any) {
       setErrors({ general: err.message || String(err) });
@@ -47,9 +48,9 @@ export default function LoginPage() {
       <h1>Login</h1>
       <form onSubmit={submit}>
         <div>
-          <label>Email</label>
-          <input value={email} onChange={e => setEmail(e.target.value)} type="email" />
-          {errors.email && <div style={{ color: 'red' }}>{errors.email}</div>}
+          <label>login</label>
+          <input value={login} onChange={e => setlogin(e.target.value)} type="login" />
+          {errors.login && <div style={{ color: 'red' }}>{errors.login}</div>}
         </div>
         <div>
           <label>Password</label>

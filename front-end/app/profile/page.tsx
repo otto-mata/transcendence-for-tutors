@@ -1,7 +1,35 @@
+"use client"
 import Image from 'next/image';
 import { MapPin, Link as LinkIcon, Calendar, Settings, Share2, Camera } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 export default function MyProfilePage() {
+	const [login, setlogin] = useState('');
+	const [name, setName] = useState('');
+
+	useEffect(() =>{
+	async function fetchLogin(){
+		try {
+			const authorization = 'Bearer ' + localStorage.getItem('access_token');
+			const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+			const res = await fetch(`${api}/profile`, {
+				method: 'GET',
+				headers: { 'Content-Type': 'application/json',
+							"Authorization":authorization}
+			});
+	  const body = await res.json();
+	//   if (!res.ok) throw new Error(body.message || 'Bad Token');
+	  if (body.login) setlogin(body.login);
+	  if (body.display_name) setName(body.display_name);
+	  } catch (err: any){
+		console.log(err);
+		// setErrors({ general: err.message || String(err) });
+	}
+	}
+	fetchLogin();
+	}, []);
+
+	// const login = getMyInfo();
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
 			{/* Cover Photo */}
@@ -40,8 +68,8 @@ export default function MyProfilePage() {
 
 				{/* Profile Info */}
 				<div className="mt-4 mb-6">
-					<h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-1">Sarah Anderson</h1>
-					<p className="text-gray-500 mb-3">@otto-mata</p>
+					<h1 className="text-3xl font-bold text-gray-900 dark:text-gray-50 mb-1">{name ? `${name}` : 'Loading...'}</h1>
+					<p className="text-gray-500 mb-3">{login ? `${login}` : 'Loading...'}</p>
 
 					<p className="text-gray-700 dark:text-gray-300 mb-4">
 						Digital creator & designer 🎨 | Coffee enthusiast ☕ | Sharing my journey through pixels and code

@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { NotificationModule } from './notification/notification.module';
 import { AuthModule } from './auth/auth.module';
+import { ProfileModule } from './profile/profile.module';
 
 @Module({
   imports: [JwtModule.register({
@@ -21,6 +22,7 @@ import { AuthModule } from './auth/auth.module';
     cache: true, // Cache environment variables for better performance
   }),
     AuthModule,
+    ProfileModule,
   ],
   controllers: [AppController],
   providers: [AppService],
