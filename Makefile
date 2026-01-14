@@ -26,3 +26,5 @@ front-stop:
 fclean:
 	cd back-end && docker compose down -v --rmi all
 	cd front-end && docker compose down -v --rmi all
+
+re: fclean all
