@@ -1,5 +1,7 @@
 import { WebSocketServer } from 'ws';
 
+import jwt from 'jsonwebtoken';
+
 const server = new WebSocketServer({
 	port: 8081
 });
@@ -7,6 +9,8 @@ const server = new WebSocketServer({
 const users = new Map(); // int userid : Set de socket
 const sockets = new Map(); // socket : userid
 const watchers = new Map(); // watchs
+
+const secret = process.env.JWT_SECRET;
 
 const show_connections = () => {
 	console.clear();
@@ -35,9 +39,19 @@ server.on('connection', (socket) => {
 		} catch {return ;}
 
 		if (msg.type === 'auth') {
-			const { userId } = msg;
-			if (userId == undefined)
+			const { token } = msg;
+			let payload;
+			let userId;
+			if (token == undefined)
 				return ;
+			try {
+				payload = jwt.verify(token, secret);
+				userId = Number(payload.userId);
+				if (Number.isNaN(userId))
+					throw 'invalid format';
+			} catch {
+				return socket.send(JSON.stringify( {type: 'auth_err', error: 'Invalid token'} ));
+			}
 			if (sockets.has(socket))
 				return socket.send(JSON.stringify( { type: 'auth_err', error: 'Already logged in !'} ));
 			if (!users.has(userId))
@@ -63,6 +77,8 @@ server.on('connection', (socket) => {
 
 	socket.on('close', () => {
 		const userId = sockets.get(socket);
+		if (!userId)
+			return ;
 		users.get(userId).delete(socket);
 		sockets.delete(socket);
 		if (users.get(userId).size == 0) {
