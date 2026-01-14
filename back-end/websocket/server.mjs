@@ -6,17 +6,16 @@ const server = new WebSocketServer({
 	port: 8081
 });
 
-const users = new Map(); // int userid : Set de socket
+const users = new Map(); // int userid : Set of socket linked to this userId
 const sockets = new Map(); // socket : userid
-const watchers = new Map(); // watchs
+const watchers = new Map(); // int userId: set of socket that watchs this userId
 
 const secret = process.env.JWT_SECRET;
 
 const show_connections = () => {
 	console.clear();
 	console.log("Currents Connections\n\n");
-	for (const i of users)
-	{
+	for (const i of users) {
 		console.log(i[0] , ": " , i[1].size , " Connected");
 	}
 	return ;
@@ -84,6 +83,12 @@ server.on('connection', (socket) => {
 		if (users.get(userId).size == 0) {
 			users.delete(userId);
 			sendUpdate(userId, 'offline');
+		}
+		for (const i of watchers) {
+			if (i[1].has(socket))
+				i[1].delete(socket);
+			if (i[1].size == 0)
+				watchers.delete(i[0]);
 		}
 		show_connections()
 	});
