@@ -1,0 +1,19 @@
+services:
+
+  transcendence:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: transcendence-front
+    ports:
+      - '${PORT:-8080}:8080'
+    environment:
+      NODE_ENV: production
+      DOCKER_ENV: 'true'
+    restart: unless-stopped
+    networks:
+      - default
+networks:
+  default:
+    driver: bridge
