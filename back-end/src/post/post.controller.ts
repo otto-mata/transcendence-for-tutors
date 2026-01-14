@@ -1,20 +1,23 @@
+import { Prisma } from '$prisma';
 import {
+	Body,
 	Controller,
-	Get,
-	Post,
-	Put,
 	Delete,
+	Get,
 	HttpStatus,
 	Param,
-	Body,
+	Post,
+	Put,
 	Query,
 	Res,
+	UseGuards,
 } from '@nestjs/common';
-import { PostService } from './post.service';
-import { Prisma } from '@/generated/prisma/client';
 import type { Response } from 'express';
+import { PostService } from './post.service';
+import { AuthGuard } from '@/guards/auth.guard';
 
 @Controller('post')
+@UseGuards(AuthGuard)
 export class PostController {
 	constructor(private readonly postService: PostService) { }
 

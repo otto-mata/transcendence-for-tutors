@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './auth.dto';
-import { Prisma } from '@p/generated/client';
+import { Prisma } from '$prisma';
 
 
 @Controller('auth')

@@ -7,13 +7,11 @@
   "license": "UNLICENSED",
   "scripts": {
     "build": "nest build",
-    "build:auth": "nest build auth",
-    "build:back-end": "nest build back-end",
     "format": "prettier --write \"apps/**/*.ts\" \"libs/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
-    "start:prod": "node dist/apps/back-end/main",
+    "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "pgen": "prisma generate",
     "db:deploy": "npx prisma migrate deploy && npx prisma generate",
@@ -21,7 +19,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./apps/back-end/test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "seed": "ts-node --project tsconfig.json prisma/seed.ts",
   "dependencies": {
