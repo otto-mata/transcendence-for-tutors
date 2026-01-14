@@ -7,20 +7,21 @@ import {
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import "dotenv/config";
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-  constructor(private jwtService : JwtService){};
+  constructor(private jwtService: JwtService, private configService: ConfigService) { };
 
-  async canActivate ( context : ExecutionContext
-  ) : Promise<boolean> {
+  async canActivate(context: ExecutionContext
+  ): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = this.ExtractTokken(request);
     if (!token)
       throw new UnauthorizedException();
     try {
       const data = await this.jwtService.verifyAsync(token, {
-          secret : process.env.JWT_SECRET //Vrimanet il faut que je gere ce mdp :33333 
+        secret: this.configService.get("JWT_SECRET") 
       });
       request['login'] = data;
     }
@@ -30,8 +31,8 @@ export class AuthGuard implements CanActivate {
     return true;
   }
 
-  private ExtractTokken( request : Request
-  ) : string | undefined  {
+  private ExtractTokken(request: Request
+  ): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
   }
