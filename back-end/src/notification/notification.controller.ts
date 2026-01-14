@@ -1,4 +1,4 @@
-import { Notification, Prisma } from '@gen/client';
+import { Notification, Prisma } from '$prisma';
 import { Controller, Get, Post, Patch, Body, Param, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 
