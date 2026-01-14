@@ -1,15 +1,14 @@
 services:
 
-  transcendence-back-dev:
+  core-api:
     build:
       context: .
-      dockerfile: apps/back-end/Dockerfile
-      target: development
-    container_name: transcendence-dev
+      dockerfile: Dockerfile
+    container_name: core-api
     ports:
       - '${APP_PORT:-3000}:3000' # API server
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       DOCKER_ENV: 'true'
       POSTGRES_HOST: postgres
       POSTGRES_PORT: 5432
@@ -20,62 +19,12 @@ services:
       DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-db}"
       JWT_SECRET: ${JWT_SECRET:-thisisasecret}
     depends_on:
-      - postgres #:
+      - postgres
+        #:
         #condition: service_healthy
-    develop:
-      watch:
-        - action: sync
-          path: ./src
-          target: /app/src
-          ignore:
-            - '**/*.test.*'
-            - '**/__tests__/**'
-        - action: rebuild
-          path: ./package.json
     restart: unless-stopped
     networks:
       - postgres-network
-  
-  auth-dev:
-    build:
-      context: .
-      dockerfile: apps/auth/Dockerfile
-      target: development
-    container_name: auth-dev
-    ports:
-      - 3001:3001 # API server
-    environment:
-      NODE_ENV: development
-      DOCKER_ENV: 'true'
-      POSTGRES_HOST: postgres
-      POSTGRES_PORT: 5432
-      POSTGRES_DB: ${POSTGRES_DB:-db}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      ALLOWED_ORIGINS: '${ALLOWED_ORIGINS:-http://localhost:3001}'
-      DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-db}"
-      JWT_SECRET: ${JWT_SECRET:-thisisasecret}
-    volumes:
-      - ./apps/auth/src/:/app/auth/src:ro
-      - ./prisma/:/app/prisma:ro
-    depends_on:
-      - transcendence-back-dev
-      - postgres #:
-        #condition: service_healthy
-    develop:
-      watch:
-        - action: sync
-          path: ./src
-          target: /app/src
-          ignore:
-            - '**/*.test.*'
-            - '**/__tests__/**'
-        - action: rebuild
-          path: ./package.json
-    restart: unless-stopped
-    networks:
-      - postgres-network
-
 
   postgres:
     container_name: postgres
@@ -89,7 +38,7 @@ services:
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-db} -h localhost"]
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-db} -h localhost" ]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -97,45 +46,10 @@ services:
     networks:
       - postgres-network
 
-<<<<<<< HEAD
-  # pgadmin:
-  #   container_name: pgadmin
-  #   image: dpage/pgadmin4
-  #   environment:
-  #     PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-  #     PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-  #     PGADMIN_CONFIG_SERVER_MODE: 'False'
-  #   volumes:
-  #      - pgadmin:/var/lib/pgadmin
-
-  #   ports:
-  #     - "${PGADMIN_PORT:-5050}:80"
-  #   networks:
-  #     - postgres-network
-  #   restart: unless-stopped
-=======
-
-#pgadmin:
-#    container_name: pgadmin
-#    image: dpage/pgadmin4
-#    environment:
-#      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-pgadmin4@pgadmin.org}
-#      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:-admin}
-#      PGADMIN_CONFIG_SERVER_MODE: 'False'
-#    volumes:
-#       - pgadmin:/var/lib/pgadmin
-#
-#    ports:
-#      - "${PGADMIN_PORT:-5050}:80"
-#    networks:
-#      - postgres-network
-#    restart: unless-stopped
->>>>>>> main
-
 networks:
   postgres-network:
     driver: bridge
 
 volumes:
-    postgres_data:
-    pgadmin:
+  postgres_data:
+  pgadmin:

@@ -1,122 +1,64 @@
-ARG NODE_VERSION=24.11.1-alpine
-FROM node:${NODE_VERSION} AS base
+FROM node:20-alpine AS base
 
-# Set working directory
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 -G nodejs && \
-    chown -R nodejs:nodejs /app
+# Install dependencies based on the preferred package manager
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* .npmrc* ./
+RUN \
+    if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+    elif [ -f package-lock.json ]; then npm ci; \
+    elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
+    else echo "Lockfile not found." && exit 1; \
+    fi
 
 
-
-# ========================================
-# dependencies
-# ========================================
-
-FROM base AS deps
-
-# Copy package files
-COPY package*.json ./
-
-# Install production dependencies
-RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-    npm ci --omit=dev && \
-    npm cache clean --force
-
-# Set proper ownership
-RUN chown -R nodejs:nodejs /app
-
-
-# ========================================
-# Build dependencies
-# ========================================
-
-FROM base AS build-deps
-
-# Copy package files
-COPY package*.json ./
-
-# Install all dependencies with build optimizations
-RUN --mount=type=cache,target=/root/.npm,sharing=locked \
-    npm ci --no-audit --no-fund && \
-    npm cache clean --force
-
-# Create necessary directories and set permissions
-RUN mkdir -p /app/.next && \
-    chown -R nodejs:nodejs /app
-
-# ========================================
-# Build
-# ========================================
-
-FROM build-deps AS build
-
-# Copy only necessary files for building (respects .dockerignore)
-COPY --chown=nodejs:nodejs . .
-
-# Build the application
-RUN npm run build
-
-# Set proper ownership
-RUN chown -R nodejs:nodejs /app
-
-# ========================================
-# Dev Stage
-# ========================================
-
-FROM build-deps AS development
-
-# Set environment
-ENV NODE_ENV=development \
-    NPM_CONFIG_LOGLEVEL=warn
-
-# Copy source files
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Ensure all directories have proper permissions
-RUN mkdir -p /app/.next && \
-    chown -R nodejs:nodejs /app && \
-    chmod -R 755 /app
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+# ENV NEXT_TELEMETRY_DISABLED=1
 
-# Switch to non-root user
-USER nodejs
+RUN \
+    if [ -f yarn.lock ]; then yarn run build; \
+    elif [ -f package-lock.json ]; then npm run build; \
+    elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
+    else echo "Lockfile not found." && exit 1; \
+    fi
 
-# Expose ports
-EXPOSE 8080
-
-# Start development server
-CMD ["npm", "run", "dev"]
-
-
-ARG NODE_VERSION=24.11.1-alpine
-FROM node:${NODE_VERSION} AS production
-
-# Set working directory
+# Production image, copy all the files and run next
+FROM base AS production
 WORKDIR /app
 
-# Create non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001 -G nodejs && \
-    chown -R nodejs:nodejs /app
+ENV NODE_ENV=production
+# Uncomment the following line in case you want to disable telemetry during runtime.
+# ENV NEXT_TELEMETRY_DISABLED=1
 
-# Set optimized environment variables
-ENV NODE_ENV=production \
-    NODE_OPTIONS="--max-old-space-size=256 --no-warnings" \
-    NPM_CONFIG_LOGLEVEL=silent
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-# Copy production dependencies from deps stage
-COPY --from=deps --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=deps --chown=nodejs:nodejs /app/package*.json ./
-# Copy built application from build stage
-COPY --from=build --chown=nodejs:nodejs /app/dist ./dist
+COPY --from=builder /app/public ./public
 
-# Switch to non-root user for security
-USER nodejs
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
-# Expose port
+USER nextjs
+
 EXPOSE 8080
 
-# Start production server
-CMD ["npm", "start"]
+ENV PORT=8080
+
+# server.js is created by next build from the standalone output
+# https://nextjs.org/docs/pages/api-reference/config/next-config-js/output
+ENV HOSTNAME="0.0.0.0"
+CMD ["node", "server.js"]
