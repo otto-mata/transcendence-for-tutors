@@ -71,7 +71,7 @@ server.on('connection', (socket) => {
 			const status = users.has(userId) ? 'online' : 'offline';
 			socket.send(JSON.stringify({type: 'status', userId, status}));
 		}
-		show_connections();
+		//show_connections();
 	});
 
 	socket.on('close', () => {
@@ -90,8 +90,8 @@ server.on('connection', (socket) => {
 			if (i[1].size == 0)
 				watchers.delete(i[0]);
 		}
-		show_connections()
+		//show_connections()
 	});
 });
 
-show_connections();
+//show_connections();
