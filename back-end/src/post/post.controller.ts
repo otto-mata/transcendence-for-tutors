@@ -1,4 +1,7 @@
 import { Prisma } from '$prisma';
+import type { CurrentUserType } from '@/decorators/current-user.decorator';
+import { CurrentUser } from '@/decorators/current-user.decorator';
+import { AuthGuard } from '@/guards/auth.guard';
 import {
 	Body,
 	Controller,
@@ -14,9 +17,6 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { PostService } from './post.service';
-import { AuthGuard } from '@/guards/auth.guard';
-import { CurrentUser } from '@/decorators/current-user.decorator';
-import type { CurrentUserType } from '@/decorators/current-user.decorator';
 
 @Controller('post')
 @UseGuards(AuthGuard)
@@ -47,9 +47,7 @@ export class PostController {
 	): Promise<string> {
 		try {
 			const { id } = params;
-			let idNum = parseInt(id);
-			if (Number.isNaN(idNum)) idNum = -1;
-			const post = await this.postService.findById(idNum);
+			const post = await this.postService.findById(id);
 			return JSON.stringify(post);
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -74,7 +72,7 @@ export class PostController {
 		try {
 			// You can now use the current user data
 			console.log('Creating post for user:', user);
-			const post = await this.postService.create({ ...data, author: { connect: { login: user.login } } });
+			const post = await this.postService.create({ ...data, author: { connect: { username: user.login } } });
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify(post);
 		} catch (error) {
@@ -99,9 +97,7 @@ export class PostController {
 	): Promise<string> {
 		try {
 			const { id } = params;
-			let idNum = parseInt(id);
-			if (Number.isNaN(idNum)) idNum = -1;
-			const post = await this.postService.update(idNum, data);
+			const post = await this.postService.update(id, data);
 			return JSON.stringify(post);
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {
@@ -132,9 +128,7 @@ export class PostController {
 	): Promise<string> {
 		try {
 			const { id } = params;
-			let idNum = parseInt(id);
-			if (Number.isNaN(idNum)) idNum = -1;
-			const post = await this.postService.delete(idNum);
+			const post = await this.postService.delete(id);
 			return JSON.stringify(post);
 		} catch (error) {
 			if (error instanceof Prisma.PrismaClientKnownRequestError) {

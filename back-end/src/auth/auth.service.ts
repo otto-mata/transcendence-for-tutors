@@ -22,7 +22,7 @@ export class AuthService {
 		login: string,
 		password: string
 	): Promise<{ access_token: string }> {
-		const user = await this.prisma.user.findUnique({ where: { login: login } });
+		const user = await this.prisma.user.findUnique({ where: { username: login } });
 		if (user == null || user['password'] !== password)
 			throw new UnauthorizedException();
 		const payload = {

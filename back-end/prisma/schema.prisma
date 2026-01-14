@@ -5,9 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "./generated"
-  moduleFormat  = "cjs"
+  provider     = "prisma-client"
+  output       = "./generated"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -15,23 +15,303 @@ datasource db {
 }
 
 model User {
-  id            Int     @default(autoincrement()) @id
-  email         String  @unique
-  login         String  @unique
-  display_name  String  @unique
-  age           Int
-  password      String
-  posts         Post[]
+  id           String  @id @default(cuid())
+  username     String  @unique
+  displayName  String?
+  email        String  @unique
+  passwordHash String
+
+  // Profile information
+  bio           String?
+  avatarUrl     String?
+  coverImageUrl String?
+  website       String?
+
+  // Social stats
+  followerCount  Int @default(0)
+  followingCount Int @default(0)
+  postCount      Int @default(0)
+
+  // Account status
+  isVerified  Boolean @default(false)
+  isPrivate   Boolean @default(false)
+  isActive    Boolean @default(true)
+  isSuspended Boolean @default(false)
+
+  // Location (optional)
+  locationName      String?
+  locationLatitude  Float?
+  locationLongitude Float?
+
+  // Metadata
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  lastSeenAt DateTime?
+
+  // Social links (optional)
+  twitterUrl   String?
+  instagramUrl String?
+  linkedinUrl  String?
+  githubUrl    String?
+
+  // Preferences
+  theme              String  @default("auto")
+  language           String  @default("en")
+  emailNotifications Boolean @default(true)
+  pushNotifications  Boolean @default(true)
+
+  // Moderation
+  isReported Boolean @default(false)
+  isFlagged  Boolean @default(false)
+
+  // Relations
+  posts     Post[]     @relation("UserPosts")
+  comments  Comment[]  @relation("UserComments")
+  likes     Like[]     @relation("UserLikes")
+  bookmarks Bookmark[] @relation("UserBookmarks")
+
+  // Following relationships
+  followers Follow[] @relation("UserFollowers")
+  following Follow[] @relation("UserFollowing")
+
+  // Blocking relationships
+  blocking  Block[] @relation("UserBlocking")
+  blockedBy Block[] @relation("UserBlockedBy")
+
+  // Muting relationships
+  muting  Mute[] @relation("UserMuting")
+  mutedBy Mute[] @relation("UserMutedBy")
+
+  // Reports
+  reportsCreated  Report[] @relation("ReportsCreated")
+  reportsReceived Report[] @relation("ReportsReceived")
+
+  @@index([username])
+  @@index([email])
+  @@index([createdAt])
 }
 
 model Post {
-  id        Int      @default(autoincrement()) @id
-  title     String
-  content   String
-  published Boolean? @default(false)
+  id       String @id @default(cuid())
+  content  String @db.Text
+  authorId String
 
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+  // Stats
+  likeCount    Int @default(0)
+  commentCount Int @default(0)
+  shareCount   Int @default(0)
+  viewCount    Int @default(0)
+
+  // Visibility
+  visibility String @default("public") // 'public' | 'followers' | 'friends' | 'private'
+
+  // Hashtags and mentions
+  hashtags String[] @default([])
+  mentions String[] @default([]) // User IDs
+
+  // Location (optional)
+  locationName      String?
+  locationLatitude  Float?
+  locationLongitude Float?
+
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+  editedAt  DateTime?
+  isEdited  Boolean   @default(false)
+
+  // Moderation
+  isDeleted  Boolean @default(false)
+  isReported Boolean @default(false)
+  isFlagged  Boolean @default(false)
+
+  // Sharing/Reposting
+  isRepost       Boolean @default(false)
+  originalPostId String?
+
+  // Reply/Thread support
+  isReply      Boolean @default(false)
+  parentPostId String?
+  replyCount   Int     @default(0)
+
+  // Relations
+  author    User       @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]  @relation("PostComments")
+  likes     Like[]     @relation("PostLikes")
+  bookmarks Bookmark[] @relation("PostBookmarks")
+  views     View[]     @relation("PostViews")
+
+  // Repost relationships
+  originalPost Post?  @relation("Reposts", fields: [originalPostId], references: [id], onDelete: SetNull)
+  reposts      Post[] @relation("Reposts")
+
+  // Reply/Thread relationships
+  parentPost Post?  @relation("Replies", fields: [parentPostId], references: [id], onDelete: Cascade)
+  replies    Post[] @relation("Replies")
+
+  // Reports
+  reports Report[] @relation("PostReports")
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([originalPostId])
+  @@index([parentPostId])
+  @@index([visibility])
+}
+
+model Comment {
+  id       String @id @default(cuid())
+  content  String @db.Text
+  authorId String
+  postId   String
+
+  // Stats
+  likeCount Int @default(0)
+
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  editedAt  DateTime?
+  isEdited  Boolean   @default(false)
+
+  // Moderation
+  isDeleted  Boolean @default(false)
+  isReported Boolean @default(false)
+  isFlagged  Boolean @default(false)
+
+  // Reply support (nested comments)
+  parentCommentId String?
+  replyCount      Int     @default(0)
+
+  // Relations
+  author User   @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade)
+  post   Post   @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
+  likes  Like[] @relation("CommentLikes")
+
+  // Nested comment support
+  parentComment Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies       Comment[] @relation("CommentReplies")
+
+  // Reports
+  reports Report[] @relation("CommentReports")
+
+  @@index([authorId])
+  @@index([postId])
+  @@index([parentCommentId])
+  @@index([createdAt])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String?
+  commentId String?
+  createdAt DateTime @default(now())
+
+  user    User     @relation("UserLikes", fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation("PostLikes", fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation("CommentLikes", fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@index([userId])
+  @@index([postId])
+  @@index([commentId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation("UserBookmarks", fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation("PostBookmarks", fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+}
+
+model View {
+  id        String   @id @default(cuid())
+  userId    String? // Nullable for anonymous views
+  postId    String
+  createdAt DateTime @default(now())
+
+  post Post @relation("PostViews", fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String // User who is following
+  followingId String // User being followed
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+model Block {
+  id        String   @id @default(cuid())
+  blockerId String // User who is blocking
+  blockedId String // User being blocked
+  createdAt DateTime @default(now())
+
+  blocker User @relation("UserBlocking", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("UserBlockedBy", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@unique([blockerId, blockedId])
+  @@index([blockerId])
+  @@index([blockedId])
+}
+
+model Mute {
+  id        String   @id @default(cuid())
+  muterId   String // User who is muting
+  mutedId   String // User being muted
+  createdAt DateTime @default(now())
+
+  muter User @relation("UserMuting", fields: [muterId], references: [id], onDelete: Cascade)
+  muted User @relation("UserMutedBy", fields: [mutedId], references: [id], onDelete: Cascade)
+
+  @@unique([muterId, mutedId])
+  @@index([muterId])
+  @@index([mutedId])
+}
+
+model Report {
+  id          String  @id @default(cuid())
+  reporterId  String
+  reason      String
+  description String? @db.Text
+  status      String  @default("pending") // 'pending' | 'reviewed' | 'resolved' | 'dismissed'
+
+  // What is being reported (one of these will be set)
+  userId    String?
+  postId    String?
+  commentId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reporter User     @relation("ReportsCreated", fields: [reporterId], references: [id], onDelete: Cascade)
+  user     User?    @relation("ReportsReceived", fields: [userId], references: [id], onDelete: Cascade)
+  post     Post?    @relation("PostReports", fields: [postId], references: [id], onDelete: Cascade)
+  comment  Comment? @relation("CommentReports", fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@index([reporterId])
+  @@index([userId])
+  @@index([postId])
+  @@index([commentId])
+  @@index([status])
 }
 
 model Notification {
@@ -44,4 +324,3 @@ model Notification {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
