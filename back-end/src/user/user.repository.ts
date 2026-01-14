@@ -14,6 +14,10 @@ export class UserRepository {
 		return this.prisma.user.findFirstOrThrow({ where: { username } });
 	}
 
+	async findByUsername(username: string): Promise<User> {
+		return this.prisma.user.findFirstOrThrow({ where: { username } });
+	}
+
 	async findByEmail(email: string): Promise<User> {
 		return this.prisma.user.findFirstOrThrow({ where: { email } });
 	}

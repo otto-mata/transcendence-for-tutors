@@ -10,7 +10,7 @@ import {
 	HttpStatus,
 	Param,
 	Post,
-	Put,
+	Patch,
 	Query,
 	Res,
 	UseGuards,
@@ -18,21 +18,22 @@ import {
 import type { Response } from 'express';
 import { PostService } from './post.service';
 
-@Controller('post')
+@Controller('posts')
 @UseGuards(AuthGuard)
 export class PostController {
 	constructor(private readonly postService: PostService) { }
 
 	@Get()
 	async getAllPosts(
-		@Query('skip') skip?: string,
-		@Query('take') take?: string,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
 		@Res({ passthrough: true }) res?: Response,
 	): Promise<string> {
 		try {
-			const skipNum = skip ? parseInt(skip) : 0;
-			const takeNum = take ? parseInt(take) : 10;
-			const posts = await this.postService.findAll(skipNum, takeNum);
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			const posts = await this.postService.findAll(skip, limitNum);
 			return JSON.stringify(posts);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -40,26 +41,110 @@ export class PostController {
 		}
 	}
 
-	@Get('/:id')
+	@Get('feed')
+	async getFeed(
+		@CurrentUser() user: CurrentUserType,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			// Implementation depends on following list
+			return JSON.stringify({ message: 'Feed not yet implemented' });
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({ message: 'Error retrieving feed', error });
+		}
+	}
+
+	@Get('trending')
+	async getTrendingPosts(
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			// Trending posts implementation
+			return JSON.stringify({ message: 'Trending posts not yet implemented' });
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({ message: 'Error retrieving trending posts', error });
+		}
+	}
+
+	@Get('latest')
+	async getLatestPosts(
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			const posts = await this.postService.findAll(skip, limitNum);
+			return JSON.stringify(posts);
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({ message: 'Error retrieving latest posts', error });
+		}
+	}
+
+	@Get('hashtag/:tag')
+	async getPostsByHashtag(
+		@Param('tag') tag: string,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			// Filter by hashtag implementation
+			return JSON.stringify({ message: 'Hashtag filter not yet implemented' });
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({ message: 'Error retrieving posts by hashtag', error });
+		}
+	}
+
+	@Get(':id')
 	async getPostById(
-		@Param() params: { id: string },
+		@Param('id') id: string,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const { id } = params;
 			const post = await this.postService.findById(id);
 			return JSON.stringify(post);
 		} catch (error) {
-			if (error instanceof Prisma.PrismaClientKnownRequestError) {
-				res.status(HttpStatus.NOT_FOUND);
-				return JSON.stringify({
-					message: `Cannot GET /post/${params.id}`,
-					error: 'Not Found',
-					statusCode: 404,
-				});
-			}
-			res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify(error);
+			res.status(HttpStatus.NOT_FOUND);
+			return JSON.stringify({
+				message: `Cannot GET /posts/${id}`,
+				error: 'Not Found',
+				statusCode: 404,
+			});
+		}
+	}
+
+	@Get(':id/thread')
+	async getPostThread(
+		@Param('id') id: string,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
+			// Get post and all related replies
+			const post = await this.postService.findById(id);
+			return JSON.stringify(post);
+		} catch (error) {
+			res.status(HttpStatus.NOT_FOUND);
+			return JSON.stringify({ message: 'Post thread not found', error });
 		}
 	}
 
@@ -70,77 +155,218 @@ export class PostController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			// You can now use the current user data
-			console.log('Creating post for user:', user);
-			const post = await this.postService.create({ ...data, author: { connect: { username: user.login } } });
+			const post = await this.postService.create({
+				...data,
+				author: { connect: { id: user.id } },
+			});
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify(post);
 		} catch (error) {
-			if (error instanceof Prisma.PrismaClientValidationError) {
-				res.status(HttpStatus.BAD_REQUEST);
-				return JSON.stringify({
-					message: 'Invalid post data',
-					error: 'Bad Request',
-					statusCode: 400,
-				});
-			}
-			res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify(error);
+			res.status(HttpStatus.BAD_REQUEST);
+			return JSON.stringify({ message: 'Invalid post data', error });
 		}
 	}
 
-	@Put('/:id')
-	async updatePost(
-		@Param() params: { id: string },
-		@Body() data: Prisma.PostUpdateInput,
+	@Post(':id/like')
+	async likePost(
+		@Param('id') id: string,
+		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const { id } = params;
+			await this.postService.likePost(id, user.id);
+			res.status(HttpStatus.CREATED);
+			return JSON.stringify({ message: 'Post liked' });
+		} catch (error) {
+			res.status(HttpStatus.BAD_REQUEST);
+			return JSON.stringify({ message: 'Error liking post', error });
+		}
+	}
+
+	@Delete(':id/like')
+	async unlikePost(
+		@Param('id') id: string,
+		@CurrentUser() user: CurrentUserType,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
+			await this.postService.unlikePost(id, user.id);
+			return JSON.stringify({ message: 'Post unliked' });
+		} catch (error) {
+			res.status(HttpStatus.BAD_REQUEST);
+			return JSON.stringify({ message: 'Error unliking post', error });
+		}
+	}
+
+	@Get(':id/likes')
+	async getPostLikes(
+		@Param('id') id: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const likes = await this.postService.getPostLikes(id);
+			return JSON.stringify(likes);
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({ message: 'Error retrieving likes', error });
+		}
+	}
+
+	@Post(':id/bookmark')
+	async bookmarkPost(
+		@Param('id') id: string,
+		@CurrentUser() user: CurrentUserType,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
+			await this.postService.bookmarkPost(id, user.id);
+			res.status(HttpStatus.CREATED);
+			return JSON.stringify({ message: 'Post bookmarked' });
+		} catch (error) {
+			res.status(HttpStatus.BAD_REQUEST);
+			return JSON.stringify({ message: 'Error bookmarking post', error });
+		}
+	}
+
+	@Delete(':id/bookmark')
+	async removeBookmark(
+		@Param('id') id: string,
+		@CurrentUser() user: CurrentUserType,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
+			await this.postService.removeBookmark(id, user.id);
+			return JSON.stringify({ message: 'Bookmark removed' });
+		} catch (error) {
+			res.status(HttpStatus.BAD_REQUEST);
+			return JSON.stringify({ message: 'Error removing bookmark', error });
+		}
+	}
+
+	@Post(':id/share')
+	async sharePost(
+		@Param('id') id: string,
+		@CurrentUser() user: CurrentUserType,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
+			const repost = await this.postService.repostPost(id, user.id);
+			res.status(HttpStatus.CREATED);
+			return JSON.stringify(repost);
+		} catch (error) {
+			res.status(HttpStatus.BAD_REQUEST);
+			return JSON.stringify({ message: 'Error sharing post', error });
+		}
+	}
+
+	@Delete(':id/share')
+	async deleteShare(
+		@Param('id') id: string,
+		@CurrentUser() user: CurrentUserType,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
+			await this.postService.deleteRepost(id, user.id);
+			return JSON.stringify({ message: 'Share removed' });
+		} catch (error) {
+			res.status(HttpStatus.BAD_REQUEST);
+			return JSON.stringify({ message: 'Error removing share', error });
+		}
+	}
+
+	@Get(':id/shares')
+	async getShares(
+		@Param('id') id: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const shares = await this.postService.getReposts(id);
+			return JSON.stringify(shares);
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({ message: 'Error retrieving shares', error });
+		}
+	}
+
+	@Post(':id/view')
+	async viewPost(
+		@Param('id') id: string,
+		@CurrentUser() user?: CurrentUserType,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			await this.postService.recordView(id, user?.id);
+			return JSON.stringify({ message: 'View recorded' });
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({ message: 'Error recording view', error });
+		}
+	}
+
+	@Get(':id/replies')
+	async getPostReplies(
+		@Param('id') id: string,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			// Get replies to this post
+			return JSON.stringify({ message: 'Replies not yet implemented' });
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({ message: 'Error retrieving replies', error });
+		}
+	}
+
+	@Post(':id/reply')
+	async replyToPost(
+		@Param('id') id: string,
+		@Body() data: Prisma.PostCreateInput,
+		@CurrentUser() user: CurrentUserType,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
+			const reply = await this.postService.createReply(id, data, user.id);
+			res.status(HttpStatus.CREATED);
+			return JSON.stringify(reply);
+		} catch (error) {
+			res.status(HttpStatus.BAD_REQUEST);
+			return JSON.stringify({ message: 'Error creating reply', error });
+		}
+	}
+
+	@Patch(':id')
+	async updatePost(
+		@Param('id') id: string,
+		@Body() data: Prisma.PostUpdateInput,
+		@CurrentUser() user: CurrentUserType,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
 			const post = await this.postService.update(id, data);
 			return JSON.stringify(post);
 		} catch (error) {
-			if (error instanceof Prisma.PrismaClientKnownRequestError) {
-				res.status(HttpStatus.NOT_FOUND);
-				return JSON.stringify({
-					message: `Cannot PUT /post/${params.id}`,
-					error: 'Not Found',
-					statusCode: 404,
-				});
-			}
-			if (error instanceof Prisma.PrismaClientValidationError) {
-				res.status(HttpStatus.BAD_REQUEST);
-				return JSON.stringify({
-					message: 'Invalid post data',
-					error: 'Bad Request',
-					statusCode: 400,
-				});
-			}
-			res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify(error);
+			res.status(HttpStatus.NOT_FOUND);
+			return JSON.stringify({ message: 'Post not found or unauthorized', error });
 		}
 	}
 
-	@Delete('/:id')
+	@Delete(':id')
 	async deletePost(
-		@Param() params: { id: string },
+		@Param('id') id: string,
+		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const { id } = params;
 			const post = await this.postService.delete(id);
 			return JSON.stringify(post);
 		} catch (error) {
-			if (error instanceof Prisma.PrismaClientKnownRequestError) {
-				res.status(HttpStatus.NOT_FOUND);
-				return JSON.stringify({
-					message: `Cannot DELETE /post/${params.id}`,
-					error: 'Not Found',
-					statusCode: 404,
-				});
-			}
-			res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify(error);
+			res.status(HttpStatus.NOT_FOUND);
+			return JSON.stringify({ message: 'Post not found or unauthorized', error });
 		}
 	}
 }

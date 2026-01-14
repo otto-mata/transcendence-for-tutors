@@ -5,7 +5,10 @@ import { PostRepository } from './post.repository';
 
 @Injectable()
 export class PostService {
-	constructor(private readonly postRepository: PostRepository) { }
+	constructor(
+		private readonly postRepository: PostRepository,
+		private readonly prisma: PrismaService,
+	) { }
 
 	async findById(id: string): Promise<Post> {
 		return this.postRepository.findById(id);
@@ -25,5 +28,101 @@ export class PostService {
 
 	async delete(id: string): Promise<Post> {
 		return this.postRepository.delete(id);
+	}
+
+	async likePost(postId: string, userId: string): Promise<void> {
+		await this.prisma.like.create({
+			data: {
+				userId,
+				postId,
+			},
+		});
+		await this.prisma.post.update({
+			where: { id: postId },
+			data: { likeCount: { increment: 1 } },
+		});
+	}
+
+	async unlikePost(postId: string, userId: string): Promise<void> {
+		await this.prisma.like.deleteMany({
+			where: {
+				userId,
+				postId,
+			},
+		});
+		await this.prisma.post.update({
+			where: { id: postId },
+			data: { likeCount: { decrement: 1 } },
+		});
+	}
+
+	async getPostLikes(postId: string): Promise<any[]> {
+		return this.prisma.like.findMany({
+			where: { postId },
+			include: { user: true },
+		});
+	}
+
+	async bookmarkPost(postId: string, userId: string): Promise<void> {
+		await this.prisma.bookmark.create({
+			data: {
+				userId,
+				postId,
+			},
+		});
+	}
+
+	async removeBookmark(postId: string, userId: string): Promise<void> {
+		await this.prisma.bookmark.deleteMany({
+			where: {
+				userId,
+				postId,
+			},
+		});
+	}
+
+	async repostPost(originalPostId: string, userId: string): Promise<Post> {
+		return this.postRepository.create({
+			content: '',
+			author: { connect: { id: userId } },
+			originalPost: { connect: { id: originalPostId } },
+			isRepost: true,
+		});
+	}
+
+	async deleteRepost(repostId: string, userId: string): Promise<void> {
+		await this.postRepository.delete(repostId);
+	}
+
+	async getReposts(originalPostId: string): Promise<Post[]> {
+		return this.prisma.post.findMany({
+			where: {
+				originalPostId,
+				isRepost: true,
+			},
+			include: { author: true },
+		});
+	}
+
+	async recordView(postId: string, userId?: string): Promise<void> {
+		await this.prisma.view.create({
+			data: {
+				postId,
+				userId,
+			},
+		});
+		await this.prisma.post.update({
+			where: { id: postId },
+			data: { viewCount: { increment: 1 } },
+		});
+	}
+
+	async createReply(parentPostId: string, data: Prisma.PostCreateInput, userId: string): Promise<Post> {
+		return this.postRepository.create({
+			...data,
+			author: { connect: { id: userId } },
+			parentPost: { connect: { id: parentPostId } },
+			isReply: true,
+		});
 	}
 }

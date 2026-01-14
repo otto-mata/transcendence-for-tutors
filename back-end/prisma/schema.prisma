@@ -37,6 +37,7 @@ model User {
   isPrivate   Boolean @default(false)
   isActive    Boolean @default(true)
   isSuspended Boolean @default(false)
+  role        String  @default("user") // 'user' | 'moderator' | 'admin'
 
   // Location (optional)
   locationName      String?
