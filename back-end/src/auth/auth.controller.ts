@@ -32,10 +32,13 @@ export class AuthController {
 						"message": message
 					});
 				}
+				else 
+					console.log(e);
 			}
 			else {
 				throw e
 			}
+			return ({ "message": "yenecomprendspas"});
 		}
 		return ({
 			"message": 'Registered successfully'
