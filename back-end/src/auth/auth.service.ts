@@ -23,10 +23,13 @@ export class AuthService {
 		password: string
 	): Promise<{ access_token: string }> {
 		const user = await this.prisma.user.findUnique({ where: { username: login } });
-		if (user == null || user['password'] !== password)
+		if (user == null || user['passwordHash'] !== password)
 			throw new UnauthorizedException();
 		const payload = {
-			login: user['login']
+			id: user.id,
+			username: user.username,
+			email: user.email,
+			role: user.role,
 		}
 		return {
 			access_token: await this.jwtService.signAsync(payload)
