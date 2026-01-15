@@ -22,7 +22,7 @@ import { CreateReportDto, UpdateReportStatusDto } from './report.dto';
 @Controller('reports')
 @UseGuards(AuthGuard)
 export class ReportController {
-	constructor(private readonly reportService: ReportService) { }
+	constructor(private readonly reportService: ReportService) {}
 
 	@Get('me')
 	async getMyReports(
@@ -35,11 +35,18 @@ export class ReportController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const reports = await this.reportService.findByReporter(user.id, skip, limitNum);
+			const reports = await this.reportService.findByReporter(
+				user.id,
+				skip,
+				limitNum,
+			);
 			return JSON.stringify(reports);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving reports', error });
+			return JSON.stringify({
+				message: 'Error retrieving reports',
+				error,
+			});
 		}
 	}
 
@@ -121,11 +128,18 @@ export class ReportController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const reports = await this.reportService.findAll(skip, limitNum, status);
+			const reports = await this.reportService.findAll(
+				skip,
+				limitNum,
+				status,
+			);
 			return JSON.stringify(reports);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving reports', error });
+			return JSON.stringify({
+				message: 'Error retrieving reports',
+				error,
+			});
 		}
 	}
 
@@ -152,7 +166,10 @@ export class ReportController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const report = await this.reportService.updateReportStatus(id, data.status);
+			const report = await this.reportService.updateReportStatus(
+				id,
+				data.status,
+			);
 			return JSON.stringify(report);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);
@@ -186,7 +203,10 @@ export class ReportController {
 			return JSON.stringify({ message: 'User unsuspended' });
 		} catch (error) {
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error unsuspending user', error });
+			return JSON.stringify({
+				message: 'Error unsuspending user',
+				error,
+			});
 		}
 	}
 

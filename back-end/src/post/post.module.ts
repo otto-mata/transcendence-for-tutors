@@ -6,9 +6,9 @@ import { PostService } from './post.service';
 import { PostRepository } from './post.repository';
 
 @Module({
-  imports: [PrismaModule, UserModule],
-  providers: [PostRepository, PostService],
-  controllers: [PostController],
-  exports: [PostService],
+	imports: [PrismaModule, UserModule],
+	providers: [PostRepository, PostService],
+	controllers: [PostController],
+	exports: [PostService],
 })
-export class PostModule { }
+export class PostModule {}

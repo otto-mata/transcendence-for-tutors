@@ -4,7 +4,7 @@ import { Comment, Prisma } from '$prisma';
 
 @Injectable()
 export class CommentRepository {
-	constructor(private readonly prisma: PrismaService) { }
+	constructor(private readonly prisma: PrismaService) {}
 
 	async findById(id: string): Promise<Comment> {
 		return this.prisma.comment.findFirstOrThrow({
@@ -17,7 +17,11 @@ export class CommentRepository {
 		});
 	}
 
-	async findByPostId(postId: string, skip: number, take: number): Promise<Comment[]> {
+	async findByPostId(
+		postId: string,
+		skip: number,
+		take: number,
+	): Promise<Comment[]> {
 		return this.prisma.comment.findMany({
 			where: { postId, isDeleted: false, parentCommentId: null },
 			skip,
@@ -31,7 +35,11 @@ export class CommentRepository {
 		});
 	}
 
-	async findReplies(parentCommentId: string, skip: number, take: number): Promise<Comment[]> {
+	async findReplies(
+		parentCommentId: string,
+		skip: number,
+		take: number,
+	): Promise<Comment[]> {
 		return this.prisma.comment.findMany({
 			where: { parentCommentId, isDeleted: false },
 			skip,
@@ -48,7 +56,10 @@ export class CommentRepository {
 		});
 	}
 
-	async update(id: string, data: Prisma.CommentUpdateInput): Promise<Comment> {
+	async update(
+		id: string,
+		data: Prisma.CommentUpdateInput,
+	): Promise<Comment> {
 		return this.prisma.comment.update({
 			where: { id },
 			data,

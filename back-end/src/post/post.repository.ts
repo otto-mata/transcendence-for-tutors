@@ -4,7 +4,7 @@ import { Post, Prisma } from '$prisma';
 
 @Injectable()
 export class PostRepository {
-	constructor(private readonly prisma: PrismaService) { }
+	constructor(private readonly prisma: PrismaService) {}
 
 	async findById(id: string): Promise<Post> {
 		return this.prisma.post.findFirstOrThrow({ where: { id } });

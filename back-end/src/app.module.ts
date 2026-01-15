@@ -14,28 +14,28 @@ import { ReportModule } from './report/report.module';
 import { MediaModule } from './media/media.module';
 
 @Module({
-  imports: [
-    JwtModule.register({
-      global: true,
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: '15m' },
-    }),
-    PrismaModule,
-    NotificationModule,
-    AuthModule,
-    ConfigModule.forRoot({
-      isGlobal: true,
-      envFilePath: '.env',
-      cache: true,
-    }),
-    PostModule,
-    UserModule,
-    CommentModule,
-    FollowModule,
-    ReportModule,
-    MediaModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+	imports: [
+		JwtModule.register({
+			global: true,
+			secret: process.env.JWT_SECRET,
+			signOptions: { expiresIn: '15m' },
+		}),
+		PrismaModule,
+		NotificationModule,
+		AuthModule,
+		ConfigModule.forRoot({
+			isGlobal: true,
+			envFilePath: '.env',
+			cache: true,
+		}),
+		PostModule,
+		UserModule,
+		CommentModule,
+		FollowModule,
+		ReportModule,
+		MediaModule,
+	],
+	controllers: [AppController],
+	providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}

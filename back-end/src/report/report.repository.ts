@@ -4,7 +4,7 @@ import { Report, Prisma } from '$prisma';
 
 @Injectable()
 export class ReportRepository {
-	constructor(private readonly prisma: PrismaService) { }
+	constructor(private readonly prisma: PrismaService) {}
 
 	async findById(id: string): Promise<Report> {
 		return this.prisma.report.findFirstOrThrow({
@@ -18,7 +18,11 @@ export class ReportRepository {
 		});
 	}
 
-	async findByReporter(reporterId: string, skip: number, take: number): Promise<Report[]> {
+	async findByReporter(
+		reporterId: string,
+		skip: number,
+		take: number,
+	): Promise<Report[]> {
 		return this.prisma.report.findMany({
 			where: { reporterId },
 			skip,
@@ -33,7 +37,11 @@ export class ReportRepository {
 		});
 	}
 
-	async findAll(skip: number, take: number, status?: string): Promise<Report[]> {
+	async findAll(
+		skip: number,
+		take: number,
+		status?: string,
+	): Promise<Report[]> {
 		return this.prisma.report.findMany({
 			where: status ? { status } : undefined,
 			skip,

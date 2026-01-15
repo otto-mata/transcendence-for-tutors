@@ -8,7 +8,7 @@ import { Request } from 'express';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
-	constructor(private requiredRole: string) { }
+	constructor(private requiredRole: string) {}
 
 	canActivate(context: ExecutionContext): boolean {
 		const request = context.switchToHttp().getRequest<Request>();

@@ -29,7 +29,7 @@ import { UserService } from './user.service';
 @Controller('users')
 @UseGuards(AuthGuard)
 export class UserController {
-	constructor(private readonly userService: UserService) { }
+	constructor(private readonly userService: UserService) {}
 
 	@Get()
 	async getAllUsers(
@@ -59,10 +59,15 @@ export class UserController {
 		try {
 			const limitNum = limit ? parseInt(limit) : 10;
 			// Suggested users logic
-			return JSON.stringify({ message: 'Suggested users not yet implemented' });
+			return JSON.stringify({
+				message: 'Suggested users not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving suggestions', error });
+			return JSON.stringify({
+				message: 'Error retrieving suggestions',
+				error,
+			});
 		}
 	}
 
@@ -77,10 +82,15 @@ export class UserController {
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Get verified users
-			return JSON.stringify({ message: 'Verified users not yet implemented' });
+			return JSON.stringify({
+				message: 'Verified users not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving verified users', error });
+			return JSON.stringify({
+				message: 'Error retrieving verified users',
+				error,
+			});
 		}
 	}
 
@@ -113,7 +123,10 @@ export class UserController {
 			return JSON.stringify({ message: 'Bookmarks not yet implemented' });
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving bookmarks', error });
+			return JSON.stringify({
+				message: 'Error retrieving bookmarks',
+				error,
+			});
 		}
 	}
 
@@ -129,7 +142,9 @@ export class UserController {
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Get current user's posts
-			return JSON.stringify({ message: 'User posts not yet implemented' });
+			return JSON.stringify({
+				message: 'User posts not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
 			return JSON.stringify({ message: 'Error retrieving posts', error });
@@ -167,10 +182,15 @@ export class UserController {
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Get blocked users
-			return JSON.stringify({ message: 'Blocked users not yet implemented' });
+			return JSON.stringify({
+				message: 'Blocked users not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving blocked users', error });
+			return JSON.stringify({
+				message: 'Error retrieving blocked users',
+				error,
+			});
 		}
 	}
 
@@ -186,10 +206,15 @@ export class UserController {
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Get muted users
-			return JSON.stringify({ message: 'Muted users not yet implemented' });
+			return JSON.stringify({
+				message: 'Muted users not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving muted users', error });
+			return JSON.stringify({
+				message: 'Error retrieving muted users',
+				error,
+			});
 		}
 	}
 
@@ -203,7 +228,10 @@ export class UserController {
 			return JSON.stringify({ message: 'Analytics not yet implemented' });
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving analytics', error });
+			return JSON.stringify({
+				message: 'Error retrieving analytics',
+				error,
+			});
 		}
 	}
 
@@ -217,7 +245,10 @@ export class UserController {
 			return JSON.stringify({ message: 'Insights not yet implemented' });
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving insights', error });
+			return JSON.stringify({
+				message: 'Error retrieving insights',
+				error,
+			});
 		}
 	}
 
@@ -246,10 +277,15 @@ export class UserController {
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Get user's posts
-			return JSON.stringify({ message: 'User posts not yet implemented' });
+			return JSON.stringify({
+				message: 'User posts not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving user posts', error });
+			return JSON.stringify({
+				message: 'Error retrieving user posts',
+				error,
+			});
 		}
 	}
 
@@ -265,10 +301,15 @@ export class UserController {
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Get user's posts with media
-			return JSON.stringify({ message: 'User media posts not yet implemented' });
+			return JSON.stringify({
+				message: 'User media posts not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving media posts', error });
+			return JSON.stringify({
+				message: 'Error retrieving media posts',
+				error,
+			});
 		}
 	}
 
@@ -284,10 +325,15 @@ export class UserController {
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Get posts liked by user
-			return JSON.stringify({ message: 'User likes not yet implemented' });
+			return JSON.stringify({
+				message: 'User likes not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving liked posts', error });
+			return JSON.stringify({
+				message: 'Error retrieving liked posts',
+				error,
+			});
 		}
 	}
 
@@ -381,7 +427,10 @@ export class UserController {
 			return JSON.stringify({ message: 'Password changed successfully' });
 		} catch (error) {
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error changing password', error });
+			return JSON.stringify({
+				message: 'Error changing password',
+				error,
+			});
 		}
 	}
 
@@ -413,7 +462,10 @@ export class UserController {
 			return JSON.stringify(updatedUser);
 		} catch (error) {
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error updating preferences', error });
+			return JSON.stringify({
+				message: 'Error updating preferences',
+				error,
+			});
 		}
 	}
 

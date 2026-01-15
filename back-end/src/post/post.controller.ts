@@ -22,7 +22,7 @@ import { PostService } from './post.service';
 @Controller('posts')
 @UseGuards(AuthGuard)
 export class PostController {
-	constructor(private readonly postService: PostService) { }
+	constructor(private readonly postService: PostService) {}
 
 	@Get()
 	async getAllPosts(
@@ -72,10 +72,15 @@ export class PostController {
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Trending posts implementation
-			return JSON.stringify({ message: 'Trending posts not yet implemented' });
+			return JSON.stringify({
+				message: 'Trending posts not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving trending posts', error });
+			return JSON.stringify({
+				message: 'Error retrieving trending posts',
+				error,
+			});
 		}
 	}
 
@@ -93,7 +98,10 @@ export class PostController {
 			return JSON.stringify(posts);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving latest posts', error });
+			return JSON.stringify({
+				message: 'Error retrieving latest posts',
+				error,
+			});
 		}
 	}
 
@@ -109,10 +117,15 @@ export class PostController {
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Filter by hashtag implementation
-			return JSON.stringify({ message: 'Hashtag filter not yet implemented' });
+			return JSON.stringify({
+				message: 'Hashtag filter not yet implemented',
+			});
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving posts by hashtag', error });
+			return JSON.stringify({
+				message: 'Error retrieving posts by hashtag',
+				error,
+			});
 		}
 	}
 
@@ -240,7 +253,10 @@ export class PostController {
 			return JSON.stringify({ message: 'Bookmark removed' });
 		} catch (error) {
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error removing bookmark', error });
+			return JSON.stringify({
+				message: 'Error removing bookmark',
+				error,
+			});
 		}
 	}
 
@@ -285,7 +301,10 @@ export class PostController {
 			return JSON.stringify(shares);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving shares', error });
+			return JSON.stringify({
+				message: 'Error retrieving shares',
+				error,
+			});
 		}
 	}
 
@@ -319,7 +338,10 @@ export class PostController {
 			return JSON.stringify({ message: 'Replies not yet implemented' });
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving replies', error });
+			return JSON.stringify({
+				message: 'Error retrieving replies',
+				error,
+			});
 		}
 	}
 
@@ -352,7 +374,10 @@ export class PostController {
 			return JSON.stringify(post);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);
-			return JSON.stringify({ message: 'Post not found or unauthorized', error });
+			return JSON.stringify({
+				message: 'Post not found or unauthorized',
+				error,
+			});
 		}
 	}
 
@@ -367,8 +392,10 @@ export class PostController {
 			return JSON.stringify(post);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);
-			return JSON.stringify({ message: 'Post not found or unauthorized', error });
+			return JSON.stringify({
+				message: 'Post not found or unauthorized',
+				error,
+			});
 		}
 	}
 }
-
