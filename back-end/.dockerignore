@@ -4,3 +4,4 @@ dist
 *.md
 .git
 prisma/generated
+.env
