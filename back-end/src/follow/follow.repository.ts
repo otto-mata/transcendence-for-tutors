@@ -4,9 +4,13 @@ import { Follow } from '$prisma';
 
 @Injectable()
 export class FollowRepository {
-	constructor(private readonly prisma: PrismaService) { }
+	constructor(private readonly prisma: PrismaService) {}
 
-	async findFollowers(userId: string, skip: number, take: number): Promise<any[]> {
+	async findFollowers(
+		userId: string,
+		skip: number,
+		take: number,
+	): Promise<any[]> {
 		return this.prisma.follow.findMany({
 			where: { followingId: userId },
 			skip,
@@ -16,7 +20,11 @@ export class FollowRepository {
 		});
 	}
 
-	async findFollowing(userId: string, skip: number, take: number): Promise<any[]> {
+	async findFollowing(
+		userId: string,
+		skip: number,
+		take: number,
+	): Promise<any[]> {
 		return this.prisma.follow.findMany({
 			where: { followerId: userId },
 			skip,
@@ -26,7 +34,10 @@ export class FollowRepository {
 		});
 	}
 
-	async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+	async isFollowing(
+		followerId: string,
+		followingId: string,
+	): Promise<boolean> {
 		const follow = await this.prisma.follow.findUnique({
 			where: {
 				followerId_followingId: {
@@ -83,7 +94,10 @@ export class FollowRepository {
 		});
 	}
 
-	async getRelationshipStatus(userId: string, targetUserId: string): Promise<any> {
+	async getRelationshipStatus(
+		userId: string,
+		targetUserId: string,
+	): Promise<any> {
 		const isFollowing = await this.isFollowing(userId, targetUserId);
 		const isFollowedBy = await this.isFollowing(targetUserId, userId);
 		const blocking = await this.prisma.block.findUnique({

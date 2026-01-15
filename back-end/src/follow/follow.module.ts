@@ -10,4 +10,4 @@ import { PrismaModule } from '@/prisma/prisma.module';
 	controllers: [FollowController],
 	exports: [FollowService],
 })
-export class FollowModule { }
+export class FollowModule {}

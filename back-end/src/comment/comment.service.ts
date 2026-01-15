@@ -4,17 +4,25 @@ import { CommentRepository } from './comment.repository';
 
 @Injectable()
 export class CommentService {
-	constructor(private readonly commentRepository: CommentRepository) { }
+	constructor(private readonly commentRepository: CommentRepository) {}
 
 	async findById(id: string): Promise<Comment> {
 		return this.commentRepository.findById(id);
 	}
 
-	async findByPostId(postId: string, skip: number, take: number): Promise<Comment[]> {
+	async findByPostId(
+		postId: string,
+		skip: number,
+		take: number,
+	): Promise<Comment[]> {
 		return this.commentRepository.findByPostId(postId, skip, take);
 	}
 
-	async findReplies(parentCommentId: string, skip: number, take: number): Promise<Comment[]> {
+	async findReplies(
+		parentCommentId: string,
+		skip: number,
+		take: number,
+	): Promise<Comment[]> {
 		return this.commentRepository.findReplies(parentCommentId, skip, take);
 	}
 
@@ -22,8 +30,15 @@ export class CommentService {
 		return this.commentRepository.create(data);
 	}
 
-	async update(id: string, data: Prisma.CommentUpdateInput): Promise<Comment> {
-		return this.commentRepository.update(id, { ...data, isEdited: true, editedAt: new Date() });
+	async update(
+		id: string,
+		data: Prisma.CommentUpdateInput,
+	): Promise<Comment> {
+		return this.commentRepository.update(id, {
+			...data,
+			isEdited: true,
+			editedAt: new Date(),
+		});
 	}
 
 	async delete(id: string): Promise<Comment> {

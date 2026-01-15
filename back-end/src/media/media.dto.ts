@@ -1,4 +1,3 @@
-
 export class MediaUploadResponseDto {
 	id: string;
 	userId: string;

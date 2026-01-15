@@ -23,7 +23,7 @@ import { UpdateNotificationDto } from './notification.dto';
 @Controller('notifications')
 @UseGuards(AuthGuard)
 export class NotificationController {
-	constructor(private readonly prisma: PrismaService) { }
+	constructor(private readonly prisma: PrismaService) {}
 
 	@Get()
 	async getNotifications(
@@ -44,7 +44,10 @@ export class NotificationController {
 			return JSON.stringify(notifications);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving notifications', error });
+			return JSON.stringify({
+				message: 'Error retrieving notifications',
+				error,
+			});
 		}
 	}
 
@@ -60,7 +63,10 @@ export class NotificationController {
 			return JSON.stringify({ unreadCount: count });
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving unread count', error });
+			return JSON.stringify({
+				message: 'Error retrieving unread count',
+				error,
+			});
 		}
 	}
 
@@ -93,10 +99,15 @@ export class NotificationController {
 				where: { read: false },
 				data: { read: true },
 			});
-			return JSON.stringify({ message: 'All notifications marked as read' });
+			return JSON.stringify({
+				message: 'All notifications marked as read',
+			});
 		} catch (error) {
 			res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error marking notifications as read', error });
+			return JSON.stringify({
+				message: 'Error marking notifications as read',
+				error,
+			});
 		}
 	}
 
@@ -128,7 +139,10 @@ export class NotificationController {
 			return JSON.stringify({ message: 'All notifications cleared' });
 		} catch (error) {
 			res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error clearing notifications', error });
+			return JSON.stringify({
+				message: 'Error clearing notifications',
+				error,
+			});
 		}
 	}
 

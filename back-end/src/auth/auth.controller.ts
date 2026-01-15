@@ -1,10 +1,4 @@
-import {
-	Controller,
-	Post,
-	Body,
-	HttpStatus,
-	Res,
-} from '@nestjs/common';
+import { Controller, Post, Body, HttpStatus, Res } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import {
@@ -18,10 +12,11 @@ import {
 	ResendVerificationDto,
 } from './auth.dto';
 import { Prisma } from '$prisma';
+import { AuthUserRegistration } from './auth.type';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService) { }
+	constructor(private readonly authService: AuthService) {}
 
 	@Post('register')
 	async register(
@@ -29,7 +24,14 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			await this.authService.createUser(data);
+			const userData: AuthUserRegistration = {
+				displayName:
+					data.displayName === undefined
+						? data.username
+						: data.displayName,
+				...data,
+			};
+			await this.authService.createUser(userData);
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify({ message: 'Registered successfully' });
 		} catch (e) {
@@ -39,12 +41,16 @@ export class AuthController {
 					return JSON.stringify({
 						error: 'Cannot create User',
 						code: 'P2002',
-						message: 'User with this username or email already exists',
+						message:
+							'User with this username or email already exists',
 					});
 				}
 			}
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ error: 'Registration failed', message: e.message });
+			return JSON.stringify({
+				error: 'Registration failed',
+				message: e.message,
+			});
 		}
 	}
 
@@ -54,7 +60,10 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const result = await this.authService.LoginUser(data.username, data.password);
+			const result = await this.authService.LoginUser(
+				data.username,
+				data.password,
+			);
 			res.status(HttpStatus.OK);
 			return JSON.stringify(result);
 		} catch (e) {
@@ -101,7 +110,9 @@ export class AuthController {
 			return JSON.stringify({ message: 'Verification email sent' });
 		} catch (e) {
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ error: 'Failed to send verification email' });
+			return JSON.stringify({
+				error: 'Failed to send verification email',
+			});
 		}
 	}
 
@@ -115,7 +126,9 @@ export class AuthController {
 			return JSON.stringify({ message: 'Password reset email sent' });
 		} catch (e) {
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ error: 'Failed to send password reset email' });
+			return JSON.stringify({
+				error: 'Failed to send password reset email',
+			});
 		}
 	}
 

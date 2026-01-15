@@ -22,7 +22,7 @@ import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
 @Controller('posts/:postId/comments')
 @UseGuards(AuthGuard)
 export class CommentController {
-	constructor(private readonly commentService: CommentService) { }
+	constructor(private readonly commentService: CommentService) {}
 
 	@Get()
 	async getComments(
@@ -35,11 +35,18 @@ export class CommentController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const comments = await this.commentService.findByPostId(postId, skip, limitNum);
+			const comments = await this.commentService.findByPostId(
+				postId,
+				skip,
+				limitNum,
+			);
 			return JSON.stringify(comments);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving comments', error });
+			return JSON.stringify({
+				message: 'Error retrieving comments',
+				error,
+			});
 		}
 	}
 
@@ -112,11 +119,18 @@ export class CommentController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const replies = await this.commentService.findReplies(id, skip, limitNum);
+			const replies = await this.commentService.findReplies(
+				id,
+				skip,
+				limitNum,
+			);
 			return JSON.stringify(replies);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving replies', error });
+			return JSON.stringify({
+				message: 'Error retrieving replies',
+				error,
+			});
 		}
 	}
 
@@ -132,7 +146,10 @@ export class CommentController {
 			return JSON.stringify(comment);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);
-			return JSON.stringify({ message: 'Comment not found or unauthorized', error });
+			return JSON.stringify({
+				message: 'Comment not found or unauthorized',
+				error,
+			});
 		}
 	}
 
@@ -147,7 +164,10 @@ export class CommentController {
 			return JSON.stringify(comment);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);
-			return JSON.stringify({ message: 'Comment not found or unauthorized', error });
+			return JSON.stringify({
+				message: 'Comment not found or unauthorized',
+				error,
+			});
 		}
 	}
 

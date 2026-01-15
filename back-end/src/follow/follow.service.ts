@@ -4,17 +4,28 @@ import { FollowRepository } from './follow.repository';
 
 @Injectable()
 export class FollowService {
-	constructor(private readonly followRepository: FollowRepository) { }
+	constructor(private readonly followRepository: FollowRepository) {}
 
-	async getFollowers(userId: string, skip: number, take: number): Promise<any[]> {
+	async getFollowers(
+		userId: string,
+		skip: number,
+		take: number,
+	): Promise<any[]> {
 		return this.followRepository.findFollowers(userId, skip, take);
 	}
 
-	async getFollowing(userId: string, skip: number, take: number): Promise<any[]> {
+	async getFollowing(
+		userId: string,
+		skip: number,
+		take: number,
+	): Promise<any[]> {
 		return this.followRepository.findFollowing(userId, skip, take);
 	}
 
-	async isFollowing(followerId: string, followingId: string): Promise<boolean> {
+	async isFollowing(
+		followerId: string,
+		followingId: string,
+	): Promise<boolean> {
 		return this.followRepository.isFollowing(followerId, followingId);
 	}
 
@@ -26,7 +37,13 @@ export class FollowService {
 		return this.followRepository.unfollow(followerId, followingId);
 	}
 
-	async getRelationshipStatus(userId: string, targetUserId: string): Promise<any> {
-		return this.followRepository.getRelationshipStatus(userId, targetUserId);
+	async getRelationshipStatus(
+		userId: string,
+		targetUserId: string,
+	): Promise<any> {
+		return this.followRepository.getRelationshipStatus(
+			userId,
+			targetUserId,
+		);
 	}
 }

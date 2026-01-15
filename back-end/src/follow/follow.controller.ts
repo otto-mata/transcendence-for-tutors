@@ -18,7 +18,7 @@ import type { CurrentUserType } from '@/decorators/current-user.decorator';
 @Controller('users')
 @UseGuards(AuthGuard)
 export class FollowController {
-	constructor(private readonly followService: FollowService) { }
+	constructor(private readonly followService: FollowService) {}
 
 	@Get(':username/followers')
 	async getFollowers(
@@ -31,11 +31,18 @@ export class FollowController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const followers = await this.followService.getFollowers(username, skip, limitNum);
+			const followers = await this.followService.getFollowers(
+				username,
+				skip,
+				limitNum,
+			);
 			return JSON.stringify(followers);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving followers', error });
+			return JSON.stringify({
+				message: 'Error retrieving followers',
+				error,
+			});
 		}
 	}
 
@@ -50,11 +57,18 @@ export class FollowController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const following = await this.followService.getFollowing(username, skip, limitNum);
+			const following = await this.followService.getFollowing(
+				username,
+				skip,
+				limitNum,
+			);
 			return JSON.stringify(following);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving following', error });
+			return JSON.stringify({
+				message: 'Error retrieving following',
+				error,
+			});
 		}
 	}
 
@@ -69,11 +83,18 @@ export class FollowController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const followers = await this.followService.getFollowers(user.id, skip, limitNum);
+			const followers = await this.followService.getFollowers(
+				user.id,
+				skip,
+				limitNum,
+			);
 			return JSON.stringify(followers);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving followers', error });
+			return JSON.stringify({
+				message: 'Error retrieving followers',
+				error,
+			});
 		}
 	}
 
@@ -88,11 +109,18 @@ export class FollowController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const following = await this.followService.getFollowing(user.id, skip, limitNum);
+			const following = await this.followService.getFollowing(
+				user.id,
+				skip,
+				limitNum,
+			);
 			return JSON.stringify(following);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving following', error });
+			return JSON.stringify({
+				message: 'Error retrieving following',
+				error,
+			});
 		}
 	}
 
@@ -134,11 +162,17 @@ export class FollowController {
 		@Res({ passthrough: true }) res?: Response,
 	): Promise<string> {
 		try {
-			const relationship = await this.followService.getRelationshipStatus(user.id, id);
+			const relationship = await this.followService.getRelationshipStatus(
+				user.id,
+				id,
+			);
 			return JSON.stringify(relationship);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving relationship', error });
+			return JSON.stringify({
+				message: 'Error retrieving relationship',
+				error,
+			});
 		}
 	}
 }

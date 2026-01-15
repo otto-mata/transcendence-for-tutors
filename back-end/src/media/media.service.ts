@@ -3,7 +3,7 @@ import { MediaRepository } from './media.repository';
 
 @Injectable()
 export class MediaService {
-	constructor(private readonly mediaRepository: MediaRepository) { }
+	constructor(private readonly mediaRepository: MediaRepository) {}
 
 	async uploadMedia(userId: string, file: Express.Multer.File): Promise<any> {
 		return this.mediaRepository.saveMedia(

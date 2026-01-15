@@ -20,7 +20,7 @@ import type { CurrentUserType } from '@/decorators/current-user.decorator';
 @Controller('media')
 @UseGuards(AuthGuard)
 export class MediaController {
-	constructor(private readonly mediaService: MediaService) { }
+	constructor(private readonly mediaService: MediaService) {}
 
 	@Post('upload')
 	@UseInterceptors(FileInterceptor('file'))

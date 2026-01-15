@@ -10,4 +10,4 @@ import { PrismaModule } from '@/prisma/prisma.module';
 	controllers: [ReportController],
 	exports: [ReportService],
 })
-export class ReportModule { }
+export class ReportModule {}

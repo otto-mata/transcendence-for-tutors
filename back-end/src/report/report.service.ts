@@ -4,17 +4,25 @@ import { ReportRepository } from './report.repository';
 
 @Injectable()
 export class ReportService {
-	constructor(private readonly reportRepository: ReportRepository) { }
+	constructor(private readonly reportRepository: ReportRepository) {}
 
 	async findById(id: string): Promise<Report> {
 		return this.reportRepository.findById(id);
 	}
 
-	async findByReporter(reporterId: string, skip: number, take: number): Promise<Report[]> {
+	async findByReporter(
+		reporterId: string,
+		skip: number,
+		take: number,
+	): Promise<Report[]> {
 		return this.reportRepository.findByReporter(reporterId, skip, take);
 	}
 
-	async findAll(skip: number, take: number, status?: string): Promise<Report[]> {
+	async findAll(
+		skip: number,
+		take: number,
+		status?: string,
+	): Promise<Report[]> {
 		return this.reportRepository.findAll(skip, take, status);
 	}
 

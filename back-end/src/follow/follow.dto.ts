@@ -1,4 +1,3 @@
-
 export class FollowResponseDto {
 	id: string;
 	followerId: string;

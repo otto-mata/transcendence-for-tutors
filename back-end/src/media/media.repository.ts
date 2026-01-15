@@ -3,9 +3,14 @@ import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class MediaRepository {
-	constructor(private readonly prisma: PrismaService) { }
+	constructor(private readonly prisma: PrismaService) {}
 
-	async saveMedia(userId: string, filename: string, mimetype: string, size: number): Promise<any> {
+	async saveMedia(
+		userId: string,
+		filename: string,
+		mimetype: string,
+		size: number,
+	): Promise<any> {
 		// This would typically store file metadata in the database
 		return {
 			id: Math.random().toString(36).substring(7),

@@ -8,7 +8,7 @@ export class PostService {
 	constructor(
 		private readonly postRepository: PostRepository,
 		private readonly prisma: PrismaService,
-	) { }
+	) {}
 
 	async findById(id: string): Promise<Post> {
 		return this.postRepository.findById(id);
@@ -117,7 +117,11 @@ export class PostService {
 		});
 	}
 
-	async createReply(parentPostId: string, data: Prisma.PostCreateInput, userId: string): Promise<Post> {
+	async createReply(
+		parentPostId: string,
+		data: Prisma.PostCreateInput,
+		userId: string,
+	): Promise<Post> {
 		return this.postRepository.create({
 			...data,
 			author: { connect: { id: userId } },
