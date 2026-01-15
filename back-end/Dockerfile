@@ -12,10 +12,7 @@ RUN npm install
 # Copy the rest of the application files
 COPY . .
 
-RUN npm run pgen
-
-# Build the NestJS application
-RUN npm run build
+RUN mv .env.docker .env
 
 # Command to run the application
-CMD ["sh", "-c", "npm run db:deploy && node dist/src/main"]
+CMD ["bash", "run.sh"]
