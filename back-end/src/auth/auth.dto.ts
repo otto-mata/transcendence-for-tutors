@@ -1,43 +1,107 @@
-//create verification for teh paramters given. For exemple
-//age must be positive, email must be a working email
-//verify If there ain't alreadyt something doing it
-//still can be used to do some "CreateUserVerif" for exemple
-//rajouter une verification que le user existe pas deja ? Est ce que la protectrion est deja faite au niveau de prisma ? mhhh
-//
-import {
-  IsEmail,
-  IsInt,
-  Min,
-  Max,
-  Length
-} from 'class-validator';
+import { IsString, IsEmail, MinLength, MaxLength, IsOptional } from 'class-validator';
 
-export class LoginUserDto {
-  @Length(4, 20)
+export class RegisterDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(50)
   username: string;
-
-  @Length(8, 30)
-  passwordHash: string;
-}
-
-export class CreateUserDto {
-  @IsInt()
-  @Min(0)
-  @Max(150)
-  age: number;
 
   @IsEmail()
   email: string;
 
-  @Length(8, 30)
-  passwordHash: string;
+  @IsString()
+  @MinLength(8)
+  @MaxLength(100)
+  password: string;
 
+  @IsString()
+  @MaxLength(100)
+  @IsOptional()
+  displayName?: string;
+}
 
-  @Length(4, 20)
+export class LoginDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(50)
   username: string;
 
-  @Length(4, 25)
-  displayName: string;
+  @IsString()
+  @MinLength(8)
+  @MaxLength(100)
+  password: string;
+}
+
+export class LoginUserDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(50)
+  username: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(100)
+  password: string;
+}
+
+export class CreateUserDto {
+  @IsString()
+  @MinLength(3)
+  @MaxLength(50)
+  username: string;
+
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(100)
+  passwordHash: string;
+
+  @IsString()
+  @MaxLength(100)
+  @IsOptional()
+  displayName?: string;
+}
+
+export class RefreshTokenDto {
+  @IsString()
+  token: string;
+}
+
+export class AuthResponseDto {
+  access_token: string;
+  user?: {
+    id: string;
+    username: string;
+    email: string;
+    role: string;
+  };
+}
+
+export class VerifyEmailDto {
+  @IsString()
+  token: string;
+}
+
+export class ForgotPasswordDto {
+  @IsEmail()
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @IsString()
+  token: string;
+
+  @IsString()
+  @MinLength(8)
+  @MaxLength(100)
+  newPassword: string;
+}
+
+export class ResendVerificationDto {
+  @IsEmail()
+  email: string;
 }
 
 

@@ -1,4 +1,6 @@
-import { Prisma } from '$prisma';
+import type { CurrentUserType } from '@/decorators/current-user.decorator';
+import { CurrentUser } from '@/decorators/current-user.decorator';
+import { AuthGuard } from '@/guards/auth.guard';
 import {
 	Body,
 	Controller,
@@ -10,17 +12,19 @@ import {
 	Post,
 	Query,
 	Res,
+	UploadedFile,
 	UseGuards,
 	UseInterceptors,
-	UploadedFile,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
+import {
+	ChangeEmailDto,
+	ChangePasswordDto,
+	UpdatePreferencesDto,
+	UpdateUserDto,
+} from './user.dto';
 import { UserService } from './user.service';
-import { AuthGuard } from '@/guards/auth.guard';
-import { RoleGuard } from '@/guards/role.guard';
-import { CurrentUser } from '@/decorators/current-user.decorator';
-import type { CurrentUserType } from '@/decorators/current-user.decorator';
 
 @Controller('users')
 @UseGuards(AuthGuard)
@@ -317,7 +321,7 @@ export class UserController {
 
 	@Patch('me')
 	async updateCurrentUser(
-		@Body() data: Prisma.UserUpdateInput,
+		@Body() data: UpdateUserDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
@@ -368,7 +372,7 @@ export class UserController {
 
 	@Patch('me/password')
 	async changePassword(
-		@Body() data: { currentPassword: string; newPassword: string },
+		@Body() data: ChangePasswordDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
@@ -383,7 +387,7 @@ export class UserController {
 
 	@Patch('me/email')
 	async changeEmail(
-		@Body() data: { newEmail: string; password: string },
+		@Body() data: ChangeEmailDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
@@ -400,17 +404,12 @@ export class UserController {
 
 	@Patch('me/preferences')
 	async updatePreferences(
-		@Body() data: any,
+		@Body() data: UpdatePreferencesDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const updatedUser = await this.userService.update(user.id, {
-				theme: data.theme,
-				language: data.language,
-				emailNotifications: data.emailNotifications,
-				pushNotifications: data.pushNotifications,
-			});
+			const updatedUser = await this.userService.update(user.id, data);
 			return JSON.stringify(updatedUser);
 		} catch (error) {
 			res.status(HttpStatus.BAD_REQUEST);

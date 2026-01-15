@@ -18,6 +18,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { AuthGuard } from '@/guards/auth.guard';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import type { CurrentUserType } from '@/decorators/current-user.decorator';
+import { UpdateNotificationDto } from './notification.dto';
 
 @Controller('notifications')
 @UseGuards(AuthGuard)

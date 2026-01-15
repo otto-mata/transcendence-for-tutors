@@ -9,13 +9,14 @@ import {
 	Get,
 	HttpStatus,
 	Param,
-	Post,
 	Patch,
+	Post,
 	Query,
 	Res,
 	UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
+import { CreatePostDto, UpdatePostDto } from './post.dto';
 import { PostService } from './post.service';
 
 @Controller('posts')
@@ -150,7 +151,7 @@ export class PostController {
 
 	@Post()
 	async createPost(
-		@Body() data: Prisma.PostCreateInput,
+		@Body() data: CreatePostDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
@@ -342,7 +343,7 @@ export class PostController {
 	@Patch(':id')
 	async updatePost(
 		@Param('id') id: string,
-		@Body() data: Prisma.PostUpdateInput,
+		@Body() data: UpdatePostDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {

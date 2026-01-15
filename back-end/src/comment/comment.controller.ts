@@ -17,6 +17,7 @@ import { CommentService } from './comment.service';
 import { AuthGuard } from '@/guards/auth.guard';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import type { CurrentUserType } from '@/decorators/current-user.decorator';
+import { CreateCommentDto, UpdateCommentDto } from './comment.dto';
 
 @Controller('posts/:postId/comments')
 @UseGuards(AuthGuard)
@@ -59,7 +60,7 @@ export class CommentController {
 	@Post()
 	async createComment(
 		@Param('postId') postId: string,
-		@Body() data: Prisma.CommentCreateInput,
+		@Body() data: CreateCommentDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
@@ -81,7 +82,7 @@ export class CommentController {
 	async replyToComment(
 		@Param('id') id: string,
 		@Param('postId') postId: string,
-		@Body() data: Prisma.CommentCreateInput,
+		@Body() data: CreateCommentDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
@@ -122,7 +123,7 @@ export class CommentController {
 	@Patch(':id')
 	async updateComment(
 		@Param('id') id: string,
-		@Body() data: Prisma.CommentUpdateInput,
+		@Body() data: UpdateCommentDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
