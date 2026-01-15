@@ -17,6 +17,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { ReportService } from './report.service';
+import { CreateReportDto, UpdateReportStatusDto } from './report.dto';
 
 @Controller('reports')
 @UseGuards(AuthGuard)
@@ -45,7 +46,7 @@ export class ReportController {
 	@Post('users/:id')
 	async reportUser(
 		@Param('id') id: string,
-		@Body() data: { reason: string; description?: string },
+		@Body() data: CreateReportDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
@@ -67,7 +68,7 @@ export class ReportController {
 	@Post('posts/:id')
 	async reportPost(
 		@Param('id') id: string,
-		@Body() data: { reason: string; description?: string },
+		@Body() data: CreateReportDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
@@ -89,7 +90,7 @@ export class ReportController {
 	@Post('comments/:id')
 	async reportComment(
 		@Param('id') id: string,
-		@Body() data: { reason: string; description?: string },
+		@Body() data: CreateReportDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
