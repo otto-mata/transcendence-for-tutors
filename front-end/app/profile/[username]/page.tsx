@@ -4,15 +4,19 @@ import Image from 'next/image';
 import { MapPin, Link as LinkIcon, Calendar, MoreHorizontal, Settings, Share2, Bell, BellOff } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { TransClient } from '../../../client/TransClient';
+import { useParams } from 'next/navigation';
 import { UserDto } from '../../../client/User.dto';
 
-export default function ProfilePage({ params }: { params: { username: string } }) {
+export default function ProfilePage() {
+	const params = useParams<{ username: string }>();
 	const [user, setUser] = useState<UserDto | null>(null);
 
 	useEffect(() => {
-		TransClient.instance.getUserByUsername(params.username)
-			.then(setUser)
-			.catch(console.error);
+		if (params.username) {
+			TransClient.instance.getUserByUsername(params.username)
+				.then(setUser)
+				.catch(console.error);
+		}
 	}, [params.username]);
 
 	if (!user) {

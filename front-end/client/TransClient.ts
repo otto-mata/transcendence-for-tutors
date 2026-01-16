@@ -9,7 +9,7 @@ export class TransClient {
 	private _cl: Axios
 
 	private constructor() {
-		this._cl = new Axios({ baseURL: "http://localhost:3001" })
+		this._cl = new Axios({ baseURL: "http://localhost:3000" })
 	}
 
 	public static get instance(): TransClient {
