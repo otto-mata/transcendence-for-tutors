@@ -1,12 +1,29 @@
+"use client";
+
 import Image from 'next/image';
 import { MapPin, Link as LinkIcon, Calendar, MoreHorizontal, Settings, Share2, Bell, BellOff } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { TransClient } from '../../../client/TransClient';
+import { UserDto } from '../../../client/User.dto';
 
 export default function ProfilePage({ params }: { params: { username: string } }) {
+	const [user, setUser] = useState<UserDto | null>(null);
+
+	useEffect(() => {
+		TransClient.instance.getUserByUsername(params.username)
+			.then(setUser)
+			.catch(console.error);
+	}, [params.username]);
+
+	if (!user) {
+		return <div>Loading...</div>;
+	}
+
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Cover Photo */}
 			<div className="relative h-64 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500">
-				<div className="absolute inset-0 bg-black opacity-10" />
+				{ user.coverImageUrl ? <Image src={user.coverImageUrl} alt="Cover photo" layout="fill" objectFit="cover" /> : <div className="absolute inset-0 bg-black opacity-10" /> }
 			</div>
 
 			{/* Profile Header */}
@@ -14,7 +31,9 @@ export default function ProfilePage({ params }: { params: { username: string } }
 				<div className="relative">
 					{/* Profile Picture */}
 					<div className="absolute -top-20 left-0">
-						<div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-4 border-white shadow-xl" />
+						<div className="w-40 h-40 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-4 border-white shadow-xl">
+							<Image src={user.avatarUrl} alt={user.username} width={160} height={160} className="rounded-full" />
+						</div>
 					</div>
 
 					{/* Action Buttons */}
@@ -36,42 +55,42 @@ export default function ProfilePage({ params }: { params: { username: string } }
 
 				{/* Profile Info */}
 				<div className="mt-4 mb-6">
-					<h1 className="text-3xl font-bold text-gray-900 mb-1">Sarah Anderson</h1>
-					<p className="text-gray-500 mb-3">@{params.username}</p>
+					<h1 className="text-3xl font-bold text-gray-900 mb-1">{user.displayName}</h1>
+					<p className="text-gray-500 mb-3">@{user.username}</p>
 
 					<p className="text-gray-700 mb-4 max-w-2xl">
-						Digital creator & designer 🎨 | Coffee enthusiast ☕ | Sharing my journey through pixels and code
+						{user.bio}
 					</p>
 
 					<div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">
-						<div className="flex items-center gap-1. 5">
+						{ user.locationName && <div className="flex items-center gap-1. 5">
 							<MapPin className="w-4 h-4" />
-							<span>San Francisco, CA</span>
-						</div>
-						<div className="flex items-center gap-1.5">
+							<span>{user.locationName}</span>
+						</div> }
+						{ user.website && <div className="flex items-center gap-1.5">
 							<LinkIcon className="w-4 h-4" />
-							<a href="#" className="text-blue-500 hover:underline">
-								sarahdesigns.com
+							<a href={user.website} className="text-blue-500 hover:underline">
+								{user.website}
 							</a>
-						</div>
+						</div> }
 						<div className="flex items-center gap-1.5">
 							<Calendar className="w-4 h-4" />
-							<span>Joined March 2022</span>
+							<span>Joined {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</span>
 						</div>
 					</div>
 
 					{/* Stats */}
 					<div className="flex gap-6 text-sm">
 						<button className="hover:underline">
-							<span className="font-bold text-gray-900">1,234</span>
+							<span className="font-bold text-gray-900">{user.postCount}</span>
 							<span className="text-gray-600 ml-1">Posts</span>
 						</button>
 						<button className="hover: underline">
-							<span className="font-bold text-gray-900">45. 2K</span>
+							<span className="font-bold text-gray-900">{user.followerCount}</span>
 							<span className="text-gray-600 ml-1">Followers</span>
 						</button>
 						<button className="hover:underline">
-							<span className="font-bold text-gray-900">892</span>
+							<span className="font-bold text-gray-900">{user.followingCount}</span>
 							<span className="text-gray-600 ml-1">Following</span>
 						</button>
 					</div>
@@ -117,15 +136,15 @@ export default function ProfilePage({ params }: { params: { username: string } }
 
 					{/* Masonry Grid */}
 					<div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-						{userPosts.map((post, index) => (
+						{user.posts.map((post, index) => (
 							<div
 								key={index}
 								className="break-inside-avoid bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer group"
 							>
 								<div className="relative overflow-hidden">
 									<div
-										className={`w-full bg-gradient-to-br ${post.gradient}`}
-										style={{ height: post.height }}
+										className={`w-full bg-gradient-to-br from-gray-400 to-slate-500`}
+										style={{ height: '200px' }}
 									>
 										<div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity" />
 
@@ -133,18 +152,18 @@ export default function ProfilePage({ params }: { params: { username: string } }
 										<div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
 											<div className="flex gap-6 text-white font-semibold">
 												<span className="flex items-center gap-2">
-													❤️ {post.likes}
+													❤️ {post.likeCount}
 												</span>
 												<span className="flex items-center gap-2">
-													💬 {post.comments}
+													💬 {post.commentCount}
 												</span>
 											</div>
 										</div>
 									</div>
 								</div>
 								<div className="p-4">
-									<p className="text-gray-700 text-sm mb-2">{post.description}</p>
-									<p className="text-xs text-gray-500">{post.time}</p>
+									<p className="text-gray-700 text-sm mb-2">{post.content}</p>
+									<p className="text-xs text-gray-500">{new Date(post.createdAt).toLocaleDateString()}</p>
 								</div>
 							</div>
 						))}
@@ -164,101 +183,3 @@ export default function ProfilePage({ params }: { params: { username: string } }
 
 const tabs = ['Posts', 'Media', 'Likes', 'Collections'];
 
-const userPosts = [
-	{
-		description: 'Minimalist workspace setup for maximum productivity 🚀',
-		gradient: 'from-blue-400 to-cyan-300',
-		height: '280px',
-		likes: '2.4K',
-		comments: '89',
-		time: '2 days ago',
-	},
-	{
-		description: 'New UI design concept for mobile banking app',
-		gradient: 'from-purple-400 to-indigo-500',
-		height: '320px',
-		likes: '3.1K',
-		comments: '124',
-		time: '4 days ago',
-	},
-	{
-		description: 'Golden hour photography experiments ✨',
-		gradient: 'from-orange-400 to-pink-400',
-		height: '240px',
-		likes: '1.8K',
-		comments: '56',
-		time: '1 week ago',
-	},
-	{
-		description: 'Coffee and code.  Best combination!  ☕',
-		gradient: 'from-amber-400 to-orange-500',
-		height: '300px',
-		likes: '2.9K',
-		comments: '102',
-		time: '1 week ago',
-	},
-	{
-		description: 'Abstract architecture photography series',
-		gradient: 'from-gray-400 to-slate-500',
-		height: '360px',
-		likes: '4.2K',
-		comments: '167',
-		time: '2 weeks ago',
-	},
-	{
-		description: 'Nature-inspired color palette 🎨',
-		gradient: 'from-green-400 to-teal-400',
-		height: '260px',
-		likes: '1.6K',
-		comments: '43',
-		time: '2 weeks ago',
-	},
-	{
-		description: 'Typography studies and experiments',
-		gradient: 'from-red-400 to-pink-500',
-		height: '340px',
-		likes: '3.7K',
-		comments: '145',
-		time: '3 weeks ago',
-	},
-	{
-		description: 'Monochrome mood board collection',
-		gradient: 'from-violet-400 to-purple-500',
-		height: '220px',
-		likes: '2.1K',
-		comments: '78',
-		time: '3 weeks ago',
-	},
-	{
-		description: 'Sunset gradient inspiration ⛰️',
-		gradient: 'from-sky-400 to-blue-500',
-		height: '380px',
-		likes: '5.3K',
-		comments: '201',
-		time: '1 month ago',
-	},
-	{
-		description: 'Urban exploration photography',
-		gradient: 'from-indigo-400 to-cyan-400',
-		height: '290px',
-		likes: '2.7K',
-		comments: '93',
-		time: '1 month ago',
-	},
-	{
-		description: 'Product design mockups',
-		gradient: 'from-pink-400 to-rose-500',
-		height: '310px',
-		likes: '3.4K',
-		comments: '156',
-		time: '1 month ago',
-	},
-	{
-		description: 'Minimalist brand identity concepts',
-		gradient: 'from-emerald-400 to-green-500',
-		height: '270px',
-		likes: '1.9K',
-		comments: '67',
-		time: '2 months ago',
-	},
-];

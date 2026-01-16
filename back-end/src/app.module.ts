@@ -12,6 +12,7 @@ import { CommentModule } from './comment/comment.module';
 import { FollowModule } from './follow/follow.module';
 import { ReportModule } from './report/report.module';
 import { MediaModule } from './media/media.module';
+import { MockApiModule } from './mock-api/mock-api.module';
 
 @Module({
 	imports: [
@@ -34,6 +35,7 @@ import { MediaModule } from './media/media.module';
 		FollowModule,
 		ReportModule,
 		MediaModule,
+		MockApiModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
