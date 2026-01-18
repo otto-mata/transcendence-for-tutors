@@ -12,6 +12,7 @@ import { CommentModule } from './comment/comment.module';
 import { FollowModule } from './follow/follow.module';
 import { MediaModule } from './media/media.module';
 import { MailModule } from './mail/mail.module';
+import { GoogleOauthModule } from './auth/google/google.module';
 
 @Module({
 	imports: [
@@ -34,6 +35,7 @@ import { MailModule } from './mail/mail.module';
 		FollowModule,
 		MediaModule,
 		MailModule,
+		GoogleOauthModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],

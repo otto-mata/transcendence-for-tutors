@@ -191,11 +191,17 @@ export class AuthService {
 		const user = await this.prisma.user.findUnique({
 			where: { username: login },
 		});
+<<<<<<< HEAD
 		if (user == null) throw new UnauthorizedException();
 		if (!user.isVerified) {
 			throw new HttpException('Email not verified', HttpStatus.UNAUTHORIZED);
 		}
 		if (!(await bcrypt.compare(password, user.passwordHash)))
+=======
+		if (user == null || !user.passwordHash)
+			throw new UnauthorizedException();
+		if (!await bcrypt.compare(password, user.passwordHash))
+>>>>>>> c5f2737 (feat: google-oauth link work, still have a back problem)
 			throw new UnauthorizedException();
 		const payload = {
 			id: user.id,
@@ -204,6 +210,32 @@ export class AuthService {
 		};
 		return {
 			access_token: await this.jwtService.signAsync(payload),
+		};
+	}
+
+	async loginOauthUser(
+		login: string,
+	): Promise<{ access_token: string }> {
+		console.time('AuthService - loginOauthUser - findUnique');
+		const user = await this.prisma.user.findUnique({
+			where: { username: login },
+		});
+		console.timeEnd('AuthService - loginOauthUser - findUnique');
+
+		if (user == null)
+			throw new UnauthorizedException();
+
+		const payload = {
+			id: user.id,
+			username: user.username,
+			email: user.email,
+			role: user.role,
+		};
+		console.time('AuthService - loginOauthUser - signAsync');
+		const accessToken = await this.jwtService.signAsync(payload);
+		console.timeEnd('AuthService - loginOauthUser - signAsync');
+		return {
+			access_token: accessToken,
 		};
 	}
 
