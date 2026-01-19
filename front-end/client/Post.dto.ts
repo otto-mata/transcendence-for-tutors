@@ -1,5 +1,3 @@
-
-
 export interface PostDto {
 	id: string;
 	content: string;
@@ -16,7 +14,7 @@ export interface PostDto {
 
 	// Hashtags and mentions are optional for PASS 1
 	hashtags: string[];
-	mentions: string[];  // User IDs mentioned in the post
+	mentions: string[]; // User IDs mentioned in the post
 
 	// Metadata
 	createdAt: Date;
