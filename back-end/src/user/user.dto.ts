@@ -4,6 +4,7 @@ import {
 	IsOptional,
 	IsString,
 	IsUrl,
+	IsArray,
 } from 'class-validator';
 
 export class CreateUserDto {
@@ -123,4 +124,87 @@ export class UserResponseDto {
 	followingCount: number;
 	postCount: number;
 	createdAt: Date;
+}
+
+export class UserListDto {
+	id: string;
+	username: string;
+	displayName?: string;
+	avatarUrl?: string;
+	isVerified: boolean;
+	bio?: string;
+}
+
+export class PaginatedUsersDto {
+	data: UserResponseDto[];
+	page: number;
+	limit: number;
+	total: number;
+	hasMore: boolean;
+}
+
+export class UserFollowStatsDto {
+	followerCount: number;
+	followingCount: number;
+	postCount: number;
+	likeCount: number;
+}
+
+export class UserPreferencesDto {
+	theme: string;
+	language: string;
+	emailNotifications: boolean;
+	pushNotifications: boolean;
+}
+
+export class UserAnalyticsDto {
+	userId: string;
+	totalViews: number;
+	totalLikes: number;
+	totalComments: number;
+	totalFollowers: number;
+	totalFollowing: number;
+	totalPosts: number;
+	engagementRate: number;
+	startDate: Date;
+	endDate: Date;
+}
+
+export class UserMetadataDto {
+	username: string;
+	displayName?: string;
+	avatarUrl?: string;
+	isVerified: boolean;
+}
+
+export class BlockedUserResponseDto {
+	id: string;
+	username: string;
+	displayName?: string;
+	avatarUrl?: string;
+	blockedAt: Date;
+}
+
+export class MutedUserResponseDto {
+	id: string;
+	username: string;
+	displayName?: string;
+	avatarUrl?: string;
+	mutedAt: Date;
+}
+
+export class PaginatedBlockedUsersDto {
+	data: BlockedUserResponseDto[];
+	page: number;
+	limit: number;
+	total: number;
+	hasMore: boolean;
+}
+
+export class PaginatedMutedUsersDto {
+	data: MutedUserResponseDto[];
+	page: number;
+	limit: number;
+	total: number;
+	hasMore: boolean;
 }

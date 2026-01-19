@@ -1,4 +1,10 @@
-import { IsArray, IsOptional, IsString } from 'class-validator';
+import {
+	IsArray,
+	IsOptional,
+	IsString,
+	IsBoolean,
+	IsNumber,
+} from 'class-validator';
 
 export class CreatePostDto {
 	@IsString()
@@ -25,6 +31,10 @@ export class CreatePostDto {
 
 	@IsOptional()
 	locationLongitude?: number;
+
+	@IsArray()
+	@IsOptional()
+	mediaIds?: string[];
 }
 
 export class UpdatePostDto {
@@ -43,6 +53,10 @@ export class UpdatePostDto {
 	@IsArray()
 	@IsOptional()
 	mentions?: string[];
+
+	@IsArray()
+	@IsOptional()
+	mediaIds?: string[];
 }
 
 export class PostResponseDto {
@@ -64,6 +78,11 @@ export class PostResponseDto {
 	isEdited: boolean;
 	isRepost: boolean;
 	isReply: boolean;
+	liked?: boolean;
+	bookmarked?: boolean;
+	media?: PostMediaDto[];
+	hashtags?: string[];
+	mentions?: string[];
 }
 
 export class PaginatedPostsDto {
@@ -72,4 +91,61 @@ export class PaginatedPostsDto {
 	limit: number;
 	total: number;
 	hasMore: boolean;
+}
+
+export class PostMediaDto {
+	id: string;
+	url: string;
+	mediaType: string;
+	mimetype: string;
+}
+
+export class LikeCountDto {
+	count: number;
+	liked: boolean;
+}
+
+export class PostLikeResponseDto {
+	message: string;
+	success: boolean;
+	likeCount?: number;
+}
+
+export class BookmarkDto {
+	message: string;
+	success: boolean;
+	bookmarked: boolean;
+}
+
+export class RepostDto {
+	message: string;
+	success: boolean;
+	post?: PostResponseDto;
+}
+
+export class PostViewResponseDto {
+	message: string;
+	success: boolean;
+	viewCount?: number;
+}
+
+export class PostThreadDto {
+	id: string;
+	replies: PostResponseDto[];
+	parent?: PostResponseDto;
+	replyCount: number;
+}
+
+export class PostListMetadataDto {
+	totalCount: number;
+	filteredCount: number;
+	hasMore: boolean;
+}
+
+export class UserPostStatisticsDto {
+	totalPosts: number;
+	totalLikes: number;
+	totalComments: number;
+	totalViews: number;
+	averageEngagement: number;
 }
