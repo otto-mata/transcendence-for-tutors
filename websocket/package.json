@@ -7,9 +7,12 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start": "node server.mjs"
+		"build": "tsc"
+    "start": "node dist/server.mjs"
   },
   "dependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/ws": "^8.18.1",
     "jsonwebtoken": "^9.0.3",
     "ws": "^8.18.3"
   }
