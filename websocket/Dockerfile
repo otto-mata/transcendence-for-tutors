@@ -5,6 +5,6 @@ COPY ./ /server/
 
 WORKDIR /server/
 
-RUN npm i
+RUN npm i && npm run build
 
 CMD ["npm", "run", "start"]
