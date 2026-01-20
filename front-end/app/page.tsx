@@ -1,7 +1,39 @@
+"use client"
 import { PostList } from "@/components/PostList";
 import { Image, Smile, Calendar } from "lucide-react";
+import { isLogged } from '@client/common.mock';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { PaginatedResponseDto  } from '@client/common.dto';
+import { PostResponseDto } from '@/client/post.dto';
+import { getPosts } from '@client/post/post.mock';
+import { TransClient } from "@/client/TransClient";
+import { Content } from "next/font/google";
+
+
 
 export default function Home() {
+  const router = useRouter();
+  const client = TransClient.get_instance();
+  const [PostInput, setPostInput] = useState('');
+  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});;
+
+  async function PostIt(){
+    const res = await client.createPost({content : PostInput});
+    console.log('my message is : ' + res.getMessage());
+  }
+
+  useEffect(() => {
+    const run = async() => {
+      const logged = await isLogged();
+       if (!logged)
+          router.push('/auth/login');
+      const res = await client.feed();
+      const data = res?.getData();
+      if (data) setPosts(data);
+    }
+    run();
+  }, [router]);
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {/* Create Post Input */}
@@ -10,6 +42,8 @@ export default function Home() {
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shrink-0" />
           <div className="flex-1">
             <input
+              value={PostInput}
+              onChange={e => setPostInput(e.target.value)}
               type="text"
               placeholder="What's happening?"
               className="w-full bg-transparent border-none focus:ring-0 text-lg placeholder-gray-500 dark:placeholder-gray-400"
@@ -26,7 +60,7 @@ export default function Home() {
                   <Calendar className="w-5 h-5" />
                 </button>
               </div>
-              <button className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-600 transition-colors">
+              <button onClick={PostIt} className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-600 transition-colors">
                 Post
               </button>
             </div>
@@ -36,7 +70,7 @@ export default function Home() {
 
       {/* Feed */}
       <div className="space-y-6">
-        <PostList id={1} isSelf={false} />
+        <PostList posts={posts} />
       </div>
     </div>
   );
