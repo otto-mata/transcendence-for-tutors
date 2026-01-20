@@ -17,3 +17,17 @@ export interface UserProfileResponse {
 	postCount: number;
 	createdAt: Date;
 }
+
+export class UpdateUserDto {
+	displayName?: string;
+	bio?: string;
+	website?: string;
+	isPrivate?: boolean;
+	avatarUrl?: string;
+	coverImageUrl?: string;
+	locationName?: string;
+	twitterUrl?: string;
+	instagramUrl?: string;
+	linkedinUrl?: string;
+	githubUrl?: string;
+}
