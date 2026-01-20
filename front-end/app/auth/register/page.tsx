@@ -1,16 +1,20 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { registerRoute, loginRoute } from '@client/auth/auth.mock'
+import { TransClient } from '@/client/TransClient';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [login, setLogin] = useState('');
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [age, setAge ] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const [errors, setErrors] = useState<{ login?: string; password?: string; general?: string; email?:string; age?: string }>({});
 
   function validate() {
     const e: typeof errors = {};
@@ -26,15 +30,17 @@ export default function RegisterPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
-      const res = await fetch(`${api}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name }),
+      const client = TransClient.get_instance();
+      const res = await client.register({
+        login : login,
+        password : password,
+        email : email,
+        display_name : name,
+        age : age
       });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.message || 'Registration failed');
-      if (body.token) localStorage.setItem('token', body.token);
+      const data = res?.getData();
+      if (!res.Ok()) throw new Error(res.getMessage() || 'Register failed');
+      if (data?.access_token) localStorage.setItem('token', data.access_token);
       router.push('/');
     } catch (err: any) {
       setErrors({ general: err.message || String(err) });
@@ -49,8 +55,13 @@ export default function RegisterPage() {
       <form onSubmit={submit}>
         <div>
           <label>Email</label>
-          <input value={email} onChange={e => setEmail(e.target.value)} type="email" />
+          <input value={email} onChange={e => setEmail(e.target.value)} type="login" />
           {errors.email && <div style={{ color: 'red' }}>{errors.email}</div>}
+        </div>
+        <div>
+          <label>Login</label>
+          <input value={login} onChange={e => setLogin(e.target.value)} />
+          {errors.login && <div style={{ color: 'red' }}>{errors.login}</div>}
         </div>
         <div>
           <label>Name</label>
@@ -60,6 +71,10 @@ export default function RegisterPage() {
           <label>Password</label>
           <input value={password} onChange={e => setPassword(e.target.value)} type="password" />
           {errors.password && <div style={{ color: 'red' }}>{errors.password}</div>}
+        </div>
+        <div>
+          <label>age</label>
+          <input value={age} onChange={e => setAge(e.target.value)} />
         </div>
         <button type="submit" disabled={loading}>{loading ? 'Registering…' : 'Register'}</button>
       </form>

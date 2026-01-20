@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-
+/*
 export async function GET() {
   const backend = process.env.BACKEND_URL ?? 'http://localhost:3000/notifications';
   try {
@@ -10,4 +10,4 @@ export async function GET() {
     console.error('Proxy to backend failed', err);
     return NextResponse.json([], { status: 502 });
   }
-}
+}}*/
