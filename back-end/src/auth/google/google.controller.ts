@@ -1,4 +1,4 @@
-import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { GoogleOauthService } from './google.service';
 
@@ -6,9 +6,10 @@ import { GoogleOauthService } from './google.service';
 export class GoogleOauthController {
   constructor(private readonly googleOauthService: GoogleOauthService) {}
 
-  @Get()
-  @UseGuards(AuthGuard('google'))
-  async googleAuth(@Req() req) {}
+  @Post()
+  async googleAuth(@Body('token') token: string) {
+    return this.googleOauthService.signInWithToken(token);
+  }
 
   @Get('redirect')
   @UseGuards(AuthGuard('google'))

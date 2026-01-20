@@ -57,6 +57,7 @@ export class UserController {
 	): Promise<string> {
 		try {
 			const currentUser = await this.userService.findById(user.id);
+			if (!currentUser) throw new Error('User not found');
 			return JSON.stringify(currentUser);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);
@@ -234,6 +235,7 @@ export class UserController {
 	): Promise<string> {
 		try {
 			const user = await this.userService.findByUsername(username);
+			if (!user) throw new Error('User not found');
 			return JSON.stringify(user);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);
@@ -248,6 +250,7 @@ export class UserController {
 	): Promise<string> {
 		try {
 			const user = await this.userService.findById(id);
+			if (!user) throw new Error('User not found');
 			return JSON.stringify(user);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);

@@ -1,7 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { GoogleLogin, CredentialResponse } from '@react-oauth/google';
+import { GoogleLogin, CredentialResponse, GoogleOAuthProvider } from '@react-oauth/google';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -48,7 +48,7 @@ export default function RegisterPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
+      const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
       const res = await fetch(`${api}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -66,6 +66,7 @@ export default function RegisterPage() {
   }
 
   return (
+    <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? ''}>
     <div style={{ maxWidth: 480, margin: '2rem auto' }}>
       <h1>Register</h1>
       <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'center' }}>
@@ -98,5 +99,6 @@ export default function RegisterPage() {
       </form>
       {errors.general && <p style={{ color: 'red' }}>{errors.general}</p>}
     </div>
+    </GoogleOAuthProvider>
   );
 }
