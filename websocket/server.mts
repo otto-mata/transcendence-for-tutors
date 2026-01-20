@@ -1,6 +1,7 @@
 import { WebSocketServer } from 'ws';
 import type WebSocket from 'ws';
 import jwt from 'jsonwebtoken';
+import * as z from "zod";
 
 const server = new WebSocketServer({
   port: 8081
@@ -11,6 +12,25 @@ const sockets = new Map<WebSocket, number>(); // socket : userid
 const watchers = new Map<number, Set<WebSocket>>(); // int userId: set of socket that watchs this userId
 
 const secret: string = process.env.JWT_SECRET || "";
+
+const authSchema = z.object({
+  type: z.literal('auth'),
+  token: z.jwt()
+});
+
+const watchSchema = z.object({
+  type: z.literal('watch'),
+  userId: z.coerce.number()
+});
+
+const messageSchema = z.discriminatedUnion('type', [
+  authSchema,
+  watchSchema
+]);
+
+const jwtSchema = z.object({
+  userId: z.coerce.number()
+});
 
 const show_connections = () => {
   console.clear();
@@ -34,20 +54,16 @@ server.on('connection', (socket) => {
     let msg;
 
     try {
-      msg = JSON.parse(data.toString());
+      msg = messageSchema.parse(JSON.parse(data.toString()));
     } catch { return; }
 
     if (msg.type === 'auth') {
       const { token } = msg;
-      let payload: any; // !!!!!! ANY
+      let payload;
       let userId;
-      if (token == undefined)
-        return;
       try {
-        payload = jwt.verify(token, secret);
-        userId = Number(payload.userId);
-        if (Number.isNaN(userId))
-          throw 'invalid format';
+        payload = jwtSchema.parse(jwt.verify(token, secret));
+        userId = payload.userId;
       } catch {
         return socket.send(JSON.stringify({ type: 'auth_err', error: 'Invalid token' }));
       }
@@ -62,8 +78,6 @@ server.on('connection', (socket) => {
     }
     if (msg.type === 'watch') {
       const { userId } = msg;
-      if (userId == undefined)
-        return;
       if (!watchers.has(userId))
         watchers.set(userId, new Set());
       watchers?.get(userId)?.add(socket);
