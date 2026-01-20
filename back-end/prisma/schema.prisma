@@ -37,7 +37,7 @@ model User {
   isPrivate   Boolean @default(false)
   isActive    Boolean @default(true)
   isSuspended Boolean @default(false)
-  role        String  @default("user") // 'user' | 'moderator' | 'admin'
+  role        Role    @default(USER)
 
   // Location (optional)
   locationName      String?
@@ -90,6 +90,12 @@ model User {
   @@index([username])
   @@index([email])
   @@index([createdAt])
+}
+
+enum Role {
+  USER
+  MODERATOR
+  ADMIN
 }
 
 model Post {

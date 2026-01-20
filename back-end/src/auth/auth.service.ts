@@ -17,14 +17,20 @@ export class AuthService {
 	async createUser(data: AuthUserRegistration): Promise<User> {
 		const salt = await bcrypt.genSalt();
 		const hash = await bcrypt.hash(data.password, salt);
-		return this.prisma.user.create({
-			data: {
-				email: data.email,
-				username: data.username,
-				passwordHash: hash,
-				displayName: data.displayName,
-			},
-		});
+		const createData: any = {
+			email: data.email,
+			username: data.username,
+			passwordHash: hash,
+			displayName: data.displayName,
+		};
+
+		// allow role to be set when provided (used for seeding/admin creation)
+		if (data.role) {
+			// Prisma enum values are uppercased in schema: USER, MODERATOR, ADMIN
+			createData.role = data.role.toUpperCase();
+		}
+
+		return this.prisma.user.create({ data: createData });
 	}
 
 	async LoginUser(

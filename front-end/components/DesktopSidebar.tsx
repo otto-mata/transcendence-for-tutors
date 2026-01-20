@@ -11,7 +11,8 @@ import {
 	Heart,
 	TrendingUp,
 	LogOut,
-	PlusCircle
+	PlusCircle,
+	Shield
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -73,6 +74,7 @@ export default function DesktopSidebar() {
 				<SidebarLink href="/likes" icon={<Heart />} label="Likes" active={isActive('/likes')} />
 				<SidebarLink href="/trending" icon={<TrendingUp />} label="Trending" active={isActive('/trending')} />
 				<SidebarLink href="/settings" icon={<Settings />} label="Settings" active={isActive('/settings')} />
+				<SidebarLink href="/admin" icon={<Shield />} label="Admin" active={isActive('/admin')} />
 			</nav>
 
 			{/* Create Post Button */}

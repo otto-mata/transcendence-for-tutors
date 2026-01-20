@@ -3,4 +3,5 @@ export interface AuthUserRegistration {
 	password: string;
 	email: string;
 	displayName: string;
+	role?: 'user' | 'moderator' | 'admin';
 }

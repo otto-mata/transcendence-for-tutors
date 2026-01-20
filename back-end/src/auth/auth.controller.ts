@@ -24,13 +24,29 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			// Only allow setting a non-default role when a valid ADMIN_TOKEN is provided
+			const { role, adminToken, password, ...rest } = data as any;
+
 			const userData: AuthUserRegistration = {
 				displayName:
 					data.displayName === undefined
 						? data.username
 						: data.displayName,
-				...data,
+				username: data.username,
+				email: data.email,
+				password: password,
 			};
+
+			if (role) {
+				const envToken = process.env.ADMIN_TOKEN;
+				if (!envToken || !adminToken || adminToken !== envToken) {
+					res.status(HttpStatus.FORBIDDEN);
+					return JSON.stringify({ error: 'Invalid admin token' });
+				}
+				// role is validated by DTO; map to expected lowercase before service
+				userData.role = role;
+			}
+
 			await this.authService.createUser(userData);
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify({ message: 'Registered successfully' });

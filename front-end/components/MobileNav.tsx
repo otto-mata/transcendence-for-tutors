@@ -15,7 +15,8 @@ import {
 	TrendingUp,
 	LogOut,
 	Moon,
-	Sun
+	Sun,
+	Shield
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -164,6 +165,7 @@ export default function MobileNav() {
 
 					<div className="space-y-1 px-3">
 						<NavLink href="/settings" icon={<Settings className="w-5 h-5" />} label="Settings" onClick={closeMenu} active={isActive('/settings')} />
+						<NavLink href="/admin" icon={<Shield className="w-5 h-5" />} label="Admin" onClick={closeMenu} active={isActive('/admin')} />
 
 						{/* Dark Mode Toggle */}
 						<button

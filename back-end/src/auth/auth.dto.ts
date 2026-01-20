@@ -4,6 +4,7 @@ import {
 	MinLength,
 	MaxLength,
 	IsOptional,
+	IsIn,
 } from 'class-validator';
 
 export class RegisterDto {
@@ -68,6 +69,16 @@ export class CreateUserDto {
 	@MaxLength(100)
 	@IsOptional()
 	displayName?: string;
+
+	// Optional role and admin token — role can only be applied when adminToken matches server ENV
+	@IsString()
+	@IsOptional()
+	@IsIn(['user', 'moderator', 'admin'])
+	role?: string;
+
+	@IsString()
+	@IsOptional()
+	adminToken?: string;
 }
 
 export class RefreshTokenDto {
