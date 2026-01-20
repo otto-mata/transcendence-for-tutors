@@ -32,7 +32,6 @@ export default function RootLayout({
       >
         <ResponsiveNav />
         {children}
-        <ChatPopup />
       </body>
     </html>
   );

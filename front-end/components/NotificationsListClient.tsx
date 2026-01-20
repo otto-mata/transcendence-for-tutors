@@ -12,7 +12,11 @@ type Notification = {
   createdAt: string;
 };
 
-export default function NotificationsListClient({ initialNotifs }: { initialNotifs: Notification[] }) {
+export default function NotificationsListClient({
+  initialNotifs,
+}: {
+  initialNotifs: Notification[];
+}) {
   const [notifs, setNotifs] = useState<Notification[]>(initialNotifs);
   const [updating, setUpdating] = useState<Record<number, boolean>>({});
 
@@ -57,13 +61,17 @@ export default function NotificationsListClient({ initialNotifs }: { initialNoti
           onMouseEnter={() => markRead(n.id)}
           className={`relative p-4 rounded-lg border ${n.read ? "bg-white text-gray-600" : "bg-blue-50 border-blue-100"} `}
         >
-          {!n.read && <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 ring-2 ring-white" />}
+          {!n.read && (
+            <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-red-500 ring-2 ring-white" />
+          )}
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="font-medium">{n.title ?? "Notification"}</p>
               <p className="text-sm text-gray-700 mt-1">{n.message}</p>
             </div>
-            <div className="text-xs text-gray-400 whitespace-nowrap">{new Date(n.createdAt).toLocaleString()}</div>
+            <div className="text-xs text-gray-400 whitespace-nowrap">
+              {new Date(n.createdAt).toLocaleString()}
+            </div>
           </div>
         </li>
       ))}

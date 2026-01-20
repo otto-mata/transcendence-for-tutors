@@ -12,7 +12,7 @@ export default function Home() {
             <input
               type="text"
               placeholder="What's happening?"
-              className="w-full bg-transparent border-none focus:ring-0 text-lg placeholder-gray-500 dark:placeholder-gray-400"
+              className="max-w-full bg-transparent border-none focus:ring-0 text-lg placeholder-gray-500 dark:placeholder-gray-400"
             />
             <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100 dark:border-gray-700">
               <div className="flex gap-4 text-blue-500">
