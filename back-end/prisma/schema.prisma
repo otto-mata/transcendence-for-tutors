@@ -54,6 +54,9 @@ model User {
   instagramUrl String?
   linkedinUrl  String?
   githubUrl    String?
+  emailVerificationToken String?
+  passwordResetToken     String?
+  passwordResetExpires   DateTime?
 
   // Preferences
   theme              String  @default("auto")
