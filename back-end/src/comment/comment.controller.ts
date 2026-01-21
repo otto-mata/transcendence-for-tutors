@@ -134,25 +134,6 @@ export class CommentController {
 		}
 	}
 
-	@Patch(':id')
-	async updateComment(
-		@Param('id') id: string,
-		@Body() data: UpdateCommentDto,
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			const comment = await this.commentService.update(id, data);
-			return JSON.stringify(comment);
-		} catch (error) {
-			res.status(HttpStatus.NOT_FOUND);
-			return JSON.stringify({
-				message: 'Comment not found or unauthorized',
-				error,
-			});
-		}
-	}
-
 	@Delete(':id')
 	async deleteComment(
 		@Param('id') id: string,

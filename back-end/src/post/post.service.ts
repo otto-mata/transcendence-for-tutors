@@ -81,42 +81,6 @@ export class PostService {
 		});
 	}
 
-	async repostPost(originalPostId: string, userId: string): Promise<Post> {
-		return this.postRepository.create({
-			content: '',
-			author: { connect: { id: userId } },
-			originalPost: { connect: { id: originalPostId } },
-			isRepost: true,
-		});
-	}
-
-	async deleteRepost(repostId: string, userId: string): Promise<void> {
-		await this.postRepository.delete(repostId);
-	}
-
-	async getReposts(originalPostId: string): Promise<Post[]> {
-		return this.prisma.post.findMany({
-			where: {
-				originalPostId,
-				isRepost: true,
-			},
-			include: { author: true },
-		});
-	}
-
-	async recordView(postId: string, userId?: string): Promise<void> {
-		await this.prisma.view.create({
-			data: {
-				postId,
-				userId,
-			},
-		});
-		await this.prisma.post.update({
-			where: { id: postId },
-			data: { viewCount: { increment: 1 } },
-		});
-	}
-
 	async createReply(
 		parentPostId: string,
 		data: Prisma.PostCreateInput,
