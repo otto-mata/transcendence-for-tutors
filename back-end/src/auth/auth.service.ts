@@ -1,4 +1,4 @@
-import { User } from '$prisma';
+import { MailerService } from '@nestjs-modules/mailer';
 import {
 	HttpException,
 	HttpStatus,
@@ -10,8 +10,9 @@ import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
-import { AuthUserRegistration } from './auth.type';
 import { ResetPasswordDto } from './auth.dto';
+import { AuthUserRegistration } from './auth.type';
+import { User } from '$prisma';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +20,7 @@ export class AuthService {
 		private prisma: PrismaService,
 		private jwtService: JwtService,
 		private configService: ConfigService,
+		private mailerService: MailerService,
 	) {}
 
 	private async sendVerificationEmail(
@@ -28,9 +30,15 @@ export class AuthService {
 		const verificationLink = `${this.configService.get(
 			'BASE_URL',
 		)}/auth/verify-email?token=${token}`;
-		console.log(
-			`Sending verification email to ${email} with link: ${verificationLink}`,
-		);
+
+		await this.mailerService.sendMail({
+			to: email,
+			from: `"${this.configService.get(
+				'MAIL_FROM_NAME',
+			)}" <${this.configService.get('MAIL_FROM_EMAIL')}>`,
+			subject: 'Welcome! Please Verify Your Email',
+			html: `<p>Please click the following link to verify your email address:</p><p><a href="${verificationLink}">${verificationLink}</a></p>`,
+		});
 	}
 
 	private async sendPasswordResetEmail(
@@ -40,7 +48,14 @@ export class AuthService {
 		const resetLink = `${this.configService.get(
 			'BASE_URL',
 		)}/auth/reset-password?token=${token}`;
-		console.log(`Sending password reset email to ${email} with link: ${resetLink}`);
+		await this.mailerService.sendMail({
+			to: email,
+			from: `"${this.configService.get(
+				'MAIL_FROM_NAME',
+			)}" <${this.configService.get('MAIL_FROM_EMAIL')}>`,
+			subject: 'Password Reset Request',
+			html: `<p>Please click the following link to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p>`,
+		});
 	}
 
 	async createUser(data: AuthUserRegistration): Promise<User> {
@@ -55,6 +70,7 @@ export class AuthService {
 				passwordHash: hash,
 				displayName: data.displayName,
 				emailVerificationToken: verificationToken,
+				lastVerificationEmailSentAt: new Date(),
 			},
 		});
 
@@ -88,7 +104,7 @@ export class AuthService {
 				'User not found',
 				HttpStatus.NOT_FOUND,
 			);
-		}
+}
 
 		if (user.isVerified) {
 			throw new HttpException(
@@ -97,10 +113,26 @@ export class AuthService {
 			);
 		}
 
+		if (user.lastVerificationEmailSentAt) {
+			const timeDiff =
+				new Date().getTime() -
+				user.lastVerificationEmailSentAt.getTime();
+			if (timeDiff < 60000) {
+				// 1 minute
+				throw new HttpException(
+					'Please wait a minute before resending.',
+					HttpStatus.TOO_MANY_REQUESTS,
+				);
+			}
+		}
+
 		const verificationToken = crypto.randomBytes(32).toString('hex');
 		await this.prisma.user.update({
 			where: { id: user.id },
-			data: { emailVerificationToken: verificationToken },
+			data: {
+				emailVerificationToken: verificationToken,
+				lastVerificationEmailSentAt: new Date(),
+			},
 		});
 
 		await this.sendVerificationEmail(user.email, verificationToken);

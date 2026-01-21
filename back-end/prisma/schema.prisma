@@ -46,6 +46,7 @@ model User {
   emailVerificationToken String?
   passwordResetToken     String?
   passwordResetExpires   DateTime?
+  lastVerificationEmailSentAt DateTime?
 
   // Preferences
   theme              String  @default("auto")
