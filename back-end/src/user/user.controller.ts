@@ -64,6 +64,24 @@ export class UserController {
 		}
 	}
 
+	@Get('me/preferences')
+	async getMyPreferences(
+		@CurrentUser() user: CurrentUserType,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
+			const currentUser = await this.userService.findById(user.id);
+			return JSON.stringify({
+				theme: currentUser.theme,
+				language: currentUser.language,
+
+			});
+		} catch (error) {
+			res.status(HttpStatus.NOT_FOUND);
+			return JSON.stringify({ message: 'Preferences not found', error });
+		}
+	}
+
 	@Get('me/bookmarks')
 	async getMyBookmarks(
 		@CurrentUser() user: CurrentUserType,
