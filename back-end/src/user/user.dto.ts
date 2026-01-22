@@ -81,6 +81,7 @@ export class UserResponseDto {
 	bio?: string;
 	avatarUrl?: string;
 	coverImageUrl?: string;
+	isVerified: boolean;
 	isPrivate: boolean;
 	isActive: boolean;
 	followerCount: number;
