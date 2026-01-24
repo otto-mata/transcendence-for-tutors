@@ -5,10 +5,9 @@ import { GoogleOauthStrategy } from './google.strategy';
 import { UserService } from '@/user/user.service';
 import { UserRepository } from '@/user/user.repository';
 import { AuthService } from '../auth.service';
-import { JwtService } from '@nestjs/jwt';
 import { UserModule } from '@/user/user.module';
 import { PassportModule } from '@nestjs/passport';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '@/prisma/prisma.module';
 
@@ -18,7 +17,14 @@ import { PrismaModule } from '@/prisma/prisma.module';
     PassportModule,
     ConfigModule,
     PrismaModule,
-    JwtModule.register({}),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        secret: configService.get('JWT_SECRET'),
+        signOptions: { expiresIn: '15m' },
+      }),
+    }),
   ],
   controllers: [GoogleOauthController],
   providers: [
@@ -27,7 +33,6 @@ import { PrismaModule } from '@/prisma/prisma.module';
     AuthService,
     UserService,
     UserRepository,
-    JwtService,
   ],
   exports: [GoogleOauthService],
 })

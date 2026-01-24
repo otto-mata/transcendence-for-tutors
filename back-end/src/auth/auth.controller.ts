@@ -35,22 +35,22 @@ export class AuthController {
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify({ message: 'Registered successfully' });
 		} catch (e) {
-			if (e instanceof Prisma.PrismaClientKnownRequestError) {
-				if (e.code === 'P2002') {
-					res.status(HttpStatus.CONFLICT);
-					return JSON.stringify({
-						error: 'Cannot create User',
-						code: 'P2002',
-						message:
-							'User with this username or email already exists',
-					});
-				}
+			if (e instanceof HttpException) {
+				res.status(e.getStatus());
+				return JSON.stringify({ error: 'Registration failed', message: e.message });
 			}
+
+			if ((e as any)?.code === 'P2002') {
+				res.status(HttpStatus.CONFLICT);
+				return JSON.stringify({
+					error: 'Cannot create User',
+					code: 'P2002',
+					message: 'User with this username or email already exists',
+				});
+			}
+
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({
-				error: 'Registration failed',
-				message: e.message,
-			});
+			return JSON.stringify({ error: 'Registration failed', message: (e as any)?.message ?? 'Unknown error' });
 		}
 	}
 

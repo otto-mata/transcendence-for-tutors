@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -16,19 +16,23 @@ import { GoogleOauthModule } from './auth/google/google.module';
 
 @Module({
 	imports: [
-		JwtModule.register({
-			global: true,
-			secret: process.env.JWT_SECRET,
-			signOptions: { expiresIn: '15m' },
-		}),
-		PrismaModule,
-		NotificationModule,
-		AuthModule,
 		ConfigModule.forRoot({
 			isGlobal: true,
 			envFilePath: '.env',
 			cache: true,
 		}),
+		JwtModule.registerAsync({
+			global: true,
+			imports: [ConfigModule],
+			inject: [ConfigService],
+			useFactory: (configService: ConfigService) => ({
+				secret: configService.get('JWT_SECRET'),
+				signOptions: { expiresIn: '15m' },
+			}),
+		}),
+		PrismaModule,
+		NotificationModule,
+		AuthModule,
 		PostModule,
 		UserModule,
 		CommentModule,
