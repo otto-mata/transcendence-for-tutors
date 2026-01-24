@@ -4,6 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PrismaService } from '@/prisma/prisma.service';
+import { GoogleOauthModule } from './google/google.module';
+import { FortyTwoOauthModule } from './fortytwo/fortytwo.module';
 
 @Module({
 	imports: [
@@ -15,6 +17,8 @@ import { PrismaService } from '@/prisma/prisma.service';
 				signOptions: { expiresIn: '15m' },
 			}),
 		}),
+		GoogleOauthModule,
+		FortyTwoOauthModule,
 	],
 	controllers: [AuthController],
 	providers: [AuthService, PrismaService],

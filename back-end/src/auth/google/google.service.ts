@@ -67,8 +67,20 @@ export class GoogleOauthService {
             displayName: `${user.firstName} ${user.lastName}`,
             avatarUrl: user.picture,
             passwordHash: '', // No password for OAuth users
+            oauthProvider: 'google',
+            oauthId: user.id,
+            isVerified: true,
         });
         console.timeEnd('GoogleSignIn - create user');
+    } else if (!userExists.oauthProvider || userExists.oauthProvider !== 'google') {
+        // Link Google OAuth to existing account
+        console.log('Linking Google OAuth to existing account');
+        console.time('GoogleSignIn - update user oauth');
+        userExists = await this.userService.update(userExists.id, {
+            oauthProvider: 'google',
+            oauthId: user.id,
+        });
+        console.timeEnd('GoogleSignIn - update user oauth');
     }
     console.log('Google sign in end !')
 
