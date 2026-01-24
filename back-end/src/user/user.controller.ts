@@ -72,6 +72,7 @@ export class UserController {
 	): Promise<string> {
 		try {
 			const currentUser = await this.userService.findById(user.id);
+			if (!currentUser) throw new Error('User not found');
 			return JSON.stringify({
 				theme: currentUser.theme,
 				language: currentUser.language,
