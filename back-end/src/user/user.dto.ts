@@ -34,10 +34,6 @@ export class UpdateUserDto {
 	@IsOptional()
 	bio?: string;
 
-	@IsString()
-	@IsOptional()
-	website?: string;
-
 	@IsBoolean()
 	@IsOptional()
 	isPrivate?: boolean;
@@ -49,26 +45,6 @@ export class UpdateUserDto {
 	@IsUrl()
 	@IsOptional()
 	coverImageUrl?: string;
-
-	@IsString()
-	@IsOptional()
-	locationName?: string;
-
-	@IsString()
-	@IsOptional()
-	twitterUrl?: string;
-
-	@IsString()
-	@IsOptional()
-	instagramUrl?: string;
-
-	@IsString()
-	@IsOptional()
-	linkedinUrl?: string;
-
-	@IsString()
-	@IsOptional()
-	githubUrl?: string;
 }
 
 export class UpdatePreferencesDto {
@@ -79,14 +55,6 @@ export class UpdatePreferencesDto {
 	@IsString()
 	@IsOptional()
 	language?: string; // 'en' | 'fr' | 'es' | etc.
-
-	@IsBoolean()
-	@IsOptional()
-	emailNotifications?: boolean;
-
-	@IsBoolean()
-	@IsOptional()
-	pushNotifications?: boolean;
 }
 
 export class ChangePasswordDto {
@@ -113,12 +81,9 @@ export class UserResponseDto {
 	bio?: string;
 	avatarUrl?: string;
 	coverImageUrl?: string;
-	website?: string;
 	isVerified: boolean;
 	isPrivate: boolean;
 	isActive: boolean;
-	isSuspended: boolean;
-	role: string;
 	followerCount: number;
 	followingCount: number;
 	postCount: number;

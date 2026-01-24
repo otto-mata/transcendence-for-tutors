@@ -61,29 +61,6 @@ export class PostController {
 		}
 	}
 
-	@Get('trending')
-	async getTrendingPosts(
-		@Query('page') page?: string,
-		@Query('limit') limit?: string,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			const pageNum = page ? parseInt(page) : 1;
-			const limitNum = limit ? parseInt(limit) : 20;
-			const skip = (pageNum - 1) * limitNum;
-			// Trending posts implementation
-			return JSON.stringify({
-				message: 'Trending posts not yet implemented',
-			});
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving trending posts',
-				error,
-			});
-		}
-	}
-
 	@Get('latest')
 	async getLatestPosts(
 		@Query('page') page?: string,
@@ -100,30 +77,6 @@ export class PostController {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
 			return JSON.stringify({
 				message: 'Error retrieving latest posts',
-				error,
-			});
-		}
-	}
-
-	@Get('hashtag/:tag')
-	async getPostsByHashtag(
-		@Param('tag') tag: string,
-		@Query('page') page?: string,
-		@Query('limit') limit?: string,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			const pageNum = page ? parseInt(page) : 1;
-			const limitNum = limit ? parseInt(limit) : 20;
-			const skip = (pageNum - 1) * limitNum;
-			// Filter by hashtag implementation
-			return JSON.stringify({
-				message: 'Hashtag filter not yet implemented',
-			});
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving posts by hashtag',
 				error,
 			});
 		}
@@ -257,69 +210,6 @@ export class PostController {
 				message: 'Error removing bookmark',
 				error,
 			});
-		}
-	}
-
-	@Post(':id/share')
-	async sharePost(
-		@Param('id') id: string,
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			const repost = await this.postService.repostPost(id, user.id);
-			res.status(HttpStatus.CREATED);
-			return JSON.stringify(repost);
-		} catch (error) {
-			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error sharing post', error });
-		}
-	}
-
-	@Delete(':id/share')
-	async deleteShare(
-		@Param('id') id: string,
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			await this.postService.deleteRepost(id, user.id);
-			return JSON.stringify({ message: 'Share removed' });
-		} catch (error) {
-			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error removing share', error });
-		}
-	}
-
-	@Get(':id/shares')
-	async getShares(
-		@Param('id') id: string,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			const shares = await this.postService.getReposts(id);
-			return JSON.stringify(shares);
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving shares',
-				error,
-			});
-		}
-	}
-
-	@Post(':id/view')
-	async viewPost(
-		@Param('id') id: string,
-		@CurrentUser() user?: CurrentUserType,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			await this.postService.recordView(id, user?.id);
-			return JSON.stringify({ message: 'View recorded' });
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error recording view', error });
 		}
 	}
 

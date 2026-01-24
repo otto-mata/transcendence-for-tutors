@@ -10,7 +10,6 @@ import { PostModule } from './post/post.module';
 import { UserModule } from './user/user.module';
 import { CommentModule } from './comment/comment.module';
 import { FollowModule } from './follow/follow.module';
-import { ReportModule } from './report/report.module';
 import { MediaModule } from './media/media.module';
 
 @Module({
@@ -32,7 +31,6 @@ import { MediaModule } from './media/media.module';
 		UserModule,
 		CommentModule,
 		FollowModule,
-		ReportModule,
 		MediaModule,
 	],
 	controllers: [AppController],

@@ -7,24 +7,6 @@ export class CreatePostDto {
 	@IsString()
 	@IsOptional()
 	visibility?: string; // 'public' | 'followers' | 'friends' | 'private'
-
-	@IsArray()
-	@IsOptional()
-	hashtags?: string[];
-
-	@IsArray()
-	@IsOptional()
-	mentions?: string[];
-
-	@IsString()
-	@IsOptional()
-	locationName?: string;
-
-	@IsOptional()
-	locationLatitude?: number;
-
-	@IsOptional()
-	locationLongitude?: number;
 }
 
 export class UpdatePostDto {
@@ -36,13 +18,6 @@ export class UpdatePostDto {
 	@IsOptional()
 	visibility?: string;
 
-	@IsArray()
-	@IsOptional()
-	hashtags?: string[];
-
-	@IsArray()
-	@IsOptional()
-	mentions?: string[];
 }
 
 export class PostResponseDto {
@@ -57,12 +32,8 @@ export class PostResponseDto {
 	visibility: string;
 	likeCount: number;
 	commentCount: number;
-	shareCount: number;
-	viewCount: number;
 	createdAt: Date;
 	updatedAt: Date;
-	isEdited: boolean;
-	isRepost: boolean;
 	isReply: boolean;
 }
 

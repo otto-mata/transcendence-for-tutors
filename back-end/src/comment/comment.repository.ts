@@ -23,7 +23,7 @@ export class CommentRepository {
 		take: number,
 	): Promise<Comment[]> {
 		return this.prisma.comment.findMany({
-			where: { postId, isDeleted: false, parentCommentId: null },
+			where: {parentCommentId: null },
 			skip,
 			take,
 			include: {
@@ -41,7 +41,7 @@ export class CommentRepository {
 		take: number,
 	): Promise<Comment[]> {
 		return this.prisma.comment.findMany({
-			where: { parentCommentId, isDeleted: false },
+			where: { parentCommentId },
 			skip,
 			take,
 			include: { author: true, likes: true },
@@ -56,21 +56,10 @@ export class CommentRepository {
 		});
 	}
 
-	async update(
-		id: string,
-		data: Prisma.CommentUpdateInput,
-	): Promise<Comment> {
-		return this.prisma.comment.update({
-			where: { id },
-			data,
-			include: { author: true, likes: true },
-		});
-	}
-
 	async delete(id: string): Promise<Comment> {
 		return this.prisma.comment.update({
 			where: { id },
-			data: { isDeleted: true },
+			data: { },
 			include: { author: true, likes: true },
 		});
 	}

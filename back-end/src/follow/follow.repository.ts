@@ -100,37 +100,10 @@ export class FollowRepository {
 	): Promise<any> {
 		const isFollowing = await this.isFollowing(userId, targetUserId);
 		const isFollowedBy = await this.isFollowing(targetUserId, userId);
-		const blocking = await this.prisma.block.findUnique({
-			where: {
-				blockerId_blockedId: {
-					blockerId: userId,
-					blockedId: targetUserId,
-				},
-			},
-		});
-		const blockedBy = await this.prisma.block.findUnique({
-			where: {
-				blockerId_blockedId: {
-					blockerId: targetUserId,
-					blockedId: userId,
-				},
-			},
-		});
-		const muting = await this.prisma.mute.findUnique({
-			where: {
-				muterId_mutedId: {
-					muterId: userId,
-					mutedId: targetUserId,
-				},
-			},
-		});
 
 		return {
 			isFollowing,
 			isFollowedBy,
-			isBlocking: !!blocking,
-			isBlockedBy: !!blockedBy,
-			isMuting: !!muting,
 		};
 	}
 }

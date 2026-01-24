@@ -50,50 +50,6 @@ export class UserController {
 		}
 	}
 
-	@Get('suggested')
-	async getSuggestedUsers(
-		@CurrentUser() user: CurrentUserType,
-		@Query('limit') limit?: string,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			const limitNum = limit ? parseInt(limit) : 10;
-			// Suggested users logic
-			return JSON.stringify({
-				message: 'Suggested users not yet implemented',
-			});
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving suggestions',
-				error,
-			});
-		}
-	}
-
-	@Get('verified')
-	async getVerifiedUsers(
-		@Query('page') page?: string,
-		@Query('limit') limit?: string,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			const pageNum = page ? parseInt(page) : 1;
-			const limitNum = limit ? parseInt(limit) : 20;
-			const skip = (pageNum - 1) * limitNum;
-			// Get verified users
-			return JSON.stringify({
-				message: 'Verified users not yet implemented',
-			});
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving verified users',
-				error,
-			});
-		}
-	}
-
 	@Get('me')
 	async getCurrentUser(
 		@CurrentUser() user: CurrentUserType,
@@ -105,6 +61,24 @@ export class UserController {
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);
 			return JSON.stringify({ message: 'User not found', error });
+		}
+	}
+
+	@Get('me/preferences')
+	async getMyPreferences(
+		@CurrentUser() user: CurrentUserType,
+		@Res({ passthrough: true }) res: Response,
+	): Promise<string> {
+		try {
+			const currentUser = await this.userService.findById(user.id);
+			return JSON.stringify({
+				theme: currentUser.theme,
+				language: currentUser.language,
+
+			});
+		} catch (error) {
+			res.status(HttpStatus.NOT_FOUND);
+			return JSON.stringify({ message: 'Preferences not found', error });
 		}
 	}
 
@@ -151,73 +125,6 @@ export class UserController {
 		}
 	}
 
-	@Get('me/preferences')
-	async getMyPreferences(
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			const currentUser = await this.userService.findById(user.id);
-			return JSON.stringify({
-				theme: currentUser.theme,
-				language: currentUser.language,
-				emailNotifications: currentUser.emailNotifications,
-				pushNotifications: currentUser.pushNotifications,
-			});
-		} catch (error) {
-			res.status(HttpStatus.NOT_FOUND);
-			return JSON.stringify({ message: 'Preferences not found', error });
-		}
-	}
-
-	@Get('me/blocked')
-	async getBlockedUsers(
-		@CurrentUser() user: CurrentUserType,
-		@Query('page') page?: string,
-		@Query('limit') limit?: string,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			const pageNum = page ? parseInt(page) : 1;
-			const limitNum = limit ? parseInt(limit) : 20;
-			const skip = (pageNum - 1) * limitNum;
-			// Get blocked users
-			return JSON.stringify({
-				message: 'Blocked users not yet implemented',
-			});
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving blocked users',
-				error,
-			});
-		}
-	}
-
-	@Get('me/muted')
-	async getMutedUsers(
-		@CurrentUser() user: CurrentUserType,
-		@Query('page') page?: string,
-		@Query('limit') limit?: string,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			const pageNum = page ? parseInt(page) : 1;
-			const limitNum = limit ? parseInt(limit) : 20;
-			const skip = (pageNum - 1) * limitNum;
-			// Get muted users
-			return JSON.stringify({
-				message: 'Muted users not yet implemented',
-			});
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving muted users',
-				error,
-			});
-		}
-	}
-
 	@Get('me/analytics')
 	async getMyAnalytics(
 		@CurrentUser() user: CurrentUserType,
@@ -230,23 +137,6 @@ export class UserController {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
 			return JSON.stringify({
 				message: 'Error retrieving analytics',
-				error,
-			});
-		}
-	}
-
-	@Get('me/insights')
-	async getMyInsights(
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			// Get detailed insights
-			return JSON.stringify({ message: 'Insights not yet implemented' });
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving insights',
 				error,
 			});
 		}
@@ -450,87 +340,7 @@ export class UserController {
 			return JSON.stringify({ message: 'Error changing email', error });
 		}
 	}
-
-	@Patch('me/preferences')
-	async updatePreferences(
-		@Body() data: UpdatePreferencesDto,
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			const updatedUser = await this.userService.update(user.id, data);
-			return JSON.stringify(updatedUser);
-		} catch (error) {
-			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({
-				message: 'Error updating preferences',
-				error,
-			});
-		}
-	}
-
-	@Post(':id/block')
-	async blockUser(
-		@Param('id') id: string,
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			// Block user logic
-			res.status(HttpStatus.CREATED);
-			return JSON.stringify({ message: 'User blocked' });
-		} catch (error) {
-			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error blocking user', error });
-		}
-	}
-
-	@Delete(':id/block')
-	async unblockUser(
-		@Param('id') id: string,
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			// Unblock user logic
-			return JSON.stringify({ message: 'User unblocked' });
-		} catch (error) {
-			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error unblocking user', error });
-		}
-	}
-
-	@Post(':id/mute')
-	async muteUser(
-		@Param('id') id: string,
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			// Mute user logic
-			res.status(HttpStatus.CREATED);
-			return JSON.stringify({ message: 'User muted' });
-		} catch (error) {
-			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error muting user', error });
-		}
-	}
-
-	@Delete(':id/mute')
-	async unmuteUser(
-		@Param('id') id: string,
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			// Unmute user logic
-			return JSON.stringify({ message: 'User unmuted' });
-		} catch (error) {
-			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error unmuting user', error });
-		}
-	}
-
+	
 	@Delete('me')
 	async deleteCurrentUser(
 		@CurrentUser() user: CurrentUserType,
