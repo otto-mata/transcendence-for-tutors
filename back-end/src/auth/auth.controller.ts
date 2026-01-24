@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpStatus, Res } from '@nestjs/common';
+import { Controller, Post, Body, HttpStatus, Res, HttpCode, HttpException } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
 import {
@@ -87,62 +87,68 @@ export class AuthController {
 	}
 
 	@Post('verify-email')
+	@HttpCode(HttpStatus.OK)
 	async verifyEmail(
 		@Body() data: VerifyEmailDto,
 		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
+	): Promise<{ message: string }> {
 		try {
-			// Email verification logic
-			return JSON.stringify({ message: 'Email verified successfully' });
+			await this.authService.verifyEmail(data.token);
+			return { message: 'Email verified successfully' };
 		} catch (e) {
+			if (e instanceof HttpException) {
+				res.status(e.getStatus());
+				return { message: e.message };
+			}
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ error: 'Email verification failed' });
+			return { message: 'Email verification failed' };
 		}
 	}
 
 	@Post('resend-verification')
+	@HttpCode(HttpStatus.OK)
 	async resendVerification(
 		@Body() data: ResendVerificationDto,
 		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
+	): Promise<{ message: string }> {
 		try {
-			// Resend verification email logic
-			return JSON.stringify({ message: 'Verification email sent' });
+			await this.authService.resendVerificationEmail(data.email);
+			return { message: 'Verification email sent' };
 		} catch (e) {
+			if (e instanceof HttpException) {
+				res.status(e.getStatus());
+				return { message: e.message };
+			}
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({
-				error: 'Failed to send verification email',
-			});
+			return { message: 'Failed to send verification email' };
 		}
 	}
 
 	@Post('forgot-password')
+	@HttpCode(HttpStatus.OK)
 	async forgotPassword(
 		@Body() data: ForgotPasswordDto,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			// Forgot password logic
-			return JSON.stringify({ message: 'Password reset email sent' });
-		} catch (e) {
-			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({
-				error: 'Failed to send password reset email',
-			});
-		}
+	): Promise<{ message: string }> {
+		await this.authService.forgotPassword(data.email);
+		return { message: 'Password reset email sent' };
 	}
 
 	@Post('reset-password')
+	@HttpCode(HttpStatus.OK)
 	async resetPassword(
 		@Body() data: ResetPasswordDto,
 		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
+	): Promise<{ message: string }> {
 		try {
-			// Reset password logic
-			return JSON.stringify({ message: 'Password reset successfully' });
+			await this.authService.resetPassword(data);
+			return { message: 'Password reset successfully' };
 		} catch (e) {
+			if (e instanceof HttpException) {
+				res.status(e.getStatus());
+				return { message: e.message };
+			}
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ error: 'Password reset failed' });
+			return { message: 'Password reset failed' };
 		}
 	}
 }

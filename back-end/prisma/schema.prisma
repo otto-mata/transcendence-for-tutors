@@ -42,6 +42,12 @@ model User {
   updatedAt  DateTime  @default(now()) @updatedAt
   lastSeenAt DateTime?
 
+  // Authentication tokens
+  emailVerificationToken String?
+  passwordResetToken     String?
+  passwordResetExpires   DateTime?
+  lastVerificationEmailSentAt DateTime?
+
   // Preferences
   theme              String  @default("auto")
   language           String  @default("en")
