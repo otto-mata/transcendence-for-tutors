@@ -89,7 +89,6 @@ export class FortyTwoOauthStrategy extends PassportStrategy(Strategy, 'fortytwo'
         provider: 'fortytwo',
       };
     } catch (error) {
-      console.error('❌ 42 OAuth - Failed to fetch user profile:', error.message);
       throw new HttpException(
         `Failed to fetch 42 user profile: ${error.message}`,
         HttpStatus.INTERNAL_SERVER_ERROR,

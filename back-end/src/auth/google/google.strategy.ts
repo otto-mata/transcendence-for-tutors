@@ -10,14 +10,6 @@ export class GoogleOauthStrategy extends PassportStrategy(Strategy, 'google') {
     const clientSecret = configService.get<string>('GOOGLE_CLIENT_SECRET');
     const callbackURL = configService.get<string>('GOOGLE_CALLBACK_URL');
 
-    console.log('--- Google OAuth Strategy ---');
-    console.log('Client ID:', clientID);
-    console.log(
-      'Client Secret:',
-      clientSecret ? '*** LOADED ***' : clientSecret,
-    );
-    console.log('Callback URL:', callbackURL);
-
     if (!clientID || !clientSecret || !callbackURL) {
       throw new Error('Google OAuth environment variables are not set.');
     }

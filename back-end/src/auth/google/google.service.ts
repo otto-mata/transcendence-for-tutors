@@ -35,32 +35,23 @@ export class GoogleOauthService {
   }
 
   async signIn(user: any) {
-    console.log('Google sign in start !')
     if (!user) {
       throw new UnauthorizedException('Unauthenticated');
     }
 
-    console.time('GoogleSignIn - findByEmail');
     let userExists = await this.userService.findByEmail(user.email);
-    console.timeEnd('GoogleSignIn - findByEmail');
 
     if (!userExists) {
-        console.log('User does not exist, creating a new one.');
         // Create a unique username
         let username = user.email.split('@')[0];
-        console.time('GoogleSignIn - findByUsername (initial)');
         let existingUser = await this.userService.findByUsername(username);
-        console.timeEnd('GoogleSignIn - findByUsername (initial)');
         let count = 1;
         while(existingUser) {
-            console.time(`GoogleSignIn - findByUsername (iteration ${count})`);
             username = `${user.email.split('@')[0]}${count}`;
             existingUser = await this.userService.findByUsername(username);
-            console.timeEnd(`GoogleSignIn - findByUsername (iteration ${count})`);
             count++;
         }
 
-        console.time('GoogleSignIn - create user');
         userExists = await this.userService.create({
             email: user.email,
             username: username,
@@ -71,22 +62,15 @@ export class GoogleOauthService {
             oauthId: user.id,
             isVerified: true,
         });
-        console.timeEnd('GoogleSignIn - create user');
     } else if (!userExists.oauthProvider || userExists.oauthProvider !== 'google') {
         // Link Google OAuth to existing account
-        console.log('Linking Google OAuth to existing account');
-        console.time('GoogleSignIn - update user oauth');
         userExists = await this.userService.update(userExists.id, {
             oauthProvider: 'google',
             oauthId: user.id,
         });
-        console.timeEnd('GoogleSignIn - update user oauth');
     }
-    console.log('Google sign in end !')
 
-    console.time('GoogleSignIn - authService.loginOauthUser');
     const token = await this.authService.loginOauthUser(userExists.username);
-    console.timeEnd('GoogleSignIn - authService.loginOauthUser');
 
     return token;
   }
