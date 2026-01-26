@@ -3,6 +3,7 @@ import { Axios } from 'axios';
 import { UpdateUserDto, UserProfileResponse } from './Users.dto';
 import { LoginDto, RegisterDto } from './Auth.dto';
 import { CreatePostDto, UpdatePostDto } from './Post.dto';
+import { CreateCommentDto, UpdateCommentDto } from './Comment.dto';
 
 type Ok<R> = ResultClass<R, never>;
 type Err<E> = ResultClass<never, E>;
@@ -267,39 +268,6 @@ const ClientFactory = (client: Axios) => {
 							return Result.error(error as RequestError);
 						}
 					},
-					share: async () => {
-						try {
-							const response = await client.post(
-								`/posts/${id}/share`,
-								{},
-							);
-							return Result.ok(response.data);
-						} catch (error) {
-							return Result.error(error as RequestError);
-						}
-					},
-					unshare: async () => {
-						try {
-							const response = await client.delete(
-								`/posts/${id}/share`,
-								{},
-							);
-							return Result.ok(response.data);
-						} catch (error) {
-							return Result.error(error as RequestError);
-						}
-					},
-					view: async () => {
-						try {
-							const response = await client.post(
-								`/posts/${id}/view`,
-								{},
-							);
-							return Result.ok(response.data);
-						} catch (error) {
-							return Result.error(error as RequestError);
-						}
-					},
 					comments: {
 						$: async (commentId: string) => {
 							return {
@@ -315,7 +283,7 @@ const ClientFactory = (client: Axios) => {
 										);
 									}
 								},
-								patch: async (data) => {
+								patch: async (data: UpdateCommentDto) => {
 									try {
 										const response = await client.patch(
 											`/posts/${id}/comments/${commentId}`,
@@ -352,11 +320,11 @@ const ClientFactory = (client: Axios) => {
 										);
 									}
 								},
-								reply: async (data) => {
+								reply: async (data: CreateCommentDto) => {
 									try {
 										const response = await client.post(
 											`/posts/${id}/comments/${commentId}/reply`,
-											{},
+											data,
 										);
 										return Result.ok(response.data);
 									} catch (error) {
@@ -377,7 +345,7 @@ const ClientFactory = (client: Axios) => {
 								return Result.error(error as RequestError);
 							}
 						},
-						post: async (data) => {
+						post: async (data: CreateCommentDto) => {
 							try {
 								const response = await client.post(
 									`/posts/${id}/comments`,
@@ -418,7 +386,7 @@ export class Backend {
 	private _cl: ClientType;
 
 	private constructor() {
-		this._cl = ClientFactory(new Axios({ baseURL: process.env.API_URL }));
+		this._cl = ClientFactory(new Axios({ baseURL: process.env.API_URL || 'http://localhost:3000/' }));
 	}
 
 	public get api(): ClientType {
