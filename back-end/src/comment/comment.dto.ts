@@ -43,7 +43,6 @@ export class CommentResponseDto {
 	parentCommentId?: string;
 	likeCount: number;
 	replyCount: number;
-	isEdited: boolean;
 	createdAt: Date;
 	updatedAt: Date;
 	liked?: boolean;

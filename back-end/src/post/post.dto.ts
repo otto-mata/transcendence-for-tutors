@@ -71,12 +71,8 @@ export class PostResponseDto {
 	visibility: string;
 	likeCount: number;
 	commentCount: number;
-	shareCount: number;
-	viewCount: number;
 	createdAt: Date;
 	updatedAt: Date;
-	isEdited: boolean;
-	isRepost: boolean;
 	isReply: boolean;
 	liked?: boolean;
 	bookmarked?: boolean;

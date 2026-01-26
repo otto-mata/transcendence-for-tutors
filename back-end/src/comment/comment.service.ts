@@ -30,17 +30,6 @@ export class CommentService {
 		return this.commentRepository.create(data);
 	}
 
-	async update(
-		id: string,
-		data: Prisma.CommentUpdateInput,
-	): Promise<Comment> {
-		return this.commentRepository.update(id, {
-			...data,
-			isEdited: true,
-			editedAt: new Date(),
-		});
-	}
-
 	async delete(id: string): Promise<Comment> {
 		return this.commentRepository.delete(id);
 	}
