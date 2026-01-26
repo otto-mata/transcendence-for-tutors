@@ -1,7 +1,30 @@
+"use client"
 import Image from 'next/image';
 import { MapPin, Link as LinkIcon, Calendar, MoreHorizontal, Settings, Share2, Bell, BellOff } from 'lucide-react';
+import { useParams } from 'next/navigation'
+import { useEffect, useState } from 'react';
+import { isLogged } from '@/client/common.mock';
+import { useRouter } from 'next/navigation';
+import { TransClient } from '@/client/TransClient';
+import { UserResponseDto } from '@/client/profile.dto';
 
 export default function ProfilePage({ params }: { params: { username: string } }) {
+	const router = useRouter();
+	const client = TransClient.get_instance();
+	const { username } = useParams<{ username: string }>()
+	const [user, setUser] = useState<UserResponseDto>();
+
+	  useEffect(() => {
+		const run = async() => {
+		  const logged = await isLogged();
+		   if (!logged)
+			  router.push('/auth/login');
+		  const res = await client.getUser({username : username});
+		  const data = res?.getData();
+		  if (data) setUser(data);
+		}
+		run();
+	  }, [router]);
 	return (
 		<div className="min-h-screen bg-gray-50">
 			{/* Cover Photo */}
@@ -36,11 +59,11 @@ export default function ProfilePage({ params }: { params: { username: string } }
 
 				{/* Profile Info */}
 				<div className="mt-4 mb-6">
-					<h1 className="text-3xl font-bold text-gray-900 mb-1">Sarah Anderson</h1>
-					<p className="text-gray-500 mb-3">@{params.username}</p>
+					<h1 className="text-3xl font-bold text-gray-900 mb-1">{user?.displayName}</h1>
+					<p className="text-gray-500 mb-3">@{user?.username}</p>
 
 					<p className="text-gray-700 mb-4 max-w-2xl">
-						Digital creator & designer 🎨 | Coffee enthusiast ☕ | Sharing my journey through pixels and code
+						{user?.bio}
 					</p>
 
 					<div className="flex flex-wrap gap-4 text-sm text-gray-600 mb-4">

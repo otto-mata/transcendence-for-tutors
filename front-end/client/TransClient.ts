@@ -82,8 +82,8 @@ const ClientMockApi = (client : Axios ) => {
 				//fetch GET /users/suggested
 				return new Response<PaginatedResponseDto<UserResponseDto>>(true, 'Users query success', PaginatedUsers);
 			},
-			$ : async (id? 		: number,
-				username?	: string
+			$ : async (data : {id? 		: number,
+				username?	: string}
 			) => {
 				//fetch GET /user/:Parameters
 				return new Response<UserResponseDto>(true, 'User query success', User1);
@@ -392,26 +392,37 @@ export class TransClient {
 	}
 
 	public async login(data : LoginDto) : ClientResponse<AuthResponseDto> {
-		return this._cl.auth.login(data);
+		return await this._cl.auth.login(data);
 	}
 
 	public async register(data : RegisterDto) : ClientResponse<AuthResponseDto> {
-		return this._cl.auth.login(data);
+		return await this._cl.auth.login(data);
+	}
+
+	public async getUser(data : {id? : number, username? : string}) : ClientResponse<UserResponseDto> {
+		return await this._cl.users.$(data);
 	}
 
 
 	public async getPost({ where }: PostFiltering): ClientResponse<PostResponseDto> {
-		return this._cl.posts.$(where.id);
+		return await this._cl.posts.$(where.id);
 	}
 
 	public async createPost(data : CreatePostDto): ClientResponse<PostResponseDto> {
-		return this._cl.posts.create(data);
+		return await this._cl.posts.create(data);
 	}
 
 	public async feed(data? : {page? : number, limit? : number}): ClientResponse<PaginatedResponseDto<PostResponseDto>> {
-		return this._cl.posts.get({});
+		return await this._cl.posts.get({});
 	}
-	
+
+	public async likePost(id : number, isSet : boolean): ClientResponse<null> {
+		if (isSet)
+			return await this._cl.posts.unlike(id);
+		return await this._cl.posts.like(id);
+		
+	}
+
 }
 
 

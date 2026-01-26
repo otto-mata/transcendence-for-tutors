@@ -1,10 +1,47 @@
+"use client"
+import { PostList } from "@/components/PostList";
+import { Image, Smile, Calendar } from "lucide-react";
+import { isLogged } from '@client/common.mock';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { PaginatedResponseDto  } from '@client/common.dto';
+import { PostResponseDto } from '@/client/post.dto';
+import { TransClient } from "@/client/TransClient";
 import { Search, TrendingUp, Hash, MapPin, Save, Bookmark } from 'lucide-react';
 import Link from 'next/link';
 
+function printit(){
+	console.log("Button clicked");
+}
+
 export default function ExplorePage() {
+	const router = useRouter();
+	const client = TransClient.get_instance();
+	  const [PostInput, setPostInput] = useState('');
+	  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});;
+	
+	  async function PostIt(){
+		const res = await client.createPost({content : PostInput});
+		console.log('my message is : ' + res.getMessage());
+	  }
+	
+	  useEffect(() => {
+		const run = async() => {
+		  const logged = await isLogged();
+		   if (!logged)
+			  router.push('/auth/login');
+		  const res = await client.feed();
+		  const data = res?.getData();
+		  if (data) setPosts(data);
+		}
+		run();
+	  }, [router]);
+
 	return (
+
 		<div className='w-full p-4'>
 			<div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
+				{/* SearchBar */}
 				<div className="max-w-xs sm:max-w-lg md:max-w-full mx-auto px-4 py-4">
 					<div className="relative">
 						<Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-200 w-5 h-5" />
@@ -15,52 +52,10 @@ export default function ExplorePage() {
 						/>
 					</div>
 				</div>
-			</div>
-
-			<div className="max-w-xs sm:max-w-lg md:max-w-full mx-auto py-6">
-				{/* Trending Section */}
-				<div className="mb-8">
-					<h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-						<TrendingUp className="w-6 h-6 text-blue-500" />
-						Trending Now
-					</h2>
-					<div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-						{trendingTopics.map((topic, index) => (
-							<div
-								key={index}
-								className="shrink-0 bg-white dark:bg-gray-800 rounded-xl px-6 py-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer border border-gray-100 dark:border-gray-700"
-							>
-								<div className="flex items-center gap-2 text-gray-600 dark:text-gray-400 text-sm mb-1">
-									<Hash className="w-4 h-4" />
-									<span>Trending</span>
-								</div>
-								<h3 className="font-semibold text-gray-900 dark:text-gray-100">{topic.name}</h3>
-								<p className="text-sm text-gray-500">{topic.posts} posts</p>
-							</div>
-						))}
-					</div>
-				</div>
-
-				{/* Categories */}
-				<div className="mb-6">
-					<div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-						{categories.map((category, index) => (
-							<button
-								key={index}
-								className={`shrink-0 px-6 py-2 rounded-full font-medium transition-all ${index === 0
-									? 'bg-blue-500 text-white shadow-md'
-									: 'bg-white text-gray-700 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 hover:dark:bg-gray-700'
-									} `}
-							>
-								{category}
-							</button>
-						))}
-					</div>
-				</div>
 
 				{/* Masonry Grid */}
 				<div className="columns-1 sm:columns-2 md:columns-3 gap-4 space-y-4">
-					{posts.map((post, index) => (
+					{MockPosts.map((post, index) => (
 						<div
 							key={index}
 							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group"
@@ -76,7 +71,7 @@ export default function ExplorePage() {
 							</div>}
 							<div className="p-4">
 								<div className="flex items-center gap-3 mb-3">
-									<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+									<Link href={`profile/${post.username} `} className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
 									<div>
 										<Link href={`profile/${post.username} `}>
 											<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">
@@ -89,12 +84,12 @@ export default function ExplorePage() {
 								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{post.description}</p>
 								<div className="flex items-center justify-between text-gray-500">
 									<div className="flex gap-4 text-sm">
-										<span className="hover:text-red-500 transition-colors cursor-pointer">
+										<button onClick={printit} className="hover:text-red-500 transition-colors cursor-pointer">
 											❤️ {post.likes}
-										</span>
-										<span className="hover:text-blue-500 transition-colors cursor-pointer">
+										</button>
+										<button onClick={printit} className="hover:text-blue-500 transition-colors cursor-pointer">
 											💬 {post.comments}
-										</span>
+										</button>
 									</div>
 									<button className="text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400">
 										<Bookmark />
@@ -109,33 +104,14 @@ export default function ExplorePage() {
 	);
 }
 
-// Sample data
-const trendingTopics = [
-	{ name: 'TechTrends', posts: '12. 5K' },
-	{ name: 'DesignInspo', posts: '8.2K' },
-	{ name: 'Photography', posts: '15.1K' },
-	{ name: 'Travel2024', posts: '6.8K' },
-];
-
-const categories = [
-	'All',
-	'Popular',
-	'Design',
-	'Photography',
-	'Art',
-	'Technology',
-	'Fashion',
-	'Food',
-];
-
-const posts = [
+const MockPosts = [
 	{
 		author: 'Alex Chen',
 		username: 'AlexChen',
 		time: '2h ago',
 		description: 'Minimalist workspace setup for maximum productivity 🚀',
 		gradient: null,
-		height: '280px',
+		height: '200px',
 		likes: '2. 4K',
 		comments: '89',
 	},
@@ -145,7 +121,7 @@ const posts = [
 		time: '4h ago',
 		description: 'Golden hour at the beach never disappoints ✨',
 		gradient: 'from-orange-400 to-pink-400',
-		height: '320px',
+		height: '20px',
 		likes: '3.1K',
 		comments: '124',
 	},
