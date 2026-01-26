@@ -55,10 +55,3 @@ export class MediaInPostDto {
 	filename: string;
 }
 
-export class PaginatedPostsDto {
-	data: PostResponseDto[];
-	page: number;
-	limit: number;
-	total: number;
-	hasMore: boolean;
-}

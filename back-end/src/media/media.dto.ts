@@ -1,7 +1,7 @@
 export class MediaUploadResponseDto {
 	id: string;
 	userId: string;
-	postId?: string;
+	postId?: string | null;
 	filename: string;
 	mimetype: string;
 	size: number;
@@ -14,10 +14,6 @@ export class MediaUploadResponseDto {
 		username: string;
 		avatarUrl?: string;
 	};
-}
-
-export class MediaUrlDto {
-	url: string;
 }
 
 export class MediaResponseDto {

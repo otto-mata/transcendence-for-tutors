@@ -16,7 +16,11 @@ import {
 	UseGuards,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { CreatePostDto, UpdatePostDto } from './post.dto';
+import {
+	CreatePostDto,
+	PostResponseDto,
+	UpdatePostDto,
+} from './post.dto';
 import { PostService } from './post.service';
 
 @Controller('posts')
@@ -48,16 +52,16 @@ export class PostController {
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
 		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
+	): Promise<{ message: string } | { message: string; error: unknown }> {
 		try {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Implementation depends on following list
-			return JSON.stringify({ message: 'Feed not yet implemented' });
+			return { message: 'Feed not yet implemented' };
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving feed', error });
+			return { message: 'Error retrieving feed', error };
 		}
 	}
 
@@ -223,19 +227,19 @@ export class PostController {
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
 		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
+	): Promise<{ message: string } | { message: string; error: unknown }> {
 		try {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
 			// Get replies to this post
-			return JSON.stringify({ message: 'Replies not yet implemented' });
+			return { message: 'Replies not yet implemented' };
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
+			return {
 				message: 'Error retrieving replies',
 				error,
-			});
+			};
 		}
 	}
 

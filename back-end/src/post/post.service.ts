@@ -2,6 +2,7 @@ import { PrismaService } from '@/prisma/prisma.service';
 import { Post, Prisma } from '$prisma';
 import { Injectable } from '@nestjs/common';
 import { PostRepository } from './post.repository';
+import { PostResponseDto, MediaInPostDto } from './post.dto';
 
 @Injectable()
 export class PostService {
@@ -10,23 +11,77 @@ export class PostService {
 		private readonly prisma: PrismaService,
 	) {}
 
-	async findById(id: string): Promise<Post> {
-		return this.postRepository.findById(id);
+	private async mapPostToResponse(postId: string): Promise<PostResponseDto> {
+		const post = await this.prisma.post.findFirstOrThrow({
+			where: { id: postId },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						avatarUrl: true,
+					},
+				},
+				media: {
+					select: {
+						id: true,
+						url: true,
+						type: true,
+						mimetype: true,
+						filename: true,
+					},
+				},
+			},
+		});
+
+		const media: MediaInPostDto[] | undefined = post.media?.map((item) => ({
+			id: item.id,
+			url: item.url,
+			type: item.type,
+			mimetype: item.mimetype,
+			filename: item.filename,
+		}));
+
+		return {
+			id: post.id,
+			content: post.content,
+			authorId: post.authorId,
+			author: post.author
+				? {
+						id: post.author.id,
+						username: post.author.username,
+						avatarUrl: post.author.avatarUrl ?? undefined,
+					}
+				: undefined,
+			visibility: post.visibility,
+			likeCount: post.likeCount,
+			commentCount: post.commentCount,
+			createdAt: post.createdAt,
+			updatedAt: post.updatedAt,
+			isReply: post.isReply,
+			media,
+		};
 	}
 
-	async findAll(skip: number, take: number): Promise<Post[]> {
-		return this.postRepository.findAll(skip, take);
+	async findById(id: string): Promise<PostResponseDto> {
+		return this.mapPostToResponse(id);
 	}
 
-	async create(data: Prisma.PostCreateInput): Promise<Post> {
-		return this.postRepository.create(data);
+	async findAll(skip: number, take: number): Promise<PostResponseDto[]> {
+		const posts = await this.postRepository.findAll(skip, take);
+		return Promise.all(posts.map((post) => this.mapPostToResponse(post.id)));
+	}
+
+	async create(data: Prisma.PostCreateInput): Promise<PostResponseDto> {
+		const post = await this.postRepository.create(data);
+		return this.mapPostToResponse(post.id);
 	}
 
 	async createWithMedia(
 		data: Prisma.PostCreateInput,
 		mediaIds?: string[],
-	): Promise<Post> {
-		// If media IDs are provided, connect them to the post
+	): Promise<PostResponseDto> {
+		let createdPost: Post;
 		if (mediaIds && mediaIds.length > 0) {
 			const postData = {
 				...data,
@@ -34,20 +89,23 @@ export class PostService {
 					connect: mediaIds.map((id) => ({ id })),
 				},
 			};
-			return this.postRepository.create(postData);
+			createdPost = await this.postRepository.create(postData);
+		} else {
+			createdPost = await this.postRepository.create(data);
 		}
-		return this.postRepository.create(data);
+		return this.mapPostToResponse(createdPost.id);
 	}
 
-	async update(id: string, data: Prisma.PostUpdateInput): Promise<Post> {
-		return this.postRepository.update(id, data);
+	async update(id: string, data: Prisma.PostUpdateInput): Promise<PostResponseDto> {
+		await this.postRepository.update(id, data);
+		return this.mapPostToResponse(id);
 	}
 
 	async updateWithMedia(
 		id: string,
 		data: Prisma.PostUpdateInput,
 		mediaIds?: string[],
-	): Promise<Post> {
+	): Promise<PostResponseDto> {
 		// If media IDs are provided, update the connections
 		if (mediaIds !== undefined) {
 			const updateData = {
@@ -56,13 +114,27 @@ export class PostService {
 					set: mediaIds.map((mediaId) => ({ id: mediaId })),
 				},
 			};
-			return this.postRepository.update(id, updateData);
+			await this.postRepository.update(id, updateData);
+		} else {
+			await this.postRepository.update(id, data);
 		}
-		return this.postRepository.update(id, data);
+		return this.mapPostToResponse(id);
 	}
 
-	async delete(id: string): Promise<Post> {
-		return this.postRepository.delete(id);
+	async delete(id: string): Promise<PostResponseDto> {
+		await this.postRepository.delete(id);
+		// Return data as-is since post is deleted
+		return {
+			id,
+			content: '',
+			authorId: '',
+			visibility: '',
+			likeCount: 0,
+			commentCount: 0,
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			isReply: false,
+		};
 	}
 
 	async likePost(postId: string, userId: string): Promise<void> {
@@ -120,12 +192,13 @@ export class PostService {
 		parentPostId: string,
 		data: Prisma.PostCreateInput,
 		userId: string,
-	): Promise<Post> {
-		return this.postRepository.create({
+	): Promise<PostResponseDto> {
+		const reply = await this.postRepository.create({
 			...data,
 			author: { connect: { id: userId } },
 			parentPost: { connect: { id: parentPostId } },
 			isReply: true,
 		});
+		return this.mapPostToResponse(reply.id);
 	}
 }

@@ -12,7 +12,6 @@ import {
 	UploadedFile,
 	ParseFilePipe,
 	MaxFileSizeValidator,
-	FileTypeValidator,
 	Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
@@ -22,6 +21,7 @@ import { AuthGuard } from '@/guards/auth.guard';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import type { CurrentUserType } from '@/decorators/current-user.decorator';
 import { multerConfig, MAX_FILE_SIZE } from './multer.config';
+import { MediaUploadResponseDto, MediaResponseDto } from './media.dto';
 
 @Controller('media')
 @UseGuards(AuthGuard)
@@ -42,14 +42,14 @@ export class MediaController {
 		file: Express.Multer.File,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
+	): Promise<MediaUploadResponseDto> {
 		try {
 			const media = await this.mediaService.uploadMedia(user.id, file);
 			res.status(HttpStatus.CREATED);
-			return JSON.stringify(media);
+			return media;
 		} catch (error) {
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error uploading media', error });
+			throw error;
 		}
 	}
 
@@ -57,13 +57,13 @@ export class MediaController {
 	async getMedia(
 		@Param('id') id: string,
 		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
+	): Promise<MediaResponseDto> {
 		try {
 			const media = await this.mediaService.getMedia(id);
-			return JSON.stringify(media);
+			return media;
 		} catch (error) {
 			if (res) res.status(HttpStatus.NOT_FOUND);
-			return JSON.stringify({ message: 'Media not found', error });
+			throw error;
 		}
 	}
 
@@ -73,7 +73,7 @@ export class MediaController {
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
 		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
+	): Promise<MediaResponseDto[]> {
 		try {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
@@ -82,10 +82,10 @@ export class MediaController {
 				pageNum,
 				limitNum,
 			);
-			return JSON.stringify(media);
+			return media;
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({ message: 'Error retrieving media', error });
+			throw error;
 		}
 	}
 
@@ -94,20 +94,17 @@ export class MediaController {
 		@Param('id') id: string,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
+	): Promise<{ message: string }> {
 		try {
 			await this.mediaService.deleteMedia(id, user.id);
-			return JSON.stringify({ message: 'Media deleted successfully' });
+			return { message: 'Media deleted successfully' };
 		} catch (error) {
 			const status =
 				error instanceof NotFoundException
 					? HttpStatus.NOT_FOUND
 					: HttpStatus.BAD_REQUEST;
 			res.status(status);
-			return JSON.stringify({
-				message: error?.message || 'Error deleting media',
-				error,
-			});
+			throw error;
 		}
 	}
 }

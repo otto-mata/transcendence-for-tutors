@@ -9,24 +9,6 @@ export class PostRepository {
 	async findById(id: string): Promise<Post> {
 		return this.prisma.post.findFirstOrThrow({
 			where: { id },
-			include: {
-				author: {
-					select: {
-						id: true,
-						username: true,
-						avatarUrl: true,
-					},
-				},
-				media: {
-					select: {
-						id: true,
-						url: true,
-						type: true,
-						mimetype: true,
-						filename: true,
-					},
-				},
-			},
 		});
 	}
 
@@ -35,48 +17,12 @@ export class PostRepository {
 			skip,
 			take,
 			orderBy: { createdAt: 'desc' },
-			include: {
-				author: {
-					select: {
-						id: true,
-						username: true,
-						avatarUrl: true,
-					},
-				},
-				media: {
-					select: {
-						id: true,
-						url: true,
-						type: true,
-						mimetype: true,
-						filename: true,
-					},
-				},
-			},
 		});
 	}
 
 	async create(data: Prisma.PostCreateInput): Promise<Post> {
 		return this.prisma.post.create({
 			data,
-			include: {
-				author: {
-					select: {
-						id: true,
-						username: true,
-						avatarUrl: true,
-					},
-				},
-				media: {
-					select: {
-						id: true,
-						url: true,
-						type: true,
-						mimetype: true,
-						filename: true,
-					},
-				},
-			},
 		});
 	}
 
@@ -84,48 +30,12 @@ export class PostRepository {
 		return this.prisma.post.update({
 			where: { id },
 			data,
-			include: {
-				author: {
-					select: {
-						id: true,
-						username: true,
-						avatarUrl: true,
-					},
-				},
-				media: {
-					select: {
-						id: true,
-						url: true,
-						type: true,
-						mimetype: true,
-						filename: true,
-					},
-				},
-			},
 		});
 	}
 
 	async delete(id: string): Promise<Post> {
 		return this.prisma.post.delete({
 			where: { id },
-			include: {
-				author: {
-					select: {
-						id: true,
-						username: true,
-						avatarUrl: true,
-					},
-				},
-				media: {
-					select: {
-						id: true,
-						url: true,
-						type: true,
-						mimetype: true,
-						filename: true,
-					},
-				},
-			},
 		});
 	}
 }
