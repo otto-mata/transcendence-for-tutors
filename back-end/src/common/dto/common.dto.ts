@@ -1,4 +1,11 @@
-import { IsOptional, IsString, IsInt, Min } from 'class-validator';
+import {
+	IsOptional,
+	IsString,
+	IsInt,
+	Min,
+	IsBoolean,
+	IsNumber,
+} from 'class-validator';
 
 export class PaginationDto {
 	@IsInt()
@@ -36,4 +43,37 @@ export class IdParamDto {
 export class UsernameParamDto {
 	@IsString()
 	username: string;
+}
+
+export class MessageResponseDto {
+	message: string;
+	statusCode?: number;
+}
+
+export class SuccessResponseDto<T = any> {
+	success: boolean;
+	message?: string;
+	data?: T;
+	statusCode?: number;
+	timestamp?: Date;
+}
+
+export class ErrorResponseDto {
+	error: string;
+	message: string;
+	statusCode: number;
+	timestamp?: Date;
+}
+
+export class CountResponseDto {
+	count: number;
+}
+
+export class IdResponseDto {
+	id: string;
+}
+
+export class ListCountDto {
+	total: number;
+	count: number;
 }
