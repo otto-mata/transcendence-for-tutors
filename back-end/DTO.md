@@ -18,530 +18,653 @@ This document provides a complete repository of all API endpoints with their inp
 ## Auth Endpoints
 
 ### Register User
+
 - **Route:** `POST /auth/register`
 - **Input DTO:** `CreateUserDto`
-  ```typescript
-  {
-    username: string;           // 3-50 chars, required
-    email: string;              // valid email, required
-    password: string;           // 8-100 chars, required
-    displayName?: string;       // 0-100 chars, optional
-  }
-  ```
+    ```typescript
+    {
+      username: string;           // 3-50 chars, required
+      email: string;              // valid email, required
+      password: string;           // 8-100 chars, required
+      displayName?: string;       // 0-100 chars, optional
+    }
+    ```
 - **Output DTO:** `AuthResponseDto`
-  ```typescript
-  {
-    message: string;
-    code?: string;
-    error?: string;
-  }
-  ```
+    ```typescript
+    {
+      message: string;
+      code?: string;
+      error?: string;
+    }
+    ```
 
 ### Login User
+
 - **Route:** `POST /auth/login`
 - **Input DTO:** `LoginDto`
-  ```typescript
-  {
-    username: string;           // 3-50 chars, required
-    password: string;           // 8-100 chars, required
-  }
-  ```
-- **Output DTO:** `AuthResponseDto`
-  ```typescript
-  {
-    access_token: string;
-    refresh_token?: string;
-    user?: {
-      id: string;
-      username: string;
-      email: string;
-      role: string;
-    };
-  }
-  ```
+    ```typescript
+    {
+    	username: string; // 3-50 chars, required
+    	password: string; // 8-100 chars, required
+    }
+    ```
+- **Output DTO:** `LoginResponseDto`
+    ```typescript
+    {
+      access_token: string;
+      refresh_token?: string;
+      user: {
+        id: string;
+        username: string;
+        email: string;
+        displayName?: string;
+        role: string;
+        isVerified: boolean;
+        isSuspended: boolean;
+      };
+    }
+    ```
 
 ### Refresh Token
+
 - **Route:** `POST /auth/refresh`
 - **Input DTO:** `RefreshTokenDto`
-  ```typescript
-  {
-    token: string;              // JWT refresh token, required
-  }
-  ```
+    ```typescript
+    {
+    	token: string; // JWT refresh token, required
+    }
+    ```
 - **Output DTO:** `AuthResponseDto`
-  ```typescript
-  {
-    access_token: string;
-    refresh_token?: string;
-  }
-  ```
+    ```typescript
+    {
+      access_token: string;
+      refresh_token?: string;
+    }
+    ```
 
 ### Verify Email
+
 - **Route:** `POST /auth/verify-email`
 - **Input DTO:** `VerifyEmailDto`
-  ```typescript
-  {
-    token: string;              // Email verification token, required
-  }
-  ```
+    ```typescript
+    {
+    	token: string; // Email verification token, required
+    }
+    ```
 - **Output DTO:** `AuthResponseDto`
-  ```typescript
-  {
-    message: string;            // "Email verified successfully"
-  }
-  ```
+    ```typescript
+    {
+    	message: string; // "Email verified successfully"
+    }
+    ```
 
 ### Resend Verification Email
+
 - **Route:** `POST /auth/resend-verification`
 - **Input DTO:** `ResendVerificationDto`
-  ```typescript
-  {
-    email: string;              // valid email, required
-  }
-  ```
+    ```typescript
+    {
+    	email: string; // valid email, required
+    }
+    ```
 - **Output DTO:** `AuthResponseDto`
-  ```typescript
-  {
-    message: string;            // "Verification email sent"
-  }
-  ```
+    ```typescript
+    {
+    	message: string; // "Verification email sent"
+    }
+    ```
 
 ### Forgot Password
+
 - **Route:** `POST /auth/forgot-password`
 - **Input DTO:** `ForgotPasswordDto`
-  ```typescript
-  {
-    email: string;              // valid email, required
-  }
-  ```
+    ```typescript
+    {
+    	email: string; // valid email, required
+    }
+    ```
 - **Output DTO:** `AuthResponseDto`
-  ```typescript
-  {
-    message: string;            // "Password reset email sent"
-  }
-  ```
+    ```typescript
+    {
+    	message: string; // "Password reset email sent"
+    }
+    ```
 
 ### Reset Password
+
 - **Route:** `POST /auth/reset-password`
 - **Input DTO:** `ResetPasswordDto`
-  ```typescript
-  {
-    token: string;              // Password reset token, required
-    newPassword: string;        // 8-100 chars, required
-  }
-  ```
+    ```typescript
+    {
+    	token: string; // Password reset token, required
+    	newPassword: string; // 8-100 chars, required
+    }
+    ```
 - **Output DTO:** `AuthResponseDto`
-  ```typescript
-  {
-    message: string;            // "Password reset successfully"
-  }
-  ```
+    ```typescript
+    {
+    	message: string; // "Password reset successfully"
+    }
+    ```
 
 ---
 
 ## User Endpoints
 
 ### Get All Users
+
 - **Route:** `GET /users`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-    search?: string;            // optional
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+      search?: string;            // optional
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<UserResponseDto>`
-  ```typescript
-  {
-    data: UserResponseDto[];
-    page: number;
-    limit: number;
-    total: number;
-    hasMore: boolean;
-  }
-  ```
+    ```typescript
+    {
+      data: UserResponseDto[];
+      page: number;
+      limit: number;
+      total: number;
+      hasMore: boolean;
+    }
+    ```
 
 ### Get Suggested Users
+
 - **Route:** `GET /users/suggested`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<UserResponseDto>`
 
+### Get Verified Users
+
+- **Route:** `GET /users/verified`
+- **Query Parameters:**
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
+- **Input DTO:** None
+- **Output DTO:** `PaginatedResponseDto<UserResponseDto>`
+
+### Check Username Exists
+
+- **Route:** `GET /users/:username/exists`
+- **Input DTO:** None
+- **Output DTO:** `SuccessResponseDto<{ exists: boolean }>`
+
 ### Get User by Username
+
 - **Route:** `GET /users/:username`
 - **Input DTO:** None
 - **Output DTO:** `UserResponseDto`
-  ```typescript
-  {
-    id: string;
-    username: string;
-    email: string;
-    displayName?: string;
-    bio?: string;
-    avatar?: string;
-    coverImage?: string;
-    verified: boolean;
-    role: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }
-  ```
+    ```typescript
+    {
+      id: string;
+      username: string;
+      email: string;
+      displayName?: string;
+      bio?: string;
+      avatarUrl?: string;
+      coverImageUrl?: string;
+      website?: string;
+      isVerified: boolean;
+      isPrivate: boolean;
+      isActive: boolean;
+      isSuspended: boolean;
+      role: string;
+      followerCount: number;
+      followingCount: number;
+      postCount: number;
+      createdAt: Date;
+    }
+    ```
 
 ### Get Current User Profile
+
 - **Route:** `GET /users/me`
 - **Input DTO:** None
 - **Output DTO:** `UserResponseDto`
 
 ### Update Current User Profile
+
 - **Route:** `PATCH /users/me`
 - **Input DTO:** `UpdateUserDto`
-  ```typescript
-  {
-    displayName?: string;       // 0-100 chars, optional
-    bio?: string;               // 0-500 chars, optional
-    avatar?: string;            // URL format, optional
-    coverImage?: string;        // URL format, optional
-  }
-  ```
+    ```typescript
+    {
+      displayName?: string;       // 0-100 chars, optional
+      bio?: string;               // 0-500 chars, optional
+      avatar?: string;            // URL format, optional
+      coverImage?: string;        // URL format, optional
+    }
+    ```
 - **Output DTO:** `UserResponseDto`
 
 ### Upload User Avatar
+
 - **Route:** `PATCH /users/me/avatar`
 - **Input:** Multipart form-data with `file` field
 - **Output DTO:** `UserResponseDto`
 
 ### Upload User Cover Image
+
 - **Route:** `PATCH /users/me/cover`
 - **Input:** Multipart form-data with `file` field
 - **Output DTO:** `UserResponseDto`
 
 ### Change Password
+
 - **Route:** `PATCH /users/me/password`
 - **Input DTO:** `ChangePasswordDto`
-  ```typescript
-  {
-    currentPassword: string;    // required
-    newPassword: string;        // 8-100 chars, required
-  }
-  ```
+    ```typescript
+    {
+    	currentPassword: string; // required
+    	newPassword: string; // 8-100 chars, required
+    }
+    ```
 - **Output DTO:** `ApiResponseDto<{ message: string }>`
-  ```typescript
-  {
-    message: string;            // "Password changed successfully"
-  }
-  ```
+    ```typescript
+    {
+    	message: string; // "Password changed successfully"
+    }
+    ```
 
 ### Change Email
+
 - **Route:** `PATCH /users/me/email`
 - **Input DTO:** `ChangeEmailDto`
-  ```typescript
-  {
-    newEmail: string;           // valid email, required
-    password: string;           // required
-  }
-  ```
+    ```typescript
+    {
+    	newEmail: string; // valid email, required
+    	password: string; // required
+    }
+    ```
 - **Output DTO:** `UserResponseDto`
 
 ### Update User Preferences
+
 - **Route:** `PATCH /users/me/preferences`
 - **Input DTO:** `UpdatePreferencesDto`
-  ```typescript
-  {
-    theme?: string;             // "light" | "dark", optional
-    language?: string;          // language code, optional
-    emailNotifications?: boolean; // optional
-    pushNotifications?: boolean;  // optional
-  }
-  ```
+    ```typescript
+    {
+      theme?: string;             // "light" | "dark", optional
+      language?: string;          // language code, optional
+      emailNotifications?: boolean; // optional
+      pushNotifications?: boolean;  // optional
+    }
+    ```
 - **Output DTO:** `UserResponseDto`
 
 ### Get User Followers
+
 - **Route:** `GET /users/:username/followers`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<UserResponseDto>`
 
 ### Get User Following
+
 - **Route:** `GET /users/:username/following`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<UserResponseDto>`
 
 ### Get User Bookmarks
+
 - **Route:** `GET /users/me/bookmarks`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
 
 ### Block User
+
 - **Route:** `POST /users/:id/block`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
-  ```typescript
-  {
-    message: string;            // "User blocked"
-  }
-  ```
+- **Output DTO:** `SuccessResponseDto<{ message: string }>`
+    ```typescript
+    {
+    	message: string; // "User blocked"
+    }
+    ```
+
+### Get Blocked Users
+
+- **Route:** `GET /users/me/blocked`
+- **Query Parameters:**
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
+- **Input DTO:** None
+- **Output DTO:** `PaginatedResponseDto<BlockedUserResponseDto>`
 
 ### Unblock User
+
 - **Route:** `DELETE /users/:id/block`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `SuccessResponseDto<{ message: string }>`
 
 ### Mute User
+
 - **Route:** `POST /users/:id/mute`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
-  ```typescript
-  {
-    message: string;            // "User muted"
-  }
-  ```
+- **Output DTO:** `SuccessResponseDto<{ message: string }>`
+    ```typescript
+    {
+    	message: string; // "User muted"
+    }
+    ```
+
+### Get Muted Users
+
+- **Route:** `GET /users/me/muted`
+- **Query Parameters:**
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
+- **Input DTO:** None
+- **Output DTO:** `PaginatedResponseDto<MutedUserResponseDto>`
 
 ### Unmute User
+
 - **Route:** `DELETE /users/:id/mute`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `SuccessResponseDto<{ message: string }>`
 
 ### Get User Analytics (Admin)
+
 - **Route:** `GET /users/admin/analytics`
 - **Query Parameters:**
-  ```typescript
-  {
-    userId?: string;
-    startDate?: string;         // ISO date format
-    endDate?: string;           // ISO date format
-  }
-  ```
+    ```typescript
+    {
+      userId?: string;
+      startDate?: string;         // ISO date format
+      endDate?: string;           // ISO date format
+    }
+    ```
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<AnalyticsDto>`
+- **Output DTO:** `SuccessResponseDto<UserAnalyticsDto>`
 
 ### Delete User (Admin)
+
 - **Route:** `DELETE /users/:id`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `SuccessResponseDto<{ message: string }>`
 
 ---
 
 ## Post Endpoints
 
 ### Get All Posts
+
 - **Route:** `GET /posts`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
-  ```typescript
-  {
-    data: PostResponseDto[];
-    page: number;
-    limit: number;
-    total: number;
-    hasMore: boolean;
-  }
-  ```
+    ```typescript
+    {
+      data: PostResponseDto[];
+      page: number;
+      limit: number;
+      total: number;
+      hasMore: boolean;
+    }
+    ```
 
 ### Get User Feed
+
 - **Route:** `GET /posts/feed`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
 
 ### Get Trending Posts
+
 - **Route:** `GET /posts/trending`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
 
 ### Get Latest Posts
+
 - **Route:** `GET /posts/latest`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
 
 ### Get Posts by Hashtag
+
 - **Route:** `GET /posts/hashtag/:tag`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
 
 ### Get Post by ID
+
 - **Route:** `GET /posts/:id`
 - **Input DTO:** None
 - **Output DTO:** `PostResponseDto`
-  ```typescript
-  {
-    id: string;
-    content: string;
-    author: UserResponseDto;
-    likes: number;
-    replies: number;
-    shares: number;
-    views: number;
-    liked: boolean;
-    bookmarked: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-  }
-  ```
+    ```typescript
+    {
+    	id: string;
+    	content: string;
+    	author: UserResponseDto;
+    	likes: number;
+    	replies: number;
+    	shares: number;
+    	views: number;
+    	liked: boolean;
+    	bookmarked: boolean;
+    	createdAt: Date;
+    	updatedAt: Date;
+    }
+    ```
 
 ### Get Post Thread
+
 - **Route:** `GET /posts/:id/thread`
 - **Input DTO:** None
 - **Output DTO:** `PostResponseDto`
 
 ### Create Post
+
 - **Route:** `POST /posts`
 - **Input DTO:** `CreatePostDto`
-  ```typescript
-  {
-    content: string;            // 1-280 chars, required
-    media?: string[];           // optional URLs
-    isReply?: boolean;          // optional
-    isRepost?: boolean;         // optional
-  }
-  ```
+    ```typescript
+    {
+      content: string;            // 1-280 chars, required
+      visibility?: string;        // 'public' | 'followers' | 'friends' | 'private'
+      hashtags?: string[];        // optional
+      mentions?: string[];        // optional
+      locationName?: string;      // optional
+      locationLatitude?: number;  // optional
+      locationLongitude?: number; // optional
+      mediaIds?: string[];        // optional media file IDs
+    }
+    ```
 - **Output DTO:** `PostResponseDto`
 
 ### Like Post
+
 - **Route:** `POST /posts/:id/like`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
-  ```typescript
-  {
-    message: string;            // "Post liked"
-  }
-  ```
+- **Output DTO:** `PostLikeResponseDto`
+    ```typescript
+    {
+      message: string;            // "Post liked"
+      success: boolean;
+      likeCount?: number;
+    }
+    ```
 
 ### Unlike Post
+
 - **Route:** `DELETE /posts/:id/like`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `PostLikeResponseDto`
 
 ### Get Post Likes
+
 - **Route:** `GET /posts/:id/likes`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<UserResponseDto[]>`
+- **Output DTO:** `SuccessResponseDto<UserResponseDto[]>`
 
 ### Bookmark Post
+
 - **Route:** `POST /posts/:id/bookmark`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
-  ```typescript
-  {
-    message: string;            // "Post bookmarked"
-  }
-  ```
+- **Output DTO:** `BookmarkDto`
+    ```typescript
+    {
+    	message: string; // "Post bookmarked"
+    	success: boolean;
+    	bookmarked: boolean;
+    }
+    ```
 
 ### Remove Bookmark
+
 - **Route:** `DELETE /posts/:id/bookmark`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `BookmarkDto`
 
 ### Share/Repost
+
 - **Route:** `POST /posts/:id/share`
 - **Input DTO:** None
-- **Output DTO:** `PostResponseDto`
+- **Output DTO:** `RepostDto`
+    ```typescript
+    {
+      message: string;
+      success: boolean;
+      post?: PostResponseDto;
+    }
+    ```
 
 ### Delete Share/Repost
+
 - **Route:** `DELETE /posts/:id/share`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `SuccessResponseDto<{ message: string }>`
 
 ### Get Shares/Reposts
+
 - **Route:** `GET /posts/:id/shares`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<PostResponseDto[]>`
+- **Output DTO:** `SuccessResponseDto<PostResponseDto[]>`
 
 ### Record View
+
 - **Route:** `POST /posts/:id/view`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `PostViewResponseDto`
+    ```typescript
+    {
+      message: string;
+      success: boolean;
+      viewCount?: number;
+    }
+    ```
 
 ### Get Post Replies
+
 - **Route:** `GET /posts/:id/replies`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
 
 ### Reply to Post
+
 - **Route:** `POST /posts/:id/reply`
 - **Input DTO:** `CreatePostDto`
 - **Output DTO:** `PostResponseDto`
 
 ### Update Post
+
 - **Route:** `PATCH /posts/:id`
 - **Input DTO:** `UpdatePostDto`
-  ```typescript
-  {
-    content?: string;           // 1-280 chars, optional
-    media?: string[];           // optional URLs
-  }
-  ```
+    ```typescript
+    {
+      content?: string;           // 1-280 chars, optional
+      media?: string[];           // optional URLs
+    }
+    ```
 - **Output DTO:** `PostResponseDto`
 
 ### Delete Post
+
 - **Route:** `DELETE /posts/:id`
 - **Input DTO:** None
 - **Output DTO:** `ApiResponseDto<PostResponseDto>`
@@ -551,136 +674,181 @@ This document provides a complete repository of all API endpoints with their inp
 ## Comment Endpoints
 
 ### Get Comments for Post
+
 - **Route:** `GET /posts/:postId/comments`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<CommentResponseDto>`
-  ```typescript
-  {
-    data: CommentResponseDto[];
-    page: number;
-    limit: number;
-    total: number;
-    hasMore: boolean;
-  }
-  ```
+    ```typescript
+    {
+      data: CommentResponseDto[];
+      page: number;
+      limit: number;
+      total: number;
+      hasMore: boolean;
+    }
+    ```
 
 ### Get Comment by ID
+
 - **Route:** `GET /posts/:postId/comments/:id`
 - **Input DTO:** None
 - **Output DTO:** `CommentResponseDto`
-  ```typescript
-  {
-    id: string;
-    content: string;
-    author: UserResponseDto;
-    post: PostResponseDto;
-    likes: number;
-    replies: number;
-    liked: boolean;
-    createdAt: Date;
-    updatedAt: Date;
-  }
-  ```
+    ```typescript
+    {
+    	id: string;
+    	content: string;
+    	author: UserResponseDto;
+    	post: PostResponseDto;
+    	likes: number;
+    	replies: number;
+    	liked: boolean;
+    	createdAt: Date;
+    	updatedAt: Date;
+    }
+    ```
 
 ### Create Comment
+
 - **Route:** `POST /posts/:postId/comments`
 - **Input DTO:** `CreateCommentDto`
-  ```typescript
-  {
-    content: string;            // 1-500 chars, required
-  }
-  ```
+    ```typescript
+    {
+    	content: string; // 1-500 chars, required
+    }
+    ```
 - **Output DTO:** `CommentResponseDto`
 
 ### Reply to Comment
+
 - **Route:** `POST /posts/:postId/comments/:id/reply`
 - **Input DTO:** `CreateCommentDto`
 - **Output DTO:** `CommentResponseDto`
 
 ### Update Comment
+
 - **Route:** `PATCH /posts/:postId/comments/:id`
 - **Input DTO:** `UpdateCommentDto`
-  ```typescript
-  {
-    content?: string;           // 1-500 chars, optional
-  }
-  ```
+    ```typescript
+    {
+      content?: string;           // 1-500 chars, optional
+    }
+    ```
 - **Output DTO:** `CommentResponseDto`
 
 ### Delete Comment
+
 - **Route:** `DELETE /posts/:postId/comments/:id`
 - **Input DTO:** None
 - **Output DTO:** `ApiResponseDto<{ message: string }>`
 
 ### Like Comment
-- **Route:** `POST /posts/:postId/comments/:id/like`
+
+- **Route:** `POST /comments/:id/like`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `CommentLikeResponseDto`
+    ```typescript
+    {
+      message: string;
+      success: boolean;
+      likeCount?: number;
+    }
+    ```
 
 ### Unlike Comment
-- **Route:** `DELETE /posts/:postId/comments/:id/like`
+
+- **Route:** `DELETE /comments/:id/like`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `CommentLikeResponseDto`
+
+### Get Comment Likes
+
+- **Route:** `GET /comments/:id/likes`
+- **Input DTO:** None
+- **Output DTO:** `SuccessResponseDto<UserResponseDto[]>`
+
+### Get Comment Replies
+
+- **Route:** `GET /comments/:id/replies`
+- **Query Parameters:**
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
+- **Input DTO:** None
+- **Output DTO:** `PaginatedResponseDto<CommentResponseDto>`
+
+### Reply to Comment
+
+- **Route:** `POST /comments/:id/reply`
+- **Input DTO:** `CreateCommentDto`
+- **Output DTO:** `CommentResponseDto`
 
 ---
 
 ## Follow Endpoints
 
 ### Get User Followers
+
 - **Route:** `GET /users/:username/followers`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<UserResponseDto>`
 
 ### Get User Following
+
 - **Route:** `GET /users/:username/following`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<UserResponseDto>`
 
 ### Check Relationship Status
+
 - **Route:** `GET /users/:username/relationship`
 - **Input DTO:** None
 - **Output DTO:** `RelationshipStatusDto`
-  ```typescript
-  {
-    isFollowing: boolean;
-    isFollowedBy: boolean;
-    isBlocked: boolean;
-    isMuted: boolean;
-  }
-  ```
+    ```typescript
+    {
+    	isFollowing: boolean;
+    	isFollowedBy: boolean;
+    	isBlocked: boolean;
+    	isMuted: boolean;
+    }
+    ```
 
 ### Follow User
+
 - **Route:** `POST /users/:id/follow`
 - **Input DTO:** None
 - **Output DTO:** `FollowResponseDto`
-  ```typescript
-  {
-    message: string;            // "User followed"
-  }
-  ```
+    ```typescript
+    {
+    	message: string; // "User followed"
+    }
+    ```
 
 ### Unfollow User
+
 - **Route:** `DELETE /users/:id/follow`
 - **Input DTO:** None
 - **Output DTO:** `ApiResponseDto<{ message: string }>`
@@ -690,207 +858,277 @@ This document provides a complete repository of all API endpoints with their inp
 ## Report Endpoints
 
 ### Get My Reports
+
 - **Route:** `GET /reports/me`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<ReportResponseDto>`
 
 ### Get All Reports (Admin)
-- **Route:** `GET /reports/admin/reports`
+
+- **Route:** `GET /admin/reports`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-    status?: string;            // optional filter
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+      status?: string;            // optional filter
+    }
+    ```
 - **Input DTO:** None
-- **Output DTO:** `PaginatedResponseDto<ReportResponseDto>`
-  ```typescript
-  {
-    data: ReportResponseDto[];
-    page: number;
-    limit: number;
-    total: number;
-    hasMore: boolean;
-  }
-  ```
+- **Output DTO:** `PaginatedResponseDto<AdminReportDetailDto>`
 
 ### Get Report by ID (Admin)
-- **Route:** `GET /reports/admin/:id`
+
+- **Route:** `GET /admin/reports/:id`
 - **Input DTO:** None
-- **Output DTO:** `ReportResponseDto`
-  ```typescript
-  {
-    id: string;
-    reason: string;
-    description?: string;
-    status: "pending" | "reviewed" | "resolved";
-    reporter: UserResponseDto;
-    user?: UserResponseDto;
-    post?: PostResponseDto;
-    comment?: CommentResponseDto;
-    createdAt: Date;
-    updatedAt: Date;
-  }
-  ```
+- **Output DTO:** `AdminReportDetailDto`
+    ```typescript
+    {
+      id: string;
+      reporterId: string;
+      reporter?: {
+        id: string;
+        username: string;
+        email: string;
+      };
+      reason: string;
+      description?: string;
+      status: "pending" | "reviewed" | "resolved";
+      reportedUser?: {
+        id: string;
+        username: string;
+        email: string;
+        isSuspended: boolean;
+      };
+      reportedPost?: PostResponseDto;
+      reportedComment?: CommentResponseDto;
+      adminNotes?: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }
+    ```
 
 ### Report User
+
 - **Route:** `POST /reports/users/:id`
 - **Input DTO:** `CreateReportDto`
-  ```typescript
-  {
-    reason: string;             // required
-    description?: string;       // optional
-  }
-  ```
+    ```typescript
+    {
+      reason: string;             // required
+      description?: string;       // optional
+    }
+    ```
 - **Output DTO:** `ReportResponseDto`
 
 ### Report Post
+
 - **Route:** `POST /reports/posts/:id`
 - **Input DTO:** `CreateReportDto`
 - **Output DTO:** `ReportResponseDto`
 
 ### Report Comment
+
 - **Route:** `POST /reports/comments/:id`
 - **Input DTO:** `CreateReportDto`
 - **Output DTO:** `ReportResponseDto`
 
 ### Update Report Status (Admin)
-- **Route:** `PATCH /reports/admin/:id/status`
+
+- **Route:** `PATCH /admin/reports/:id`
 - **Input DTO:** `UpdateReportStatusDto`
-  ```typescript
-  {
-    status: "pending" | "reviewed" | "resolved"; // required
-    adminNotes?: string;        // optional
-  }
-  ```
-- **Output DTO:** `ReportResponseDto`
+    ```typescript
+    {
+      status: "pending" | "reviewed" | "resolved"; // required
+      adminNotes?: string;        // optional
+    }
+    ```
+- **Output DTO:** `AdminReportDetailDto`
 
 ### Suspend User (Admin)
-- **Route:** `POST /reports/admin/users/:id/suspend`
-- **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+
+- **Route:** `POST /admin/users/:id/suspend`
+- **Input DTO:** `SuspendUserDto`
+    ```typescript
+    {
+      userId: string;
+      reason?: string;
+      durationInDays?: number;
+    }
+    ```
+- **Output DTO:** `AdminActionResponseDto`
 
 ### Unsuspend User (Admin)
-- **Route:** `POST /reports/admin/users/:id/unsuspend`
-- **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+
+- **Route:** `POST /admin/users/:id/unsuspend`
+- **Input DTO:** `UnsuspendUserDto`
+    ```typescript
+    {
+      userId: string;
+      reason?: string;
+    }
+    ```
+- **Output DTO:** `AdminActionResponseDto`
 
 ### Verify User (Admin)
-- **Route:** `POST /reports/admin/users/:id/verify`
+
+- **Route:** `POST /admin/users/:id/verify`
+- **Input DTO:** `VerifyUserDto`
+    ```typescript
+    {
+    	userId: string;
+    }
+    ```
+- **Output DTO:** `AdminActionResponseDto`
+
+### Delete Post (Admin)
+
+- **Route:** `DELETE /admin/posts/:id`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `AdminActionResponseDto`
+
+### Delete Comment (Admin)
+
+- **Route:** `DELETE /admin/comments/:id`
+- **Input DTO:** None
+- **Output DTO:** `AdminActionResponseDto`
 
 ### Delete Content (Admin)
-- **Route:** `DELETE /reports/admin/content/:id`
+
+- **Route:** `DELETE /admin/content/:id`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `SuccessResponseDto<{ message: string }>`
 
 ---
 
 ## Media Endpoints
 
 ### Upload Media
+
 - **Route:** `POST /media/upload`
 - **Input:** Multipart form-data with `file` field
 - **Output DTO:** `MediaUploadResponseDto`
-  ```typescript
-  {
-    id: string;
-    url: string;
-    mediaType: string;
-    size: number;
-    uploadedAt: Date;
-  }
-  ```
+    ```typescript
+    {
+    	id: string;
+    	userId: string;
+    	filename: string;
+    	mimetype: string;
+    	size: number;
+    	url: string;
+    	createdAt: Date;
+    }
+    ```
 
 ### Get Media by ID
+
 - **Route:** `GET /media/:id`
 - **Input DTO:** None
-- **Output DTO:** `MediaUrlDto`
-  ```typescript
-  {
-    id: string;
-    url: string;
-    mediaType: string;
-  }
-  ```
+- **Output DTO:** `MediaResponseDto`
+    ```typescript
+    {
+      id: string;
+      userId: string;
+      filename: string;
+      mimetype: string;
+      size: number;
+      url: string;
+      width?: number;
+      height?: number;
+      duration?: number;
+      thumbnailUrl?: string;
+      createdAt: Date;
+      updatedAt: Date;
+    }
+    ```
 
 ### Delete Media
+
 - **Route:** `DELETE /media/:id`
 - **Input DTO:** None
-- **Output DTO:** `ApiResponseDto<{ message: string }>`
+- **Output DTO:** `MediaDeleteResponseDto`
+    ```typescript
+    {
+    	message: string;
+    	success: boolean;
+    	deletedId: string;
+    }
+    ```
 
 ---
 
 ## Notification Endpoints
 
 ### Get Notifications
+
 - **Route:** `GET /notifications`
 - **Query Parameters:**
-  ```typescript
-  {
-    page?: number;              // default: 1
-    limit?: number;             // default: 20
-  }
-  ```
+    ```typescript
+    {
+      page?: number;              // default: 1
+      limit?: number;             // default: 20
+    }
+    ```
 - **Input DTO:** None
 - **Output DTO:** `PaginatedResponseDto<NotificationResponseDto>`
-  ```typescript
-  {
-    data: NotificationResponseDto[];
-    page: number;
-    limit: number;
-    total: number;
-    hasMore: boolean;
-  }
-  ```
+    ```typescript
+    {
+      data: NotificationResponseDto[];
+      page: number;
+      limit: number;
+      total: number;
+      hasMore: boolean;
+    }
+    ```
 
 ### Get Unread Count
+
 - **Route:** `GET /notifications/unread`
 - **Input DTO:** None
 - **Output DTO:** `UnreadCountDto`
-  ```typescript
-  {
-    unreadCount: number;
-  }
-  ```
+    ```typescript
+    {
+    	unreadCount: number;
+    }
+    ```
 
 ### Mark Notification as Read
+
 - **Route:** `PATCH /notifications/:id/read`
 - **Input DTO:** None
 - **Output DTO:** `NotificationResponseDto`
-  ```typescript
-  {
-    id: number;
-    type: string;
-    message: string;
-    read: boolean;
-    relatedUser?: UserResponseDto;
-    relatedPost?: PostResponseDto;
-    createdAt: Date;
-  }
-  ```
+    ```typescript
+    {
+      id: number;
+      type: string;
+      message: string;
+      read: boolean;
+      relatedUser?: UserResponseDto;
+      relatedPost?: PostResponseDto;
+      createdAt: Date;
+    }
+    ```
 
 ### Mark All as Read
+
 - **Route:** `PATCH /notifications/read-all`
 - **Input DTO:** None
 - **Output DTO:** `ApiResponseDto<{ message: string }>`
 
 ### Delete Notification
+
 - **Route:** `DELETE /notifications/:id`
 - **Input DTO:** None
 - **Output DTO:** `ApiResponseDto<{ message: string }>`
 
 ### Delete All Notifications
+
 - **Route:** `DELETE /notifications`
 - **Input DTO:** None
 - **Output DTO:** `ApiResponseDto<{ message: string }>`
@@ -900,14 +1138,16 @@ This document provides a complete repository of all API endpoints with their inp
 ## Common DTOs
 
 ### PaginationDto
+
 ```typescript
 {
-  page: number;                 // current page
-  limit: number;                // items per page
+  page?: number;                // default: 1
+  limit?: number;               // default: 20
 }
 ```
 
 ### PaginatedResponseDto<T>
+
 ```typescript
 {
   data: T[];                    // array of items
@@ -919,26 +1159,252 @@ This document provides a complete repository of all API endpoints with their inp
 ```
 
 ### ApiResponseDto<T>
+
 ```typescript
 {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+  timestamp: Date;
+  statusCode?: number;
+}
+```
+
+### SuccessResponseDto<T>
+
+```typescript
+{
+  success: boolean;
   message?: string;
   data?: T;
-  error?: string;
+  statusCode?: number;
+  timestamp?: Date;
+}
+```
+
+### ErrorResponseDto
+
+```typescript
+{
+  error: string;
+  message: string;
+  statusCode: number;
+  timestamp?: Date;
+}
+```
+
+### MessageResponseDto
+
+```typescript
+{
+  message: string;
   statusCode?: number;
 }
 ```
 
 ### IdParamDto
+
 ```typescript
 {
-  id: string;                   // resource ID
+	id: string; // resource ID
 }
 ```
 
 ### UsernameParamDto
+
 ```typescript
 {
-  username: string;             // user username
+	username: string; // user username
+}
+```
+
+### CountResponseDto
+
+```typescript
+{
+	count: number;
+}
+```
+
+### ListCountDto
+
+```typescript
+{
+	total: number;
+	count: number;
+}
+```
+
+---
+
+## Analytics DTOs
+
+### UserAnalyticsDto
+
+```typescript
+{
+  userId: string;
+  totalViews: number;
+  totalLikes: number;
+  totalComments: number;
+  totalFollowers: number;
+  totalFollowing: number;
+  totalPosts: number;
+  engagementRate: number;
+  averageLikesPerPost: number;
+  averageCommentsPerPost: number;
+  mostLikedPost?: {
+    id: string;
+    likes: number;
+  };
+  startDate: Date;
+  endDate: Date;
+}
+```
+
+### PostAnalyticsDto
+
+```typescript
+{
+  postId: string;
+  views: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  engagement: number;
+  engagementRate: number;
+  reachCount: number;
+  impressionCount: number;
+  topCommenters: string[];
+  createdAt: Date;
+  lastEngagementAt?: Date;
+}
+```
+
+### AnalyticsFilterDto
+
+```typescript
+{
+  userId?: string;
+  startDate?: string;           // ISO date format
+  endDate?: string;             // ISO date format
+  timeframe?: 'day' | 'week' | 'month' | 'year';
+}
+```
+
+### TimeSeriesAnalyticsDto
+
+```typescript
+{
+	timestamp: Date;
+	views: number;
+	likes: number;
+	comments: number;
+	shares: number;
+	followers: number;
+}
+```
+
+### PlatformStatisticsDto
+
+```typescript
+{
+  totalUsers: number;
+  activeUsers: number;
+  totalPosts: number;
+  totalComments: number;
+  totalFollows: number;
+  averagePostsPerUser: number;
+  averageEngagementRate: number;
+  topTrendingTopics: string[];
+  timestamp: Date;
+}
+```
+
+### InsightsDto
+
+```typescript
+{
+  userId: string;
+  followerGrowth: number;
+  postGrowth: number;
+  engagementTrend: 'up' | 'down' | 'stable';
+  topPostsByEngagement: PostAnalyticsDto[];
+  recommendedPostingTimes: string[];
+  audienceDemographics?: {
+    avgAge?: number;
+    genderDistribution?: object;
+    topCountries?: { country: string; count: number }[];
+  };
+}
+```
+
+---
+
+## Search and Hashtag DTOs
+
+### HashtagDto
+
+```typescript
+{
+	id: string;
+	name: string;
+	count: number;
+	trend: number; // trending score
+	createdAt: Date;
+	updatedAt: Date;
+}
+```
+
+### TrendingHashtagDto
+
+```typescript
+{
+	name: string;
+	count: number;
+	trend: number;
+	rank: number;
+}
+```
+
+### SearchQueryDto
+
+```typescript
+{
+  query: string;
+  type?: 'posts' | 'users' | 'hashtags' | 'comments' | 'all';
+  page?: number;                // default: 1
+  limit?: number;               // default: 20
+}
+```
+
+### SearchResultDto<T>
+
+```typescript
+{
+  query: string;
+  resultType: string;
+  results: T[];
+  total: number;
+  timestamp: Date;
+}
+```
+
+### CombinedSearchResultDto
+
+```typescript
+{
+  query: string;
+  posts: SearchPostResultDto[];
+  users: SearchUserResultDto[];
+  hashtags: HashtagDto[];
+  comments: SearchCommentResultDto[];
+  postCount: number;
+  userCount: number;
+  hashtagCount: number;
+  commentCount: number;
+  timestamp: Date;
 }
 ```
 
@@ -949,6 +1415,7 @@ This document provides a complete repository of all API endpoints with their inp
 All endpoints except those in the **Auth Endpoints** section require authentication.
 
 **Headers:**
+
 ```
 Authorization: Bearer <JWT_TOKEN>
 ```
@@ -963,9 +1430,9 @@ All endpoints may return error responses in the following format:
 
 ```typescript
 {
-  error: string;
-  message: string;
-  statusCode: number;
+	error: string;
+	message: string;
+	statusCode: number;
 }
 ```
 
@@ -980,3 +1447,97 @@ All endpoints may return error responses in the following format:
 - **409 Conflict** - Resource already exists or conflict detected
 - **500 Internal Server Error** - Server error
 
+---
+
+## Additional Endpoints
+
+### User Profile Endpoints
+
+#### Get Current User Profile
+
+- **Route:** `GET /users/me`
+- **Input DTO:** None
+- **Output DTO:** `UserResponseDto`
+
+#### Delete Current User Account
+
+- **Route:** `DELETE /users/me`
+- **Input DTO:** None
+- **Output DTO:** `SuccessResponseDto<{ message: string }>`
+
+#### Get User Preferences
+
+- **Route:** `GET /users/me/preferences`
+- **Input DTO:** None
+- **Output DTO:** `UserPreferencesDto`
+
+### Post Feed Endpoints
+
+#### Get User Feed
+
+- **Route:** `GET /posts/feed`
+- **Query Parameters:** page, limit
+- **Input DTO:** None
+- **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
+
+#### Get User Timeline
+
+- **Route:** `GET /posts/timeline`
+- **Query Parameters:** page, limit
+- **Input DTO:** None
+- **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
+
+#### Get Post Thread
+
+- **Route:** `GET /posts/:id/thread`
+- **Input DTO:** None
+- **Output DTO:** `PostThreadDto`
+
+### Search and Discovery Endpoints
+
+#### Get Posts by Hashtag
+
+- **Route:** `GET /posts/hashtag/:tag`
+- **Query Parameters:** page, limit
+- **Input DTO:** None
+- **Output DTO:** `PaginatedResponseDto<PostResponseDto>`
+
+#### Get Trending Hashtags
+
+- **Route:** `GET /hashtags/trending`
+- **Query Parameters:** page, limit
+- **Input DTO:** None
+- **Output DTO:** `PaginatedResponseDto<TrendingHashtagDto>`
+
+#### Search Posts
+
+- **Route:** `GET /posts/search`
+- **Query Parameters:** query, page, limit
+- **Input DTO:** None
+- **Output DTO:** `CombinedSearchResultDto`
+
+### Utility Endpoints
+
+#### Logout User
+
+- **Route:** `POST /auth/logout`
+- **Input DTO:** None
+- **Output DTO:** `LogoutResponseDto`
+
+#### Health Check
+
+- **Route:** `GET /health`
+- **Input DTO:** None
+- **Output DTO:** `HealthCheckResponseDto`
+
+#### API Version
+
+- **Route:** `GET /version`
+- **Input DTO:** None
+- **Output DTO:** `SuccessResponseDto<{ version: string }>`
+
+#### Platform Statistics
+
+- **Route:** `GET /stats`
+- **Input DTO:** None
+- **Output DTO:** `PlatformStatisticsDto`

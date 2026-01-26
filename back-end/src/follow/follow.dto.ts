@@ -30,3 +30,40 @@ export class PaginatedFollowsDto {
 	total: number;
 	hasMore: boolean;
 }
+
+export class FollowActionResponseDto {
+	message: string;
+	success: boolean;
+	data?: {
+		isFollowing: boolean;
+		followingId: string;
+	};
+}
+
+export class FollowCountDto {
+	followerCount: number;
+	followingCount: number;
+}
+
+export class FollowListResponseDto {
+	data: UserFollowListDto[];
+	total: number;
+	count: number;
+}
+
+export class FollowerDto {
+	id: string;
+	username: string;
+	displayName?: string;
+	avatarUrl?: string;
+	isVerified: boolean;
+	isMutual: boolean;
+}
+
+export class FollowingDto {
+	id: string;
+	username: string;
+	displayName?: string;
+	avatarUrl?: string;
+	isVerified: boolean;
+}
