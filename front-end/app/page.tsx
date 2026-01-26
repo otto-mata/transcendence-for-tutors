@@ -6,9 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PaginatedResponseDto  } from '@client/common.dto';
 import { PostResponseDto } from '@/client/post.dto';
-import { getPosts } from '@client/post/post.mock';
 import { TransClient } from "@/client/TransClient";
-import { Content } from "next/font/google";
 
 
 
@@ -20,7 +18,8 @@ export default function Home() {
 
   async function PostIt(){
     const res = await client.createPost({content : PostInput});
-    console.log('my message is : ' + res.getMessage());
+    setPostInput('');
+    router.refresh();
   }
 
   useEffect(() => {

@@ -4,26 +4,10 @@ import { PostResponseDto } from '@/client/post.dto';
 import { Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import { TransClient } from '@/client/TransClient';
+import { useRouter } from 'next/navigation';
 
 function printit(){
 	console.log("Button clicked");
-}
-
-
-interface MockPostData {
-	userId: number;
-	id: number;
-	body: string;
-};
-
-function CommentPost(){
-	//fetch POST asslike
-	console.log("yep ! It clicked");
-}
-
-function BookmarkPost(){
-	//fetch POST asslike
-	console.log("yep ! It clicked");
 }
 
 function buttonApearance(alreadyDone?: boolean){
@@ -33,15 +17,22 @@ function buttonApearance(alreadyDone?: boolean){
 
 
 export const PostList = ({posts}: {posts : PaginatedResponseDto<PostResponseDto>}) => {
+  if (!posts)
+		return (<div>Error</div>);
+	
   const client = TransClient.get_instance();
+  const router = useRouter();
 
-  function LikePost(postId : number, likeState : boolean){
-	  client.likePost(postId, likeState);
+  function LikePost(post : PostResponseDto){
+	client.likePost(post.id, post.liked);
+	router.refresh();
+  }
+
+  function CommentPost(id : number){
+	router.push('/post/' + id);
   }
 
 	//const posts = await axios.get<MockPostData[]>(`https://jsonplaceholder.typicode.com/posts`, { params: { userId: id } })
-	if (!posts)
-		return (<div>Error</div>);
 	if (posts)
 	return (<div className="flex flex-col bg">
 		{posts.data?.map((post, index) => (
@@ -73,10 +64,10 @@ export const PostList = ({posts}: {posts : PaginatedResponseDto<PostResponseDto>
 								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{post.content}</p>
 								<div className="flex items-center justify-between text-gray-500">
 									<div className="flex gap-4 text-sm">
-										<button onClick={() => LikePost(post.id, post.liked)} className={ post.liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>
+										<button onClick={() => LikePost(post)} className={ post.liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>
 											❤️ {post.likes}
 										</button>
-										<button onClick={printit} className="hover:text-blue-500 transition-colors cursor-pointer">
+										<button onClick={() => CommentPost(post.id)} className="hover:text-blue-500 transition-colors cursor-pointer">
 											💬 {post.replies}
 										</button>
 									</div>

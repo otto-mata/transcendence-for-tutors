@@ -1,10 +1,9 @@
 "use client"
 import Image from 'next/image';
 import { MapPin, Link as LinkIcon, Calendar, MoreHorizontal, Settings, Share2, Bell, BellOff } from 'lucide-react';
-import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react';
 import { isLogged } from '@/client/common.mock';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { TransClient } from '@/client/TransClient';
 import { UserResponseDto } from '@/client/profile.dto';
 

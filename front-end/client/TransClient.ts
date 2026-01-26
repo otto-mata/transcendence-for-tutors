@@ -1,5 +1,4 @@
 import { Axios } from "axios";
-import { PostFiltering } from "./Post";
 import { AuthResponseDto, LoginDto, RegisterDto } from "./auth.dto";
 import { CreatePostDto, QueryParametersDto, PostResponseDto, UpdatePostDto } from "./post.dto";
 import { ApiResponseDto, PaginatedResponseDto, QueryParametersDto } from "./common.dto";
@@ -13,6 +12,47 @@ import { NotificationResponseDto, UnreadCountDto } from "./notification.dto";
 // type ClientResponse<T> = Promise<ApiResponseDto<T>>;
 
 //Important : A lot of thoses call will in the end use an access token, so I don't put it inside the parameters, because it is stored in localStorage
+
+function newPost(content : string) {
+
+
+	if (!content)
+		return;
+	PaginatedPosts.data.push({
+		id: +PaginatedPosts.data.length + 1 ,
+		content: content,
+		author: User1,
+		likes: 0,
+		replies: 0,
+		shares: 0,
+		views: 0,
+		liked: false,
+		bookmarked: false,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		})
+}
+
+function newComment(content : string, postId : number) {
+	const post = PaginatedPosts.data.at(postId - 1);
+
+	if (!post || !content){
+		return;
+	}
+	const  tmp = PaginatedComment.data.length + 1 ;
+	PaginatedComment.data.push({
+		id: tmp,
+		content: content,
+		author: User1,
+		post: Post1,
+		likes: 0,
+		replies: 0,
+		liked: false,
+		createdAt: new Date(),
+		updatedAt: new Date(),
+		})
+}
+
 
 class Response<DataType>{
 	constructor(
@@ -158,15 +198,15 @@ const ClientMockApi = (client : Axios ) => {
 		posts:{
 			$: async (id : number ) => {
 				// fetch Get /posts/:id
-				const post = id == 2 ? Post2 : Post1;
-				if (id > 2)
+				const post = PaginatedPosts.data.at(id - 1);
+				if (!post)
 					return new Response<PostResponseDto>(false, 'No such post');	
 				return new Response<PostResponseDto>(true, 'Post Retrieved well :D', post);
 			},
 			thread : async (id : number ) => {
 				// fetch Get /posts/:id/thread
-				const post = id == 2 ? Post2 : Post1;
-				if (id > 2)
+				const post = PaginatedPosts.data.at(id - 1);
+				if (!post)
 					return new Response<PostResponseDto>(false, 'No such post');	
 				return new Response<PostResponseDto>(true, 'Post Retrieved well :D', post);
 			},
@@ -177,7 +217,10 @@ const ClientMockApi = (client : Axios ) => {
 			},
 			create : async (data : CreatePostDto) => {
 				//fetch POST /posts
-				return new Response<PostResponseDto>(false, 'Post Created', Post1);	
+				if (!data.content || data.content == '' )
+						return new Response<null>(true, 'No content in the post creation');
+				newPost(data.content);
+				return new Response<null>(false, 'Post Created');	
 			},
 			reply : async (data : CreatePostDto) => {
 				//fetch POST /posts/:id/reply
@@ -198,50 +241,60 @@ const ClientMockApi = (client : Axios ) => {
 			},
 			like : async (id : number ) => {
 				// fetch Get /posts/:id/like
-				const post = id == 2 ? Post2 : Post1;
-				if (id > 2)
+				const post = PaginatedPosts.data.at(id - 1);
+				if (!post)
 					return new Response<null>(false, 'No such post');	
+				if (post.liked)
+					return new Response<null>(false, 'Post already liked');
+				post.likes += 1;
+				post.liked = true;
 				return new Response<null>(true, 'Post Liked');
 			},
 			unlike : async (id : number ) => {
 				// fetch Delete /posts/:id/like
-				const post = id == 2 ? Post2 : Post1;
-				if (id > 2)
+				const post = PaginatedPosts.data.at(id - 1);
+				if (!post)
 					return new Response<null>(false, 'No such post');	
+				if (!post.liked)
+					return new Response<null>(false, 'Post not liked');
+				post.likes -= 1;
+				post.liked = false;
 				return new Response<null>(true, 'Post unliked');
 			},
 			share : async (id : number ) => {
 				// fetch Get /posts/:id/share
-				const post = id == 2 ? Post2 : Post1;
-				if (id > 2)
+				const post = PaginatedPosts.data.at(id - 1);
+				if (!post)
 					return new Response<null>(false, 'No such post');	
 				return new Response<null>(true, 'Post shared');
 			},
 			unshare : async (id : number ) => {
 				// fetch Delete /posts/:id/share
-				const post = id == 2 ? Post2 : Post1;
-				if (id > 2)
+				const post = PaginatedPosts.data.at(id - 1);
+				if (!post)
 					return new Response<null>(false, 'No such post');	
 				return new Response<null>(true, 'Post unshared');
 			},
 			bookmark : async (id : number ) => {
 				// fetch Get /posts/:id/bookmark
-				const post = id == 2 ? Post2 : Post1;
-				if (id > 2)
+				const post = PaginatedPosts.data.at(id - 1);
+				if (!post)
 					return new Response<null>(false, 'No such post');	
+				post.bookmarked = true;
 				return new Response<null>(true, 'Post bookmarked');
 			},
 			removeBookmark : async (id : number ) => {
 				// fetch Delete /posts/:id/bookmark
-				const post = id == 2 ? Post2 : Post1;
-				if (id > 2)
-					return new Response<null>(false, 'No such post');	
+				const post = PaginatedPosts.data.at(id - 1);
+				if (!post)
+					return new Response<null>(false, 'No such post');
+				post.bookmarked = false;
 				return new Response<null>(true, 'Post remove from bookmarked');
 			},
 			likes : async ( id : number) => {
 				// fetch Get /posts/:id/likes
-				const post = id == 2 ? Post2 : Post1;
-				if (id > 2)
+				const post = PaginatedPosts.data.at(id - 1);
+				if (!post)
 					return new Response<PaginatedResponseDto<UserResponseDto>>(false, 'No such post');	
 				return new Response<PaginatedResponseDto<UserResponseDto>>
 					(true, 'Post List Retrieved well :D', PaginatedUsers);
@@ -264,9 +317,9 @@ const ClientMockApi = (client : Axios ) => {
 
 		},
 		comment : {
-			getPost : async (postId : number) => {
+			getPost : async (data : {id : number, page? : number, limit? : number}) => {
 				//fetch GET /posts/:postId/comments
-				if (postId > 2)
+				if (data.id > 2)
 					return new Response<PaginatedResponseDto<CommentResponseDto>>
 						(true, 'No such Post')
 				return new Response<PaginatedResponseDto<CommentResponseDto>>
@@ -274,31 +327,46 @@ const ClientMockApi = (client : Axios ) => {
 			},
 			get : async (postId : number, commentId : number) => {
 				//fetch GET /posts/:postId/comments/:id
-				if (postId > 2 || commentId > 2)
+				const post = PaginatedPosts.data.at(postId - 1);
+				if (!post)
+					return new Response<CommentResponseDto>
+						(true, 'No such post')
+				const comment = PaginatedComment.data.at(postId - 1);
+				if (!comment)
 					return new Response<CommentResponseDto>
 						(true, 'No such comment')
+				
 				return new Response<CommentResponseDto>
 					(true, 'Comment retrieved', comment1)
 			},
 			delete : async (postId : number, commentId : number) => {
 				//fetch delete /posts/:postId/comments/:id
-				if (postId > 2 || commentId > 2)
+				const post = PaginatedPosts.data.at(postId - 1);
+				if (!post)
+					return new Response<CommentResponseDto>
+						(true, 'No such post')
+				const comment = PaginatedComment.data.at(postId - 1);
+				if (!comment)
 					return new Response<CommentResponseDto>
 						(true, 'No such comment')
+				
 				return new Response<CommentResponseDto>
 					(true, 'Comment deleted', comment1)
 			},
 			create : async (postId : number, content : string) => {
 				//fetch POST /posts/:postId/comments
-				if (postId > 2)
+				const post = PaginatedPosts.data.at(postId - 1);
+				if (!post)
 					return new Response<CommentResponseDto>
 						(true, 'No such Post')
+				newComment(content, postId);
 				return new Response<CommentResponseDto>
 					(true, 'Comment posted', comment1)
 			},
 			reply : async (postId : number, commentId : number) => {
 				//fetch POST /posts/:postId/comments/:id/reply
-				if (postId > 2)
+				const post = PaginatedPosts.data.at(postId - 1);
+				if (!post)
 					return new Response<CommentResponseDto>
 						(true, 'No such Post')
 				return new Response<CommentResponseDto>
@@ -306,27 +374,49 @@ const ClientMockApi = (client : Axios ) => {
 			},
 			update : async (postId : number, commentId : number) => {
 				//fetch UPDATE /posts/:postId/comments/:id
-				if (postId > 2 || commentId > 2)
+				const post = PaginatedPosts.data.at(postId - 1);
+				if (!post)
+					return new Response<CommentResponseDto>
+						(true, 'No such post')
+				const comment = PaginatedComment.data.at(postId - 1);
+				if (!comment)
 					return new Response<CommentResponseDto>
 						(true, 'No such comment')
+				
 				return new Response<CommentResponseDto>
 					(true, 'Comment updated', comment1)
 			},
 			like : async (postId : number, commentId : number) => {
 				//fetch POST /posts/:postId/comments/:id/like
-				if (postId > 2 || commentId > 2)
-					return new Response<CommentResponseDto>
-						(true, 'No such comment')
-				return new Response<CommentResponseDto>
-					(true, 'Comment liked', comment1)
+				const post = PaginatedPosts.data.at(postId - 1);
+				if (!post)
+					return new Response<null>
+						(true, 'No such post')
+				const comment = PaginatedComment.data.at(commentId - 1);
+				if (!comment)
+					return new Response<null>(false, 'No such comment');
+				if (comment.liked)
+					return new Response<null>(false, 'Comment already liked');
+				comment.likes += 1;
+				comment.liked = true;
+				return new Response<null>
+					(true, 'Comment liked')
 			},
 			unlike : async (postId : number, commentId : number) => {
 				//fetch Delete /posts/:postId/comments/:id/like
-				if (postId > 2 || commentId > 2)
-					return new Response<CommentResponseDto>
+				const post = PaginatedPosts.data.at(postId - 1);
+				if (!post)
+					return new Response<null>
 						(true, 'No such comment')
-				return new Response<CommentResponseDto>
-					(true, 'Comment unliked', comment1)
+				const comment = PaginatedComment.data.at(commentId - 1);
+				if (!comment)
+					return new Response<null>(false, 'No such comment');
+				if (!comment.liked)
+					return new Response<null>(false, 'Comment not liked');
+				comment.likes -= 1;
+				comment.liked = false;
+				return new Response<null>
+					(true, 'Comment unliked')
 			},
 			
 		},
@@ -404,11 +494,11 @@ export class TransClient {
 	}
 
 
-	public async getPost({ where }: PostFiltering): ClientResponse<PostResponseDto> {
-		return await this._cl.posts.$(where.id);
+	public async getPost(id : number): ClientResponse<PostResponseDto> {
+		return await this._cl.posts.$(id);
 	}
 
-	public async createPost(data : CreatePostDto): ClientResponse<PostResponseDto> {
+	public async createPost(data : CreatePostDto): ClientResponse<null> {
 		return await this._cl.posts.create(data);
 	}
 
@@ -422,14 +512,35 @@ export class TransClient {
 		return await this._cl.posts.like(id);
 		
 	}
+	
+	public async bookmarkPost(id : number, isSet : boolean): ClientResponse<null> {
+		if (isSet)
+			return await this._cl.posts.removeBookmark(id);
+		return await this._cl.posts.bookmark(id);
+		
+	}
 
+	public async getComments(data : {id : number, page? : number, limit? : number}): ClientResponse<PaginatedResponseDto<CommentResponseDto>> {
+		return await this._cl.comment.getPost(data);
+	}
+
+	public async commentPost(id : number, content : string): ClientResponse<CommentResponseDto> {
+		return await this._cl.comment.create(id, content);
+	}
+
+	public async likeComment(postId : number, commentId : number , isSet : boolean): ClientResponse<null> {
+		if (isSet)
+			return await this._cl.comment.unlike(postId, commentId);
+		return await this._cl.comment.like(postId, commentId);
+		
+	}
 }
 
 
 
 //===============Random Values================
 
-export const User1={
+const User1={
   id: 1,
   username: 'login',
   email: 'marme@laid.fr',
@@ -441,7 +552,7 @@ export const User1={
   updatedAt: new Date(),
 }
 
-export const User2={
+const User2={
   id: 2,
   username: 'login2',
   email: 'meme@pas.mal',
@@ -453,7 +564,7 @@ export const User2={
   updatedAt: new Date(),
 }
 
-export const Post1 = {
+const Post1 = {
   id: 1,
   content: "I guess this is what is supposed to be the string content of the post ?",
   author: User1,
@@ -467,7 +578,7 @@ export const Post1 = {
   updatedAt: new Date(),
 }
 
-export const Post2 = {
+const Post2 = {
   id: 2,
   content: "mhhhh Good content, yes, this is content, verry verry good",
   author: User2,
@@ -481,7 +592,7 @@ export const Post2 = {
   updatedAt: new Date(),
 }
 
-export const comment1 = {
+const comment1 = {
   id: 1,
   content: 'Jadore ce contenus, merveilleux !',
   author: User1,
@@ -493,7 +604,7 @@ export const comment1 = {
   updatedAt: new Date(),
 }
 
-export const comment2 = {
+const comment2 = {
   id: 2,
   content: 'moi personellement je deteste',
   author: User2,
@@ -505,7 +616,7 @@ export const comment2 = {
   updatedAt: new Date(),
 }
 
-export const Notif1 = {
+const Notif1 = {
   id: 1,
   type: 'follow',
   message: 'you just got followed by someonw',
@@ -514,7 +625,7 @@ export const Notif1 = {
   createdAt: new Date(),
 }
 
-export const Notif2 = {
+const Notif2 = {
   id: 1,
   type: 'comment',
   message: 'This is a comment',
@@ -523,7 +634,7 @@ export const Notif2 = {
   createdAt: new Date(),
 }
 
-export const PaginatedUsers = {
+const PaginatedUsers = {
 	data : [User1, User2],
 	page : 1,
 	limit : 2,
@@ -531,7 +642,7 @@ export const PaginatedUsers = {
 	hasMore : false
 }
 
-export const PaginatedPosts = {
+const PaginatedPosts = {
 	data : [Post1, Post2],
 	page : 1,
 	limit : 2,
@@ -539,7 +650,7 @@ export const PaginatedPosts = {
 	hasMore : false
 }
 
-export const PaginatedComment = {
+const PaginatedComment = {
 	data : [comment1, comment2],
 	page : 1,
 	limit : 2,
@@ -547,7 +658,7 @@ export const PaginatedComment = {
 	hasMore : false
 }
 
-export const PaginatedNotifications = {
+const PaginatedNotifications = {
 	data : [Notif1, Notif2],
 	page : 1,
 	limit : 2,
