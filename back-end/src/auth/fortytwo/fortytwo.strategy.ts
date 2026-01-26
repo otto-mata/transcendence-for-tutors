@@ -2,6 +2,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-oauth2';
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { FortyTwoUserDto, FortyTwoApiProfileDto } from './fortytwo.dto';
 
 @Injectable()
 export class FortyTwoOauthStrategy extends PassportStrategy(Strategy, 'fortytwo') {
@@ -64,7 +65,7 @@ export class FortyTwoOauthStrategy extends PassportStrategy(Strategy, 'fortytwo'
     accessToken: string,
     refreshToken: string,
     profile: any,
-  ): Promise<any> {
+  ): Promise<FortyTwoUserDto> {
     try {
       const response = await fetch('https://api.intra.42.fr/v2/me', {
         headers: {
@@ -76,10 +77,10 @@ export class FortyTwoOauthStrategy extends PassportStrategy(Strategy, 'fortytwo'
         throw new Error(`42 API error: ${response.status}`);
       }
 
-      const user42 = await response.json();
+      const user42: FortyTwoApiProfileDto = await response.json();
       const email = user42.email || `${user42.login}@student.42.fr`;
 
-      return {
+      const userDto: FortyTwoUserDto = {
         id: user42.id,
         email,
         firstName: user42.first_name,
@@ -88,6 +89,8 @@ export class FortyTwoOauthStrategy extends PassportStrategy(Strategy, 'fortytwo'
         picture: user42.image?.link || user42.image?.versions?.small,
         provider: 'fortytwo',
       };
+
+      return userDto;
     } catch (error) {
       throw new HttpException(
         `Failed to fetch 42 user profile: ${error.message}`,

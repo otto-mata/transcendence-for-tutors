@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import type { Response } from 'express';
 import { FortyTwoOauthService } from './fortytwo.service';
+import { FortyTwoVerifyTokenDto, FortyTwoVerifyResponseDto, FortyTwoUserDto } from './fortytwo.dto';
 
 @Controller('auth/42')
 export class FortyTwoOauthController {
@@ -19,7 +20,7 @@ export class FortyTwoOauthController {
   @Get('redirect')
   @UseGuards(AuthGuard('fortytwo'))
   async fortyTwoAuthRedirect(
-    @Req() req,
+    @Req() req: { user: FortyTwoUserDto },
     @Res() res: Response,
   ) {
     try {
@@ -35,8 +36,8 @@ export class FortyTwoOauthController {
   }
 
   @Post('verify')
-  async verifyToken(@Body('token') token: string) {
-    if (!token) {
+  async verifyToken(@Body() body: FortyTwoVerifyTokenDto): Promise<FortyTwoVerifyResponseDto> {
+    if (!body.token) {
       return {
         success: false,
         error: 'No token provided',
@@ -44,7 +45,7 @@ export class FortyTwoOauthController {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token);
+      const payload = await this.jwtService.verifyAsync(body.token);
       return {
         success: true,
         payload,

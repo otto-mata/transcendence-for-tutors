@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '@/user/user.service';
 import { AuthService } from '../auth.service';
+import { FortyTwoUserDto, FortyTwoAuthResponseDto } from './fortytwo.dto';
 
 @Injectable()
 export class FortyTwoOauthService {
@@ -9,7 +10,7 @@ export class FortyTwoOauthService {
     private readonly authService: AuthService,
   ) {}
 
-  async signIn(user: any) {
+  async signIn(user: FortyTwoUserDto): Promise<FortyTwoAuthResponseDto> {
     if (!user) {
       throw new UnauthorizedException('Unauthenticated');
     }

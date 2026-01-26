@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '@/user/user.service';
 import { AuthService } from '../auth.service';
 import { OAuth2Client } from 'google-auth-library';
+import { GoogleUserDto, GoogleAuthResponseDto } from './google.dto';
 
 @Injectable()
 export class GoogleOauthService {
@@ -16,7 +17,7 @@ export class GoogleOauthService {
     );
   }
 
-  async signInWithToken(token: string) {
+  async signInWithToken(token: string): Promise<GoogleAuthResponseDto> {
     const ticket = await this.client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -25,7 +26,7 @@ export class GoogleOauthService {
     if (!payload) {
       throw new UnauthorizedException('Invalid Google token');
     }
-    const user = {
+    const user: GoogleUserDto = {
       email: payload.email,
       firstName: payload.given_name,
       lastName: payload.family_name,
@@ -34,26 +35,27 @@ export class GoogleOauthService {
     return this.signIn(user);
   }
 
-  async signIn(user: any) {
-    if (!user) {
-      throw new UnauthorizedException('Unauthenticated');
+  async signIn(user: GoogleUserDto): Promise<GoogleAuthResponseDto> {
+    if (!user || !user.email) {
+      throw new UnauthorizedException('Unauthenticated or missing email');
     }
 
-    let userExists = await this.userService.findByEmail(user.email);
+    const email = user.email;
+    let userExists = await this.userService.findByEmail(email);
 
     if (!userExists) {
         // Create a unique username
-        let username = user.email.split('@')[0];
+        let username = email.split('@')[0];
         let existingUser = await this.userService.findByUsername(username);
         let count = 1;
         while(existingUser) {
-            username = `${user.email.split('@')[0]}${count}`;
+            username = `${email.split('@')[0]}${count}`;
             existingUser = await this.userService.findByUsername(username);
             count++;
         }
 
         userExists = await this.userService.create({
-            email: user.email,
+            email: email,
             username: username,
             displayName: `${user.firstName} ${user.lastName}`,
             avatarUrl: user.picture,
@@ -63,7 +65,6 @@ export class GoogleOauthService {
             isVerified: true,
         });
     } else if (!userExists.oauthProvider || userExists.oauthProvider !== 'google') {
-        // Link Google OAuth to existing account
         userExists = await this.userService.update(userExists.id, {
             oauthProvider: 'google',
             oauthId: user.id,
