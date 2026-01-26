@@ -7,6 +7,11 @@ export class CreatePostDto {
 	@IsString()
 	@IsOptional()
 	visibility?: string; // 'public' | 'followers' | 'friends' | 'private'
+
+	@IsArray()
+	@IsOptional()
+	@IsString({ each: true })
+	mediaIds?: string[];
 }
 
 export class UpdatePostDto {
@@ -18,6 +23,10 @@ export class UpdatePostDto {
 	@IsOptional()
 	visibility?: string;
 
+	@IsArray()
+	@IsOptional()
+	@IsString({ each: true })
+	mediaIds?: string[];
 }
 
 export class PostResponseDto {
@@ -35,6 +44,15 @@ export class PostResponseDto {
 	createdAt: Date;
 	updatedAt: Date;
 	isReply: boolean;
+	media?: MediaInPostDto[];
+}
+
+export class MediaInPostDto {
+	id: string;
+	url: string;
+	type: string;
+	mimetype: string;
+	filename: string;
 }
 
 export class PaginatedPostsDto {

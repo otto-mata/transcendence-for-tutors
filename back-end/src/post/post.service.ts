@@ -22,7 +22,42 @@ export class PostService {
 		return this.postRepository.create(data);
 	}
 
+	async createWithMedia(
+		data: Prisma.PostCreateInput,
+		mediaIds?: string[],
+	): Promise<Post> {
+		// If media IDs are provided, connect them to the post
+		if (mediaIds && mediaIds.length > 0) {
+			const postData = {
+				...data,
+				media: {
+					connect: mediaIds.map((id) => ({ id })),
+				},
+			};
+			return this.postRepository.create(postData);
+		}
+		return this.postRepository.create(data);
+	}
+
 	async update(id: string, data: Prisma.PostUpdateInput): Promise<Post> {
+		return this.postRepository.update(id, data);
+	}
+
+	async updateWithMedia(
+		id: string,
+		data: Prisma.PostUpdateInput,
+		mediaIds?: string[],
+	): Promise<Post> {
+		// If media IDs are provided, update the connections
+		if (mediaIds !== undefined) {
+			const updateData = {
+				...data,
+				media: {
+					set: mediaIds.map((mediaId) => ({ id: mediaId })),
+				},
+			};
+			return this.postRepository.update(id, updateData);
+		}
 		return this.postRepository.update(id, data);
 	}
 

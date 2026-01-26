@@ -122,10 +122,14 @@ export class PostController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const post = await this.postService.create({
-				...data,
-				author: { connect: { id: user.id } },
-			});
+			const { mediaIds, ...postData } = data;
+			const post = await this.postService.createWithMedia(
+				{
+					...postData,
+					author: { connect: { id: user.id } },
+				},
+				mediaIds,
+			);
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify(post);
 		} catch (error) {
@@ -260,7 +264,8 @@ export class PostController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const post = await this.postService.update(id, data);
+			const { mediaIds, ...postData } = data;
+			const post = await this.postService.updateWithMedia(id, postData, mediaIds);
 			return JSON.stringify(post);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);

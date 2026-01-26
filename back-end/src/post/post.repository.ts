@@ -7,31 +7,125 @@ export class PostRepository {
 	constructor(private readonly prisma: PrismaService) {}
 
 	async findById(id: string): Promise<Post> {
-		return this.prisma.post.findFirstOrThrow({ where: { id } });
+		return this.prisma.post.findFirstOrThrow({
+			where: { id },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						avatarUrl: true,
+					},
+				},
+				media: {
+					select: {
+						id: true,
+						url: true,
+						type: true,
+						mimetype: true,
+						filename: true,
+					},
+				},
+			},
+		});
 	}
 
 	async findAll(skip: number, take: number): Promise<Post[]> {
 		return this.prisma.post.findMany({
 			skip,
 			take,
-			orderBy: { id: 'desc' },
+			orderBy: { createdAt: 'desc' },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						avatarUrl: true,
+					},
+				},
+				media: {
+					select: {
+						id: true,
+						url: true,
+						type: true,
+						mimetype: true,
+						filename: true,
+					},
+				},
+			},
 		});
 	}
 
 	async create(data: Prisma.PostCreateInput): Promise<Post> {
-		return this.prisma.post.create({ data });
+		return this.prisma.post.create({
+			data,
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						avatarUrl: true,
+					},
+				},
+				media: {
+					select: {
+						id: true,
+						url: true,
+						type: true,
+						mimetype: true,
+						filename: true,
+					},
+				},
+			},
+		});
 	}
 
 	async update(id: string, data: Prisma.PostUpdateInput): Promise<Post> {
 		return this.prisma.post.update({
 			where: { id },
 			data,
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						avatarUrl: true,
+					},
+				},
+				media: {
+					select: {
+						id: true,
+						url: true,
+						type: true,
+						mimetype: true,
+						filename: true,
+					},
+				},
+			},
 		});
 	}
 
 	async delete(id: string): Promise<Post> {
 		return this.prisma.post.delete({
 			where: { id },
+			include: {
+				author: {
+					select: {
+						id: true,
+						username: true,
+						avatarUrl: true,
+					},
+				},
+				media: {
+					select: {
+						id: true,
+						url: true,
+						type: true,
+						mimetype: true,
+						filename: true,
+					},
+				},
+			},
 		});
 	}
 }
