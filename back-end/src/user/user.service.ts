@@ -6,19 +6,19 @@ import { UserRepository } from './user.repository';
 export class UserService {
 	constructor(private readonly userRepository: UserRepository) {}
 
-	async findById(id: string): Promise<User> {
+	async findById(id: string): Promise<User | null> {
 		return this.userRepository.findById(id);
 	}
 
-	async findByLogin(login: string): Promise<User> {
+	async findByLogin(login: string): Promise<User | null> {
 		return this.userRepository.findByLogin(login);
 	}
 
-	async findByUsername(username: string): Promise<User> {
+	async findByUsername(username: string): Promise<User | null> {
 		return this.userRepository.findByUsername(username);
 	}
 
-	async findByEmail(email: string): Promise<User> {
+	async findByEmail(email: string): Promise<User | null> {
 		return this.userRepository.findByEmail(email);
 	}
 

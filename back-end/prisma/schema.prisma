@@ -48,6 +48,10 @@ model User {
   passwordResetExpires   DateTime?
   lastVerificationEmailSentAt DateTime?
 
+  // OAuth Provider information
+  oauthProvider String?  // 'google', 'fortytwo', etc.
+  oauthId       String?  // OAuth provider's user ID
+
   // Preferences
   theme              String  @default("auto")
   language           String  @default("en")

@@ -5,6 +5,7 @@ import {
 	ForbiddenException,
 } from '@nestjs/common';
 import { Request } from 'express';
+import { CurrentUserType } from '@/decorators/current-user.decorator';
 
 @Injectable()
 export class RoleGuard implements CanActivate {
@@ -12,7 +13,7 @@ export class RoleGuard implements CanActivate {
 
 	canActivate(context: ExecutionContext): boolean {
 		const request = context.switchToHttp().getRequest<Request>();
-		const user = request['user'];
+		const user: CurrentUserType | undefined = request['user'] as CurrentUserType;
 
 		if (!user) {
 			throw new ForbiddenException('User not found');

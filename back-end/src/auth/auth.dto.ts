@@ -151,6 +151,35 @@ export class ResendVerificationDto {
 	email: string;
 }
 
+// OAuth DTOs
+export class OAuthCallbackDto {
+	@IsString()
+	code: string;
+
+	@IsString()
+	@IsOptional()
+	state?: string;
+}
+
+export class OAuthTokenDto {
+	@IsString()
+	token: string;
+
+	@IsString()
+	provider: string; // 'google', 'fortytwo'
+}
+
+export class OAuthResponseDto {
+	access_token: string;
+	user: {
+		id: string;
+		username: string;
+		email: string;
+		displayName?: string;
+		avatarUrl?: string;
+	}
+}
+
 export class ResendVerificationResponseDto {
 	message: string;
 	success: boolean;
