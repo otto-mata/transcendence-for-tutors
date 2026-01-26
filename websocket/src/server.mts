@@ -23,9 +23,16 @@ const watchSchema = z.object({
   userId: z.coerce.number()
 });
 
+const msgSchema = z.object({
+  type: z.literal('message'),
+  userId: z.coerce.number(),
+  message: z.string()
+});
+
 const messageSchema = z.discriminatedUnion('type', [
   authSchema,
-  watchSchema
+  watchSchema,
+  msgSchema
 ]);
 
 const jwtSchema = z.object({
@@ -83,6 +90,15 @@ server.on('connection', (socket) => {
       watchers?.get(userId)?.add(socket);
       const status = users.has(userId) ? 'online' : 'offline';
       socket.send(JSON.stringify({ type: 'status', userId, status }));
+    }
+    if (msg.type === 'message') {
+      const { userId, message } = msg;
+      if (!sockets.has(socket))
+        return (socket.send(JSON.stringify({ type: 'mess_err', error: 'Not logged in !' })));
+      for (let i of users.get(userId) ?? []) {
+        i.send(JSON.stringify({ type: 'rec_message', from: userId, message: message }));
+      }
+      socket.send(JSON.stringify({ type: 'mess_ok' }));
     }
     //show_connections();
   });
