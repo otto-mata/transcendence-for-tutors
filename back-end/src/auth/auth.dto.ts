@@ -1,42 +1,162 @@
-//create verification for teh paramters given. For exemple
-//age must be positive, email must be a working email
-//verify If there ain't alreadyt something doing it
-//still can be used to do some "CreateUserVerif" for exemple
-//rajouter une verification que le user existe pas deja ? Est ce que la protectrion est deja faite au niveau de prisma ? mhhh
-//
-import { IsEmail,
-        IsInt,
-        Min,
-        Max,
-        Length} from 'class-validator';
+import {
+	IsString,
+	IsEmail,
+	MinLength,
+	MaxLength,
+	IsOptional,
+} from 'class-validator';
+
+export class RegisterDto {
+	@IsString()
+	@MinLength(3)
+	@MaxLength(50)
+	username: string;
+
+	@IsEmail()
+	email: string;
+
+	@IsString()
+	@MinLength(8)
+	@MaxLength(100)
+	password: string;
+
+	@IsString()
+	@MaxLength(100)
+	@IsOptional()
+	displayName?: string;
+}
+
+export class LoginDto {
+	@IsString()
+	@MinLength(3)
+	@MaxLength(50)
+	username: string;
+
+	@IsString()
+	@MinLength(8)
+	@MaxLength(100)
+	password: string;
+}
 
 export class LoginUserDto {
-  @Length(4, 20)
-  login : string;
+	@IsString()
+	@MinLength(3)
+	@MaxLength(50)
+	username: string;
 
-  @Length(8, 30)
-  password : string;
+	@IsString()
+	@MinLength(8)
+	@MaxLength(100)
+	password: string;
 }
 
 export class CreateUserDto {
-  @IsInt()
-  @Min(0)
-  @Max(150)
-  age : number;
+	@IsString()
+	@MinLength(3)
+	@MaxLength(50)
+	username: string;
 
-  @IsEmail()
-  email : string;
+	@IsEmail()
+	email: string;
 
-  @Length(8, 30)
-  password : string;
+	@IsString()
+	@MinLength(8)
+	@MaxLength(100)
+	password: string;
 
-
-  @Length(4, 20)
-  login : string;
-  
-  @Length(4, 25)
-  display_name : string;
+	@IsString()
+	@MaxLength(100)
+	@IsOptional()
+	displayName?: string;
 }
 
+export class RefreshTokenDto {
+	@IsString()
+	token: string;
+}
 
+export class AuthResponseDto {
+	access_token: string;
+	refresh_token?: string;
+	user?: {
+		id: string;
+		username: string;
+		email: string;
+		role: string;
+	};
+}
 
+export class LoginResponseDto {
+	access_token: string;
+	refresh_token?: string;
+	user: {
+		id: string;
+		username: string;
+		email: string;
+		displayName?: string;
+		role: string;
+		isVerified: boolean;
+		isSuspended: boolean;
+	};
+}
+
+export class RegisterResponseDto {
+	message: string;
+	code?: string;
+	error?: string;
+	user?: {
+		id: string;
+		username: string;
+		email: string;
+	};
+}
+
+export class VerifyEmailDto {
+	@IsString()
+	token: string;
+}
+
+export class VerifyEmailResponseDto {
+	message: string;
+	success: boolean;
+}
+
+export class ForgotPasswordDto {
+	@IsEmail()
+	email: string;
+}
+
+export class ForgotPasswordResponseDto {
+	message: string;
+	success: boolean;
+}
+
+export class ResetPasswordDto {
+	@IsString()
+	token: string;
+
+	@IsString()
+	@MinLength(8)
+	@MaxLength(100)
+	newPassword: string;
+}
+
+export class ResetPasswordResponseDto {
+	message: string;
+	success: boolean;
+}
+
+export class ResendVerificationDto {
+	@IsEmail()
+	email: string;
+}
+
+export class ResendVerificationResponseDto {
+	message: string;
+	success: boolean;
+}
+
+export class LogoutResponseDto {
+	message: string;
+	success: boolean;
+}

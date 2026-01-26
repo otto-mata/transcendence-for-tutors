@@ -5,9 +5,9 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client"
-  output   = "./generated"
-  moduleFormat  = "cjs"
+  provider     = "prisma-client"
+  output       = "./generated"
+  moduleFormat = "cjs"
 }
 
 datasource db {
@@ -15,24 +15,174 @@ datasource db {
 }
 
 model User {
-  id            Int     @default(autoincrement()) @id
-  email         String  @unique
-  login         String  @unique
-  display_name  String  @unique
-  age           Int
-  password      String
-  posts         Post[]
+  id           String  @id @default(cuid())
+  username     String  @unique
+  displayName  String?
+  email        String  @unique
+  passwordHash String
+
+  // Profile information
+  bio           String?
+  avatarUrl     String?
+  coverImageUrl String?
+  website       String?
+
+  // Social stats
+  followerCount  Int @default(0)
+  followingCount Int @default(0)
+  postCount      Int @default(0)
+
+  // Account status
+  isVerified  Boolean @default(false)
+  isPrivate   Boolean @default(false)
+  isActive    Boolean @default(true)
+
+  // Metadata
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  lastSeenAt DateTime?
+
+  // Authentication tokens
+  emailVerificationToken String?
+  passwordResetToken     String?
+  passwordResetExpires   DateTime?
+  lastVerificationEmailSentAt DateTime?
+
+  // Preferences
+  theme              String  @default("auto")
+  language           String  @default("en")
+
+  // Relations
+  posts     Post[]     @relation("UserPosts")
+  comments  Comment[]  @relation("UserComments")
+  likes     Like[]     @relation("UserLikes")
+  bookmarks Bookmark[] @relation("UserBookmarks")
+
+  // Following relationships
+  followers Follow[] @relation("UserFollowers")
+  following Follow[] @relation("UserFollowing")
+
+  @@index([username])
+  @@index([email])
+  @@index([createdAt])
 }
 
 model Post {
-  id        Int      @default(autoincrement()) @id
-  title     String
-  content   String
-  published Boolean? @default(false)
+  id       String @id @default(cuid())
+  content  String @db.Text
+  authorId String
 
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+  // Stats
+  likeCount    Int @default(0)
+  commentCount Int @default(0)
+
+  // Visibility
+  visibility String @default("public") // 'public' | 'followers' | 'friends' | 'private'
+
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
+
+  // Reply/Thread support
+  isReply      Boolean @default(false)
+  parentPostId String?
+  replyCount   Int     @default(0)
+
+  // Relations
+  author    User       @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  comments  Comment[]  @relation("PostComments")
+  likes     Like[]     @relation("PostLikes")
+  bookmarks Bookmark[] @relation("PostBookmarks")
+
+  // Reply/Thread relationships
+  parentPost Post?  @relation("Replies", fields: [parentPostId], references: [id], onDelete: Cascade)
+  replies    Post[] @relation("Replies")
+
+  @@index([authorId])
+  @@index([createdAt])
+  @@index([parentPostId])
+  @@index([visibility])
 }
+
+model Comment {
+  id       String @id @default(cuid())
+  content  String @db.Text
+  authorId String
+  postId   String
+
+  // Stats
+  likeCount Int @default(0)
+
+  // Metadata
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+
+  // Reply support (nested comments)
+  parentCommentId String?
+  replyCount      Int     @default(0)
+
+  // Relations
+  author User   @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade)
+  post   Post   @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
+  likes  Like[] @relation("CommentLikes")
+
+  // Nested comment support
+  parentComment Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies       Comment[] @relation("CommentReplies")
+
+  @@index([authorId])
+  @@index([postId])
+  @@index([parentCommentId])
+  @@index([createdAt])
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String?
+  commentId String?
+  createdAt DateTime @default(now())
+
+  user    User     @relation("UserLikes", fields: [userId], references: [id], onDelete: Cascade)
+  post    Post?    @relation("PostLikes", fields: [postId], references: [id], onDelete: Cascade)
+  comment Comment? @relation("CommentLikes", fields: [commentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([userId, commentId])
+  @@index([userId])
+  @@index([postId])
+  @@index([commentId])
+}
+
+model Bookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  postId    String
+  createdAt DateTime @default(now())
+
+  user User @relation("UserBookmarks", fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation("PostBookmarks", fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String // User who is following
+  followingId String // User being followed
+  createdAt   DateTime @default(now())
+
+  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
 
 model Notification {
   id        Int      @id @default(autoincrement())
@@ -44,4 +194,3 @@ model Notification {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-

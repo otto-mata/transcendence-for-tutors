@@ -6,23 +6,36 @@ import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
 import { NotificationModule } from './notification/notification.module';
 import { AuthModule } from './auth/auth.module';
+import { PostModule } from './post/post.module';
+import { UserModule } from './user/user.module';
+import { CommentModule } from './comment/comment.module';
+import { FollowModule } from './follow/follow.module';
+import { MediaModule } from './media/media.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
-  imports: [JwtModule.register({
-    global: true,
-    secret: process.env.JWT_SECRET,
-    signOptions: { expiresIn: '15m' },
-  }),
-    PrismaModule,
-    NotificationModule,
-  ConfigModule.forRoot({
-    isGlobal: true, // Makes ConfigModule available globally
-    envFilePath: '.env', // Path to your .env file
-    cache: true, // Cache environment variables for better performance
-  }),
-    AuthModule,
-  ],
-  controllers: [AppController],
-  providers: [AppService],
+	imports: [
+		JwtModule.register({
+			global: true,
+			secret: process.env.JWT_SECRET,
+			signOptions: { expiresIn: '15m' },
+		}),
+		PrismaModule,
+		NotificationModule,
+		AuthModule,
+		ConfigModule.forRoot({
+			isGlobal: true,
+			envFilePath: '.env',
+			cache: true,
+		}),
+		PostModule,
+		UserModule,
+		CommentModule,
+		FollowModule,
+		MediaModule,
+		MailModule,
+	],
+	controllers: [AppController],
+	providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
