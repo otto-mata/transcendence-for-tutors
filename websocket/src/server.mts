@@ -1,43 +1,14 @@
 import { WebSocketServer } from 'ws';
 import type WebSocket from 'ws';
-import jwt from 'jsonwebtoken';
-import * as z from "zod";
+import { handler, sendUpdate } from './messages.handler.mjs';
 
 const server = new WebSocketServer({
   port: 8081
 });
 
-const users = new Map<number, Set<WebSocket>>(); // int userid : Set of socket linked to this userId
-const sockets = new Map<WebSocket, number>(); // socket : userid
-const watchers = new Map<number, Set<WebSocket>>(); // int userId: set of socket that watchs this userId
-
-const secret: string = process.env.JWT_SECRET || "";
-
-const authSchema = z.object({
-  type: z.literal('auth'),
-  token: z.jwt()
-});
-
-const watchSchema = z.object({
-  type: z.literal('watch'),
-  userId: z.coerce.number()
-});
-
-const msgSchema = z.object({
-  type: z.literal('message'),
-  userId: z.coerce.number(),
-  message: z.string()
-});
-
-const messageSchema = z.discriminatedUnion('type', [
-  authSchema,
-  watchSchema,
-  msgSchema
-]);
-
-const jwtSchema = z.object({
-  userId: z.coerce.number()
-});
+export const users = new Map<number, Set<WebSocket>>(); // int userid : Set of socket linked to this userId
+export const sockets = new Map<WebSocket, number>(); // socket : userid
+export const watchers = new Map<number, Set<WebSocket>>(); // int userId: set of socket that watchs this userId
 
 const show_connections = () => {
   console.clear();
@@ -48,59 +19,9 @@ const show_connections = () => {
   return;
 }
 
-const sendUpdate = (userId: number, status: string) => {
-  const set = watchers.get(userId);
-  if (!set)
-    return;
-  for (const i of set)
-    i.send(JSON.stringify({ type: 'status', userId, status }));
-};
-
 server.on('connection', (socket) => {
   socket.on('message', (data) => {
-    let msg;
-
-    try {
-      msg = messageSchema.parse(JSON.parse(data.toString()));
-    } catch { return; }
-
-    if (msg.type === 'auth') {
-      const { token } = msg;
-      let payload;
-      let userId;
-      try {
-        payload = jwtSchema.parse(jwt.verify(token, secret));
-        userId = payload.userId;
-      } catch {
-        return socket.send(JSON.stringify({ type: 'auth_err', error: 'Invalid token' }));
-      }
-      if (sockets.has(socket))
-        return socket.send(JSON.stringify({ type: 'auth_err', error: 'Already logged in !' }));
-      if (!users.has(userId))
-        users.set(userId, new Set());
-      users?.get(userId)?.add(socket);
-      sockets.set(socket, userId);
-      sendUpdate(userId, 'online');
-      socket.send(JSON.stringify({ type: 'auth_ok' }));
-    }
-    if (msg.type === 'watch') {
-      const { userId } = msg;
-      if (!watchers.has(userId))
-        watchers.set(userId, new Set());
-      watchers?.get(userId)?.add(socket);
-      const status = users.has(userId) ? 'online' : 'offline';
-      socket.send(JSON.stringify({ type: 'status', userId, status }));
-    }
-    if (msg.type === 'message') {
-      const { userId, message } = msg;
-      if (!sockets.has(socket))
-        return (socket.send(JSON.stringify({ type: 'mess_err', error: 'Not logged in !' })));
-      for (let i of users.get(userId) ?? []) {
-        i.send(JSON.stringify({ type: 'rec_message', from: userId, message: message }));
-      }
-      socket.send(JSON.stringify({ type: 'mess_ok' }));
-    }
-    //show_connections();
+    handler(socket, data);
   });
 
   socket.on('close', () => {
