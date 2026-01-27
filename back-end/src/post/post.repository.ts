@@ -7,7 +7,7 @@ export class PostRepository {
 	constructor(private readonly prisma: PrismaService) {}
 
 	async findById(id: string): Promise<Post> {
-		return this.prisma.post.findFirstOrThrow({
+		return this.prisma.post.findUniqueOrThrow({
 			where: { id },
 		});
 	}

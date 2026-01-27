@@ -7,19 +7,19 @@ export class UserRepository {
 	constructor(private readonly prisma: PrismaService) {}
 
 	async findById(id: string): Promise<User> {
-		return this.prisma.user.findFirstOrThrow({ where: { id } });
+		return this.prisma.user.findUniqueOrThrow({ where: { id } });
 	}
 
 	async findByLogin(username: string): Promise<User> {
-		return this.prisma.user.findFirstOrThrow({ where: { username } });
+		return this.prisma.user.findUniqueOrThrow({ where: { username } });
 	}
 
 	async findByUsername(username: string): Promise<User> {
-		return this.prisma.user.findFirstOrThrow({ where: { username } });
+		return this.prisma.user.findUniqueOrThrow({ where: { username } });
 	}
 
 	async findByEmail(email: string): Promise<User> {
-		return this.prisma.user.findFirstOrThrow({ where: { email } });
+		return this.prisma.user.findUniqueOrThrow({ where: { email } });
 	}
 
 	async findAll(skip: number, take: number): Promise<User[]> {

@@ -15,22 +15,8 @@ export class PostService {
 		const post = await this.prisma.post.findFirstOrThrow({
 			where: { id: postId },
 			include: {
-				author: {
-					select: {
-						id: true,
-						username: true,
-						avatarUrl: true,
-					},
-				},
-				media: {
-					select: {
-						id: true,
-						url: true,
-						type: true,
-						mimetype: true,
-						filename: true,
-					},
-				},
+				author: true,
+				media: true,
 			},
 		});
 
