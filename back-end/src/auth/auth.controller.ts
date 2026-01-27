@@ -13,6 +13,7 @@ import {
 } from './auth.dto';
 import { Prisma } from '$prisma';
 import { AuthUserRegistration } from './auth.type';
+import { env } from 'prisma/config';
 
 @Controller('auth')
 export class AuthController {
@@ -24,6 +25,8 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			console.log("it does goes here : ", env("DATABASE_URL"));
+			
 			const userData: AuthUserRegistration = {
 				displayName:
 					data.displayName === undefined

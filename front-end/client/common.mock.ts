@@ -1,5 +1,12 @@
+import { Backend } from "./TransClient";
+
 export async function isLogged(){
-  if (localStorage.getItem('access_token') == 'access_token') return true;
-  //if (localStorage.getItem('access_token') == 'ouiouioui') return true;
-  return false;
+  const client = Backend.getInstance();
+  const token = localStorage.getItem('access_token') ? localStorage.getItem('access_token') as string : " ";
+  const res = await client.auth.refresh({token : token});
+  const data = JSON.parse(res.value);
+  if (data.error)
+      return false;//horible
+  localStorage.setItem('access_token', data.access_token);
+  return true;
 }

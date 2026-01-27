@@ -212,12 +212,13 @@ export class AuthService {
 			const data = await this.jwtService.verifyAsync(token, {
 				secret: this.configService.get('JWT_SECRET'),
 			});
-			if (!data || !data['password'] || !data['login'])
+			if (!data || !data['username'] || !data['email'] || !data['id'])
 				throw new UnauthorizedException();
 			return {
 				access_token: await this.jwtService.signAsync({
-					login: data['login'],
-					password: data['password'],
+					id : data['id'],
+					username: data['username'],
+					email: data['email'],
 				}),
 			};
 		} catch {

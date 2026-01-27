@@ -1,11 +1,11 @@
 import { UserResponseDto } from "./profile.dto";
 
 export class PostResponseDto {
-  id: number;
+  id: string;
   content: string;
-  author: UserResponseDto;
-  likes: number;
-  replies: number;
+  authorId: string ;
+  likeCount: number;
+  replyCount: number;
   shares: number;
   views: number;
   liked: boolean;

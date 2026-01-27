@@ -1,12 +1,19 @@
 export class CommentResponseDto {
-  id: number;
-  content: string;
-  author: UserResponseDto;
-  post: PostResponseDto;
-  likes: number;
-  replies: number;
-  liked: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+	id: string;
+	content: string;
+	authorId: string;
+	author?: {
+		id: string;
+		username: string;
+		avatarUrl?: string;
+	};
+	postId: string;
+	parentCommentId?: string;
+	likeCount: number;
+	replyCount: number;
+	createdAt: Date;
+	updatedAt: Date;
+	liked?: boolean;
+	// media?: CommentMediaDto[];
+	mentions?: string[];
 }
-

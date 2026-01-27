@@ -15,13 +15,19 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+// import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 
 export default function DesktopSidebar() {
 	const pathname = usePathname();
+	// const router = useRouter();
 
 	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
 
+	function LogoutFunction(){
+		localStorage.setItem('access_token', " ");
+		// router.push('/auth/login')
+	}
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
@@ -69,8 +75,8 @@ export default function DesktopSidebar() {
 				<SidebarLink href="/notifications" icon={<Bell />} label="Notifications" badge={notifCount} active={isActive('/notifications')} />
 				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" badge={3} active={isActive('/messages')} />
 				<SidebarLink href="/profile" icon={<User />} label="Profile" active={isActive('/profile')} />
-				<SidebarLink href="/bookmarks" icon={<Bookmark />} label="Bookmarks" active={isActive('/bookmarks')} />
-				<SidebarLink href="/likes" icon={<Heart />} label="Likes" active={isActive('/likes')} />
+				<SidebarLink href="/post/saved" icon={<Bookmark />} label="Bookmarks" active={isActive('/post/saved')} />
+				<SidebarLink href="/post/liked" icon={<Heart />} label="Likes" active={isActive('/post/liked')} />
 				<SidebarLink href="/trending" icon={<TrendingUp />} label="Trending" active={isActive('/trending')} />
 				<SidebarLink href="/settings" icon={<Settings />} label="Settings" active={isActive('/settings')} />
 			</nav>
@@ -89,7 +95,7 @@ export default function DesktopSidebar() {
 						<p className="font-semibold text-sm text-gray-900 dark:text-gray-50 truncate">Sarah Anderson</p>
 						<p className="text-xs text-gray-500 truncate">@otto-mata</p>
 					</div>
-					<LogOut className="w-4 h-4 text-gray-400 dark:text-gray-600" />
+					<LogOut onClick={LogoutFunction} className="w-4 h-4 text-gray-400 dark:text-gray-600" />
 				</Link>
 			</div>
 		</aside>

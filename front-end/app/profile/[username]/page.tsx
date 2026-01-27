@@ -4,12 +4,12 @@ import { MapPin, Link as LinkIcon, Calendar, MoreHorizontal, Settings, Share2, B
 import { useEffect, useState } from 'react';
 import { isLogged } from '@/client/common.mock';
 import { useRouter, useParams } from 'next/navigation';
-import { TransClient } from '@/client/TransClient';
+import { Backend } from '@/client/TransClient';
 import { UserResponseDto } from '@/client/profile.dto';
 
 export default function ProfilePage({ params }: { params: { username: string } }) {
 	const router = useRouter();
-	const client = TransClient.get_instance();
+	const client = Backend.getInstance();
 	const { username } = useParams<{ username: string }>()
 	const [user, setUser] = useState<UserResponseDto>();
 
@@ -18,8 +18,8 @@ export default function ProfilePage({ params }: { params: { username: string } }
 		  const logged = await isLogged();
 		   if (!logged)
 			  router.push('/auth/login');
-		  const res = await client.getUser({username : username});
-		  const data = res?.getData();
+		  const res = await client.users.$({username : username}).get();
+		  const data = JSON.parse(res?.value);
 		  if (data) setUser(data);
 		}
 		run();

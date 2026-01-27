@@ -1,7 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TransClient } from '@/client/TransClient';
+import { Backend } from '@/client/TransClient';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -18,18 +18,22 @@ export default function LoginPage() {
     return Object.keys(e).length === 0;
   }
 
-  
+  function redirect(){
+   router.push('/auth/register');
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
     if (!validate()) return;
     setLoading(true);
     try {
-      const client = TransClient.get_instance();
-      const res = await client.login({ login : login, password : password}); 
-      const data = res?.getData();
-      if (!res.Ok) throw new Error(res.getMessage() || 'Login failed');
-      if (data?.access_token) localStorage.setItem('access_token', data.access_token);
+      const client = Backend.getInstance();
+      const res = await client.auth.login({ username : login, password : password}); 
+      if (!res.ok) throw res.error;
+      const data = JSON.parse(res?.value);
+      if (data.access_token) localStorage.setItem('access_token', data.access_token);
+      if (data?.error) throw new Error(data.error)
       router.push('/');
     } catch (err: any) {
       setErrors({ general: err.message || String(err) });
@@ -55,6 +59,7 @@ export default function LoginPage() {
         <button type="submit" disabled={loading}>{loading ? 'Logging in…' : 'Log in'}</button>
       </form>
       {errors.general && <p style={{ color: 'red' }}>{errors.general}</p>}
+      <button onClick={redirect}>No account yet ?</button>
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client"
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TransClient } from '@/client/TransClient';
+import { Backend } from '@/client/TransClient';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -30,22 +30,25 @@ export default function RegisterPage() {
     return Object.keys(e).length === 0;
   }
 
+  function redirect(){
+   router.push('/auth/login');
+  }
+
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setErrors({});
     if (!validate()) return;
     setLoading(true);
     try {
-      const client = TransClient.get_instance();
-      const res = await client.register({
-        login : login,
+      const client = Backend.getInstance();
+      const res = await client.auth.register({
+        username : login,
         password : password,
         email : email,
-        display_name : name,
-        age : age
+        displayName : name,
       });
-      const data = res?.getData();
-      if (!res.Ok()) throw new Error(res.getMessage() || 'Register failed');
+      if (!res.ok) throw res.error;
+      const data = res?.value;
       if (data?.access_token) localStorage.setItem('token', data.access_token);
       router.push('/');
     } catch (err: any) {
@@ -84,6 +87,7 @@ export default function RegisterPage() {
         </div>
         <button type="submit" disabled={loading}>{loading ? 'Registering…' : 'Register'}</button>
       </form>
+      <button onClick={redirect}>Already registered ?</button>
       {errors.general && <p style={{ color: 'red' }}>{errors.general}</p>}
     </div>
   );

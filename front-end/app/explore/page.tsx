@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PaginatedResponseDto  } from '@client/common.dto';
 import { PostResponseDto } from '@/client/post.dto';
-import { TransClient } from "@/client/TransClient";
+import { Backend } from "@/client/TransClient";
 import { Search, TrendingUp, Hash, MapPin, Save, Bookmark } from 'lucide-react';
 import Link from 'next/link';
 
@@ -16,7 +16,7 @@ function printit(){
 
 export default function ExplorePage() {
 	const router = useRouter();
-	const client = TransClient.get_instance();
+	const client = Backend.getInstance();
 	  const [PostInput, setPostInput] = useState('');
 	  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});;
 	
@@ -30,9 +30,9 @@ export default function ExplorePage() {
 		  const logged = await isLogged();
 		   if (!logged)
 			  router.push('/auth/login');
-		  const res = await client.feed();
-		  const data = res?.getData();
-		  if (data) setPosts(data);
+		  const res = await client.posts.get();
+		  const data = JSON.parse(res?.value);
+		  if (data) setPosts({data : data});
 		}
 		run();
 	  }, [router]);

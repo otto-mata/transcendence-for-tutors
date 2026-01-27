@@ -3,8 +3,10 @@ import { PaginatedResponseDto  } from '@client/common.dto';
 import { PostResponseDto } from '@/client/post.dto';
 import { Bookmark } from 'lucide-react';
 import Link from 'next/link';
-import { TransClient } from '@/client/TransClient';
+import { Backend } from '@/client/TransClient';
 import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { UserResponseDto } from '@/client/profile.dto';
 
 function printit(){
 	console.log("Button clicked");
@@ -16,29 +18,61 @@ function buttonApearance(alreadyDone?: boolean){
 }
 
 
-export const PostList = ({posts}: {posts : PaginatedResponseDto<PostResponseDto>}) => {
-  if (!posts)
-		return (<div>Error</div>);
-	
-  const client = TransClient.get_instance();
-  const router = useRouter();
 
-  function LikePost(post : PostResponseDto){
-	client.likePost(post.id, post.liked);
-	router.refresh();
+export const OnePost = ({post} : {post : PostResponseDto}) => {
+	const router = useRouter();
+	const client = Backend.getInstance();
+	const [user, setUser] = useState<{username : string, displayName : string}>({username : "charging...", displayName : "charging..."});
+	const [Liked, setLiked] = useState(post.liked);
+	const [Bookmarked, setBookmarked] = useState(post.bookmarked);
+	const createdAt = new Date(post.createdAt).toDateString();
+
+	async function LikePost(post : PostResponseDto){
+	if (!Liked){
+		const res = await client.posts.$(post.id).like();
+		if (!res.ok)
+			return;
+		setLiked(true);
+		post.likeCount += 1;
+		return ;
+	}
+	const res = await client.posts.$(post.id).unlike();
+	if (!res.ok)
+		return;
+	setLiked(false);
+	post.likeCount -= 1;
+  }
+  
+  async function SavePost(post : PostResponseDto){
+	if (!Bookmarked){
+		const res = await client.posts.$(post.id).save();
+		if (!res.ok)
+			return;
+		setBookmarked(true);
+		return ;
+	}
+	const res = await client.posts.$(post.id).unsave();
+	if (!res.ok)
+		return;
+	setBookmarked(false);
   }
 
-  function CommentPost(id : number){
+  function CommentPost(id : string){
 	router.push('/post/' + id);
   }
+  	useEffect(() => {
+		const run = async () => {
+			const res = await client.users.$({id :  post.authorId}).get();
+			if (!res.value) throw res.error;
+			const data = JSON.parse(res?.value);
+			setUser(data);
+		}
+		
+		run();
+  }, [post.id])
 
-	//const posts = await axios.get<MockPostData[]>(`https://jsonplaceholder.typicode.com/posts`, { params: { userId: id } })
-	if (posts)
-	return (<div className="flex flex-col bg">
-		{posts.data?.map((post, index) => (
-						<div
-							key={index}
-							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group"
+   return (<div
+							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group mt-1"
 						>
 							{/* {post.gradient && <div className="relative overflow-hidden">
 								<div
@@ -51,50 +85,47 @@ export const PostList = ({posts}: {posts : PaginatedResponseDto<PostResponseDto>
 							</div>} */}
 							<div className="p-4">
 								<div className="flex items-center gap-3 mb-3">
-									<Link href={`profile/${post.author.username} `} className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+									<Link href={`profile/${user.username} `} className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
 									<div>
-										<Link href={`profile/${post.author.username} `}>
+										<Link href={`profile/${user.username} `}>
 											<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">
-												{post.author.displayName}
+												{user.displayName}
 											</h4>
 										</Link>
-										<p className="text-xs text-gray-500">{post.createdAt ? post.createdAt.getDate() : null}</p>
+										<p className="text-xs text-gray-500">{createdAt}</p>
 									</div>
 								</div>
 								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{post.content}</p>
 								<div className="flex items-center justify-between text-gray-500">
 									<div className="flex gap-4 text-sm">
-										<button onClick={() => LikePost(post)} className={ post.liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>
-											❤️ {post.likes}
+										<button onClick={() => LikePost(post)} className={ Liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>
+											❤️ {post.likeCount}
 										</button>
 										<button onClick={() => CommentPost(post.id)} className="hover:text-blue-500 transition-colors cursor-pointer">
-											💬 {post.replies}
+											💬 {post.replyCount}
 										</button>
 									</div>
-									<button className={ post.bookmarked ? "text-blue-500 hover:text-gray-600 dark:text-blue-500 dark:hover:text-gray-400" : "text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"}>
+									<button onClick={() => SavePost(post)} className={ Bookmarked ? "text-blue-500 hover:text-gray-600 dark:text-blue-500 dark:hover:text-gray-400" : "text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"}>
 										<Bookmark />
 									</button>
 								</div>
 							</div>
 						</div>
-					))}
-		{/*posts?.data?.map(post => {
-			return <div key={post.id} className="m-2 shadow rounded-md bg-gray-100 pt-1 dark:bg-gray-800">
-				<div className="flex justify-end px-4">
-					<span className="text-xs">$</span>
-				</div>
-				<div className="px-4 mb-2 xl:my-6">{post.content}</div>
-				<div className="w-full border-t border-t-gray-200 dark:border-t-gray-900 p-2 flex text-xs">
-					<button onClick={CommentPost} className="w-1/3 flex justify-center hover:bg-blue-600 transition-colors">{post.replies} Comments</button>
-					<span className="w-0 border-l border-gray-200 dark:border-l-gray-900" ></span>
-					<button onClick={LikePost} className={buttonApearance(post.liked)}>{post.likes} Likes</button>
-					<span className="w-0 border-r border-gray-200 dark:border-r-gray-900"></span>
-					<button onClick={RepostPost} className={buttonApearance(post.bookmarked)}>{post.shares} Reposts</button>
-				</div>
-			</div>
-		})
-		*/}
-	</div >
+					
+
+  );
+}
+
+
+export const PostList = ({posts}: {posts : PaginatedResponseDto<PostResponseDto>}) => {
+  if (!posts)
+		return (<div>Error</div>);
+
+	//const posts = await axios.get<MockPostData[]>(`https://jsonplaceholder.typicode.com/posts`, { params: { userId: id } })
+	if (posts)
+	return (<div className="flex flex-col bg">
+		{posts.data.map(post => <OnePost key={post.id} post={post} />)}
+		</div >
 	);
 };
 

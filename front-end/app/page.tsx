@@ -6,33 +6,39 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PaginatedResponseDto  } from '@client/common.dto';
 import { PostResponseDto } from '@/client/post.dto';
-import { TransClient } from "@/client/TransClient";
+import { Backend } from "@/client/TransClient";
 
 
 
 export default function Home() {
   const router = useRouter();
-  const client = TransClient.get_instance();
+  const client = Backend.getInstance();
   const [PostInput, setPostInput] = useState('');
+  const [change, setChange] = useState(false);
   const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});;
 
   async function PostIt(){
-    const res = await client.createPost({content : PostInput});
+    await client.posts.post({content : PostInput});
     setPostInput('');
-    router.refresh();
+    setChange(!change);
   }
 
   useEffect(() => {
     const run = async() => {
       const logged = await isLogged();
-       if (!logged)
+       if (!logged){
           router.push('/auth/login');
-      const res = await client.feed();
-      const data = res?.getData();
-      if (data) setPosts(data);
+          return;
+      }
+      const res = await client.posts.get();
+      if (!res.ok) throw res.error;
+      const data = JSON.parse(res?.value);
+      console.log("test", data);
+      setPosts({data : data});
+    
     }
     run();
-  }, [router]);
+  }, [change]);
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {/* Create Post Input */}

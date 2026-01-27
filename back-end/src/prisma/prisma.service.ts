@@ -17,7 +17,7 @@ export class PrismaService
 			);
 		}
 
-		const adapter = new PrismaPg({ url: databaseUrl });
+		const adapter = new PrismaPg({ url: databaseUrl});
 		super({ adapter });
 	}
 	async onModuleInit(): Promise<void> {
