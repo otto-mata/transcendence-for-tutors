@@ -1,7 +1,14 @@
 'use server';
 import { Axios } from 'axios';
 import { UpdateUserDto, UserProfileResponse } from './Users.dto';
-import { LoginDto, RegisterDto } from './Auth.dto';
+import {
+	LoginDto,
+	RegisterDto,
+	GoogleTokenDto,
+	GoogleAuthResponseDto,
+	FortyTwoVerifyTokenDto,
+	FortyTwoVerifyResponseDto,
+} from './Auth.dto';
 import { CreatePostDto, UpdatePostDto } from './Post.dto';
 import { CreateCommentDto, UpdateCommentDto } from './Comment.dto';
 
@@ -135,7 +142,7 @@ const ClientFactory = (client: Axios) => {
 					return Result.error(error as RequestError);
 				}
 			},
-			verify2: async () => {
+			resend: async () => {
 				try {
 					const response = await client.post(
 						'/auth/resend-verification',
@@ -145,6 +152,46 @@ const ClientFactory = (client: Axios) => {
 				} catch (error) {
 					return Result.error(error as RequestError);
 				}
+			},
+			// Google oauth
+			google: {
+				signIn: async (data: GoogleTokenDto) => {
+					try {
+						const response =
+							await client.post<GoogleAuthResponseDto>(
+								'/auth/google',
+								data,
+							);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				getRedirectUrl: () => {
+					const baseUrl =
+						process.env.API_URL || 'http://localhost:3000';
+					return `${baseUrl}/auth/google/redirect`;
+				},
+			},
+			// 42 oauth
+			fortyTwo: {
+				getLoginUrl: () => {
+					const baseUrl =
+						process.env.API_URL || 'http://localhost:3000';
+					return `${baseUrl}/auth/42/login`;
+				},
+				verify: async (data: FortyTwoVerifyTokenDto) => {
+					try {
+						const response =
+							await client.post<FortyTwoVerifyResponseDto>(
+								'/auth/42/verify',
+								data,
+							);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
 			},
 		},
 		me: {
