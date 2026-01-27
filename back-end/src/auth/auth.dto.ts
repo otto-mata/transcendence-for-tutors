@@ -77,6 +77,7 @@ export class RefreshTokenDto {
 
 export class AuthResponseDto {
 	access_token: string;
+	refresh_token?: string;
 	user?: {
 		id: string;
 		username: string;
@@ -85,14 +86,49 @@ export class AuthResponseDto {
 	};
 }
 
+export class LoginResponseDto {
+	access_token: string;
+	refresh_token?: string;
+	user: {
+		id: string;
+		username: string;
+		email: string;
+		displayName?: string;
+		role: string;
+		isVerified: boolean;
+		isSuspended: boolean;
+	};
+}
+
+export class RegisterResponseDto {
+	message: string;
+	code?: string;
+	error?: string;
+	user?: {
+		id: string;
+		username: string;
+		email: string;
+	};
+}
+
 export class VerifyEmailDto {
 	@IsString()
 	token: string;
 }
 
+export class VerifyEmailResponseDto {
+	message: string;
+	success: boolean;
+}
+
 export class ForgotPasswordDto {
 	@IsEmail()
 	email: string;
+}
+
+export class ForgotPasswordResponseDto {
+	message: string;
+	success: boolean;
 }
 
 export class ResetPasswordDto {
@@ -105,7 +141,51 @@ export class ResetPasswordDto {
 	newPassword: string;
 }
 
+export class ResetPasswordResponseDto {
+	message: string;
+	success: boolean;
+}
+
 export class ResendVerificationDto {
 	@IsEmail()
 	email: string;
+}
+
+// OAuth DTOs
+export class OAuthCallbackDto {
+	@IsString()
+	code: string;
+
+	@IsString()
+	@IsOptional()
+	state?: string;
+}
+
+export class OAuthTokenDto {
+	@IsString()
+	token: string;
+
+	@IsString()
+	provider: string; // 'google', 'fortytwo'
+}
+
+export class OAuthResponseDto {
+	access_token: string;
+	user: {
+		id: string;
+		username: string;
+		email: string;
+		displayName?: string;
+		avatarUrl?: string;
+	}
+}
+
+export class ResendVerificationResponseDto {
+	message: string;
+	success: boolean;
+}
+
+export class LogoutResponseDto {
+	message: string;
+	success: boolean;
 }

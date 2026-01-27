@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.13.4",
     "axios": "^1.13.2",
     "lucide-react": "^0.562.0",
     "next": "16.0.10",
@@ -22,6 +23,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+    "prettier": "^3.8.0",
     "tailwindcss": "^4",
     "typescript": "^5"
   }
