@@ -6,20 +6,20 @@ import { User, Prisma } from '$prisma';
 export class UserRepository {
 	constructor(private readonly prisma: PrismaService) {}
 
-	async findById(id: string): Promise<User | null> {
-		return this.prisma.user.findUnique({ where: { id } });
+	async findById(id: string): Promise<User> {
+		return this.prisma.user.findUniqueOrThrow({ where: { id } });
 	}
 
-	async findByLogin(username: string): Promise<User | null> {
-		return this.prisma.user.findUnique({ where: { username } });
+	async findByLogin(username: string): Promise<User> {
+		return this.prisma.user.findUniqueOrThrow({ where: { username } });
 	}
 
-	async findByUsername(username: string): Promise<User | null> {
-		return this.prisma.user.findUnique({ where: { username } });
+	async findByUsername(username: string): Promise<User> {
+		return this.prisma.user.findUniqueOrThrow({ where: { username } });
 	}
 
-	async findByEmail(email: string): Promise<User | null> {
-		return this.prisma.user.findUnique({ where: { email } });
+	async findByEmail(email: string): Promise<User> {
+		return this.prisma.user.findUniqueOrThrow({ where: { email } });
 	}
 
 	async findAll(skip: number, take: number): Promise<User[]> {
