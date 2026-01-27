@@ -7,23 +7,19 @@ export class PostRepository {
 	constructor(private readonly prisma: PrismaService) {}
 
 	async findById(id: string): Promise<Post> {
-		return this.prisma.post.findUniqueOrThrow({
-			where: { id },
-		});
+		return this.prisma.post.findFirstOrThrow({ where: { id } });
 	}
 
 	async findAll(skip: number, take: number): Promise<Post[]> {
 		return this.prisma.post.findMany({
 			skip,
 			take,
-			orderBy: { createdAt: 'desc' },
+			orderBy: { id: 'desc' },
 		});
 	}
 
 	async create(data: Prisma.PostCreateInput): Promise<Post> {
-		return this.prisma.post.create({
-			data,
-		});
+		return this.prisma.post.create({ data });
 	}
 
 	async update(id: string, data: Prisma.PostUpdateInput): Promise<Post> {

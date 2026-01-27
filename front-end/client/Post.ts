@@ -1,5 +1,5 @@
 export interface PostFiltering {
 	where: {
-		id: number
-	}
+		id: number;
+	};
 }

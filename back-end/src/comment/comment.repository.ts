@@ -7,7 +7,7 @@ export class CommentRepository {
 	constructor(private readonly prisma: PrismaService) {}
 
 	async findById(id: string): Promise<Comment> {
-		return this.prisma.comment.findUniqueOrThrow({
+		return this.prisma.comment.findFirstOrThrow({
 			where: { id },
 			include: {
 				author: true,

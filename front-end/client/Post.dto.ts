@@ -1,25 +1,13 @@
-
-
-export interface PostDto {
-	id: string;
+export interface CreatePostDto {
 	content: string;
-	authorId: string;
-	author: string;
+	visibility?: string;
+	mentions?: string[];
+	mediaIds?: string[];
+}
 
-	likeCount: number;
-	commentCount: number;
-	shareCount: number;
-	viewCount: number;
-
-	isLikedByCurrentUser: boolean;
-	isBookmarkedByCurrentUser: boolean;
-
-	// Hashtags and mentions are optional for PASS 1
-	hashtags: string[];
-	mentions: string[];  // User IDs mentioned in the post
-
-	// Metadata
-	createdAt: Date;
-	editedAt?: Date;
-	isEdited: boolean;
+export interface UpdatePostDto {
+	content?: string;
+	visibility?: string;
+	mentions?: string[];
+	mediaIds?: string[];
 }
