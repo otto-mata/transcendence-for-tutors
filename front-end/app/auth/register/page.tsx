@@ -33,7 +33,8 @@ export default function RegisterPage() {
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Google login failed');
-      if (body.token) localStorage.setItem('token', body.token);
+      console.log(body);
+      if (body.access_token) localStorage.setItem('access_token', body.access_token);
       router.push('/');
     } catch (err: any) {
       setErrors({ general: err.message || String(err) });
@@ -56,7 +57,7 @@ export default function RegisterPage() {
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Registration failed');
-      if (body.token) localStorage.setItem('token', body.token);
+      if (body.access_token) localStorage.setItem('access_token', body.access_token);
       router.push('/');
     } catch (err: any) {
       setErrors({ general: err.message || String(err) });
