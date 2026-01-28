@@ -29,12 +29,13 @@ export class PostController {
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
 		@Res({ passthrough: true }) res?: Response,
+		@CurrentUser() user?: CurrentUserType,
 	): Promise<string> {
 		try {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const posts = await this.postService.findAll(skip, limitNum);
+			const posts = await this.postService.findAll(skip, limitNum, user?.id);
 			return JSON.stringify(posts);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -42,8 +43,8 @@ export class PostController {
 		}
 	}
 
-	@Get('feed')
-	async getFeed(
+	@Get('saved')
+	async getSaved(
 		@CurrentUser() user: CurrentUserType,
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
@@ -53,8 +54,27 @@ export class PostController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			// Implementation depends on following list
-			return JSON.stringify({ message: 'Feed not yet implemented' });
+			const posts = await this.postService.findSaved(skip, limitNum, user.id);
+			return JSON.stringify(posts);
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({ message: 'Error retrieving feed', error });
+		}
+	}
+
+	@Get('liked')
+	async getLiked(
+		@CurrentUser() user: CurrentUserType,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			const posts = await this.postService.findLiked(skip, limitNum, user.id);
+			return JSON.stringify(posts);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
 			return JSON.stringify({ message: 'Error retrieving feed', error });
@@ -89,6 +109,7 @@ export class PostController {
 	): Promise<string> {
 		try {
 			const post = await this.postService.findById(id);
+			
 			return JSON.stringify(post);
 		} catch (error) {
 			res.status(HttpStatus.NOT_FOUND);
@@ -130,6 +151,7 @@ export class PostController {
 			return JSON.stringify(post);
 		} catch (error) {
 			res.status(HttpStatus.BAD_REQUEST);
+			console.log(error);
 			return JSON.stringify({ message: 'Invalid post data', error });
 		}
 	}
@@ -212,46 +234,7 @@ export class PostController {
 			});
 		}
 	}
-
-	@Get(':id/replies')
-	async getPostReplies(
-		@Param('id') id: string,
-		@Query('page') page?: string,
-		@Query('limit') limit?: string,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			const pageNum = page ? parseInt(page) : 1;
-			const limitNum = limit ? parseInt(limit) : 20;
-			const skip = (pageNum - 1) * limitNum;
-			// Get replies to this post
-			return JSON.stringify({ message: 'Replies not yet implemented' });
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving replies',
-				error,
-			});
-		}
-	}
-
-	@Post(':id/reply')
-	async replyToPost(
-		@Param('id') id: string,
-		@Body() data: Prisma.PostCreateInput,
-		@CurrentUser() user: CurrentUserType,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			const reply = await this.postService.createReply(id, data, user.id);
-			res.status(HttpStatus.CREATED);
-			return JSON.stringify(reply);
-		} catch (error) {
-			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error creating reply', error });
-		}
-	}
-
+	
 	@Patch(':id')
 	async updatePost(
 		@Param('id') id: string,

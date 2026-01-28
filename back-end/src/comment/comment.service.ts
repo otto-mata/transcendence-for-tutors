@@ -1,10 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { Comment, Prisma } from '$prisma';
 import { CommentRepository } from './comment.repository';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class CommentService {
-	constructor(private readonly commentRepository: CommentRepository) {}
+	constructor(private readonly commentRepository: CommentRepository,
+				private readonly prisma: PrismaService,
+			) {}
 
 	async findById(id: string): Promise<Comment> {
 		return this.commentRepository.findById(id);
@@ -26,7 +29,11 @@ export class CommentService {
 		return this.commentRepository.findReplies(parentCommentId, skip, take);
 	}
 
-	async create(data: Prisma.CommentCreateInput): Promise<Comment> {
+	async create(postId : string, data: Prisma.CommentCreateInput): Promise<Comment> {
+		await this.prisma.post.update({
+			where: { id: postId },
+			data: { replyCount: { increment: 1 } },
+		});
 		return this.commentRepository.create(data);
 	}
 

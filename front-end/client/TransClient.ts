@@ -1,3 +1,4 @@
+// 'use server';
 import { Axios } from 'axios';
 import {
 	UpdateUserDto,
@@ -14,7 +15,7 @@ import {
 	GoogleAuthResponseDto,
 	FortyTwoVerifyTokenDto,
 	FortyTwoVerifyResponseDto,
-} from './Auth.dto';
+} from './auth.dto';
 import { CreatePostDto, UpdatePostDto } from './Post.dto';
 import { CreateCommentDto, UpdateCommentDto } from './Comment.dto';
 
@@ -75,13 +76,25 @@ class RequestError extends Error {
 }
 
 const ClientFactory = (client: Axios) => {
+	client.interceptors.request.use(
+  	(config) => {
+    const token = localStorage.getItem('access_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  	},
+  	(error) => Promise.reject(error)
+);
 	return {
 		auth: {
 			register: async (data: RegisterDto) => {
+				console.log("datas are : ", data);
 				try {
-					const response = await client.post('/auth/register', {
-						...data,
-					});
+					const response = await client.post('/auth/register', JSON.stringify(data), {
+							headers : {
+							'Content-Type':'application/json'
+						}});
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);
@@ -89,9 +102,11 @@ const ClientFactory = (client: Axios) => {
 			},
 			login: async (data: LoginDto) => {
 				try {
-					const response = await client.post('/auth/login', {
-						...data,
-					});
+					const response = await client.post('/auth/login', JSON.stringify(data), {
+							headers : {
+							'Content-Type':'application/json'
+						}}
+					);
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);
@@ -105,11 +120,13 @@ const ClientFactory = (client: Axios) => {
 					return Result.error(error as RequestError);
 				}
 			},
-			refresh: async ({ refreshToken }: { refreshToken: string }) => {
+			refresh: async (refreshToken : { token : string }) => {
 				try {
-					const response = await client.post('/auth/refresh', {
-						refreshToken,
-					});
+					const response = await client.post('/auth/refresh',
+						JSON.stringify(refreshToken),{
+							headers : {
+							'Content-Type':'application/json'
+						}});
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);
@@ -309,11 +326,13 @@ const ClientFactory = (client: Axios) => {
 			},
 		},
 		users: {
-			$: (id: string) => {
+			$: ({id, username} : {id?: string, username? : string}) => {
 				return {
 					get: async () => {
 						try {
-							const response = await client.get(`/users/${id}`);
+							if (!username && !id) throw new Error("wrong input");
+							const str = username ? username : "by-id/" + id; 
+							const response = await client.get(`/users/${str}`);
 							return Result.ok(response.data);
 						} catch (error) {
 							return Result.error(error as RequestError);
@@ -366,8 +385,7 @@ const ClientFactory = (client: Axios) => {
 					like: async () => {
 						try {
 							const response = await client.post(
-								`/posts/${id}like`,
-								{},
+								`/posts/${id}/like`
 							);
 							return Result.ok(response.data);
 						} catch (error) {
@@ -408,7 +426,7 @@ const ClientFactory = (client: Axios) => {
 						}
 					},
 					comments: {
-						$: async (commentId: string) => {
+						$: (commentId: string) => {
 							return {
 								get: async () => {
 									try {
@@ -427,6 +445,30 @@ const ClientFactory = (client: Axios) => {
 										const response = await client.patch(
 											`/posts/${id}/comments/${commentId}`,
 											data,
+										);
+										return Result.ok(response.data);
+									} catch (error) {
+										return Result.error(
+											error as RequestError,
+										);
+									}
+								},
+								like: async () => {
+									try {
+										const response = await client.post(
+											`/posts/${id}/comments/${commentId}/like`,
+										);
+										return Result.ok(response.data);
+									} catch (error) {
+										return Result.error(
+											error as RequestError,
+										);
+									}
+								},
+								unlike: async () => {
+									try {
+										const response = await client.delete(
+											`/posts/${id}/comments/${commentId}/like`,
 										);
 										return Result.ok(response.data);
 									} catch (error) {
@@ -484,11 +526,14 @@ const ClientFactory = (client: Axios) => {
 								return Result.error(error as RequestError);
 							}
 						},
-						post: async (data: CreateCommentDto) => {
+						post: async (data : string) => {
 							try {
 								const response = await client.post(
 									`/posts/${id}/comments`,
-									data,
+									JSON.stringify({content : data}),{
+							headers : {
+							'Content-Type':'application/json'
+						}}
 								);
 								return Result.ok(response.data);
 							} catch (error) {
@@ -506,9 +551,28 @@ const ClientFactory = (client: Axios) => {
 					return Result.error(error as RequestError);
 				}
 			},
+			liked: async () => {
+				try {
+					const response = await client.get('/posts/liked');
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			saved: async () => {
+				try {
+					const response = await client.get('/posts/saved');
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
 			post: async (data: CreatePostDto) => {
 				try {
-					const response = await client.post('/posts', data);
+					const response = await client.post('/posts', JSON.stringify(data), {
+							headers : {
+							'Content-Type':'application/json'
+						}});
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);
@@ -586,41 +650,11 @@ export class Backend {
 
 	// test le back tqt
 	private constructor() {
-		const token = localStorage.getItem('access_token') || '';
-		this._cl = ClientFactory(new Axios({ 
-			baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/',
-			headers: token ? {
-				'Authorization': `Bearer ${token}`,
-				'Content-Type': 'application/json',
-			} : {
-				'Content-Type': 'application/json',
-			},
-			transformRequest: [(data) => {
-				if (data instanceof FormData) return data;
-				return JSON.stringify(data);
-			}],
-			transformResponse: [(data) => {
-				try {
-					return JSON.parse(data);
-				} catch {
-					return data;
-				}
-			}],
-		}));
+		this._cl = ClientFactory(new Axios({ baseURL: 'http://localhost:3000' })); //process.env.API_URL
 	}
 
-	public static getInstance(): Backend {
-		if (Backend._instance == null) {
-			Backend._instance = new Backend();
-		}
-		return Backend._instance;
-	}
-
-	public get api(): ClientType {
-		return this._cl;
-	}
-
-	public async refresh() {
-		this._cl.auth.refresh({ refreshToken: 'coucou' });
+	public static getInstance(): ClientType {
+		if (Backend._instance == null) Backend._instance = new Backend();
+		return Backend._instance._cl;
 	}
 }

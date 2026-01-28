@@ -250,7 +250,7 @@ export class UserController {
 		}
 	}
 
-	@Get(':id')
+	@Get('by-id/:id')
 	async getUserById(
 		@Param('id') id: string,
 		@Res({ passthrough: true }) res: Response,

@@ -1,22 +1,45 @@
 "use client"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { GoogleLogin, CredentialResponse, GoogleOAuthProvider } from '@react-oauth/google';
+import { Backend } from '@/client/TransClient';
+import { isLogged } from '@/client/common.mock';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function RegisterPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [login, setLogin] = useState('');
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [age, setAge ] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
+  const [errors, setErrors] = useState<{ login?: string; password?: string; general?: string; email?:string; age?: string }>({});
 
+  
+  useEffect(() => {
+        const run = async() => {
+          const logged = await isLogged();
+           if (logged){
+              router.push("/");
+          }
+        }
+        run();
+      }, []);
+  
+  
   function validate() {
     const e: typeof errors = {};
     if (!emailRegex.test(email)) e.email = 'Please enter a valid email address';
     if (password.length < 8) e.password = 'Password must be at least 8 characters';
+    const ageNum = parseInt(age, 10);
+
+    if (isNaN(ageNum)) {
+      e.age = 'Enter a valid age';
+    } else if (ageNum < 18 || ageNum >= 150) {
+      e.age = 'Age must be between 18 and 150';
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -42,6 +65,10 @@ export default function RegisterPage() {
       setLoading(false);
     }
   }
+  
+  function redirect(){
+   router.push('/auth/login');
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,15 +76,16 @@ export default function RegisterPage() {
     if (!validate()) return;
     setLoading(true);
     try {
-      const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
-      const res = await fetch(`${api}/auth/register`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, name }),
+      const client = Backend.getInstance();
+      const res = await client.auth.register({
+        username : login,
+        password : password,
+        email : email,
+        displayName : name,
       });
-      const body = await res.json();
-      if (!res.ok) throw new Error(body.message || 'Registration failed');
-      if (body.access_token) localStorage.setItem('access_token', body.access_token);
+      if (!res.ok) throw res.error;
+      const data = res?.value;
+      if (data?.access_token) localStorage.setItem('token', data.access_token);
       router.push('/');
     } catch (err: any) {
       setErrors({ general: err.message || String(err) });
@@ -84,8 +112,13 @@ export default function RegisterPage() {
       <form onSubmit={submit}>
         <div>
           <label>Email</label>
-          <input value={email} onChange={e => setEmail(e.target.value)} type="email" />
+          <input value={email} onChange={e => setEmail(e.target.value)} type="login" />
           {errors.email && <div style={{ color: 'red' }}>{errors.email}</div>}
+        </div>
+        <div>
+          <label>Login</label>
+          <input value={login} onChange={e => setLogin(e.target.value)} />
+          {errors.login && <div style={{ color: 'red' }}>{errors.login}</div>}
         </div>
         <div>
           <label>Name</label>
@@ -96,8 +129,13 @@ export default function RegisterPage() {
           <input value={password} onChange={e => setPassword(e.target.value)} type="password" />
           {errors.password && <div style={{ color: 'red' }}>{errors.password}</div>}
         </div>
+        <div>
+          <label>age</label>
+          <input value={age} onChange={e => setAge(e.target.value)} />
+        </div>
         <button type="submit" disabled={loading}>{loading ? 'Registering…' : 'Register'}</button>
       </form>
+      <button onClick={redirect}>Already registered ?</button>
       {errors.general && <p style={{ color: 'red' }}>{errors.general}</p>}
     </div>
     </GoogleOAuthProvider>

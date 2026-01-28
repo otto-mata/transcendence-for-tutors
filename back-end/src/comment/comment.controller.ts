@@ -35,6 +35,7 @@ export class CommentController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
+			console.log("ceci est sense etre le id : ", postId);
 			const comments = await this.commentService.findByPostId(
 				postId,
 				skip,
@@ -72,10 +73,12 @@ export class CommentController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const comment = await this.commentService.create({
-				...data,
-				post: { connect: { id: postId } },
-				author: { connect: { id: user.id } },
+			const comment = await this.commentService.create(
+				postId, 
+				{
+					...data,
+					post: { connect: { id: postId } },
+					author: { connect: { id: user.id } },
 			});
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify(comment);
@@ -94,11 +97,12 @@ export class CommentController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const comment = await this.commentService.create({
-				...data,
-				parentComment: { connect: { id } },
-				author: { connect: { id: user.id } },
-				post: { connect: { id: postId } },
+			const comment = await this.commentService.create(
+				postId, {
+					...data,
+					parentComment: { connect: { id } },
+					author: { connect: { id: user.id } },
+					post: { connect: { id: postId } },
 			});
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify(comment);

@@ -30,28 +30,27 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	useEffect(() => {
 		if (!initialUser) {
 			fetchUserProfile();
+			console.log("this is user : ", user);
 		}
-	}, [username, initialUser]);
+	}, [isUploadingAvatar, isUploadingCover, username, initialUser]);
 
 	const fetchUserProfile = async () => {
 		setIsLoading(true);
 		setError(null);
 		try {
-			const backend = Backend.getInstance();
+			const client = Backend.getInstance();
 			if (isOwnProfile) {
-				const result = await backend.api.me.get();
-				if (result.ok) {
-					setUser(result.value as UserProfileResponse);
-				} else {
-					throw new Error('Failed to fetch profile');
-				}
+				const result = await client.me.get();
+				if (!result.ok)
+					throw new Error('Failed to fetch profile'); ;
+				const data = JSON.parse(result?.value);
+				setUser(data);
 			} else {
-				const result = await backend.api.users.$(username).get();
-				if (result.ok) {
-					setUser(result.value as UserProfileResponse);
-				} else {
-					throw new Error('User not found');
-				}
+				const result = await client.users.$({username}).get();
+				if (!result.ok)
+					throw new Error('Failed to fetch profile'); ;
+				const data = JSON.parse(result?.value);
+				setUser(data);
 			}
 		} catch (err) {
 			setError(err instanceof Error ? err.message : 'An error occurred');
@@ -66,8 +65,8 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 
 		setIsUploadingCover(true);
 		try {
-			const backend = Backend.getInstance();
-			const result = await backend.api.me.updateCover(file);
+			const client = Backend.getInstance();
+			const result = await client.me.updateCover(file);
 			if (result.ok) {
 				const updatedUser = result.value as UserProfileResponse;
 				setUser(updatedUser);
@@ -85,8 +84,8 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 
 		setIsUploadingAvatar(true);
 		try {
-			const backend = Backend.getInstance();
-			const result = await backend.api.me.updateAvatar(file);
+			const client = Backend.getInstance();
+			const result = await client.me.updateAvatar(file);
 			if (result.ok) {
 				const updatedUser = result.value as UserProfileResponse;
 				setUser(updatedUser);
