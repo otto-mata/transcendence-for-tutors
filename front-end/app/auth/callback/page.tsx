@@ -1,20 +1,41 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function AuthCallback() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
     async function verifyAuth() {
       try {
+        const errorParam = searchParams.get("error");
+        if (errorParam) {
+          throw new Error(errorParam);
+        }
+
+        const tokenParam = searchParams.get("token");
+        if (tokenParam) {
+          localStorage.setItem("token", tokenParam);
+          setStatus("success");
+          setTimeout(() => router.push("/"), 1000);
+          return;
+        }
+
+        const existingToken = localStorage.getItem("token");
+        if (!existingToken) {
+          throw new Error("No authentication token found");
+        }
+
         const api = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
         
         const res = await fetch(`${api}/auth/me`, {
           method: "GET",
-          credentials: "include",
+          headers: {
+            "Authorization": `Bearer ${existingToken}`,
+          },
         });
 
         if (res.ok) {
@@ -30,7 +51,7 @@ export default function AuthCallback() {
     }
 
     verifyAuth();
-  }, [router]);
+  }, [router, searchParams]);
 
   return (
     <div style={{ 

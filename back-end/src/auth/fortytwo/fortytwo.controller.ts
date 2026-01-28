@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req, Res, UseGuards, HttpStatus } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Res, UseGuards } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthGuard } from '@nestjs/passport';
 import type { Response } from 'express';
@@ -26,28 +26,17 @@ export class FortyTwoOauthController {
     try {
       const token = await this.fortyTwoOauthService.signIn(req.user);
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
-      const isProduction = process.env.NODE_ENV === 'production';
       
-      res.cookie('access_token', token.access_token, {
-        httpOnly: true,  
-        secure: isProduction, 
-        sameSite: isProduction ? 'strict' : 'lax',
-        maxAge: 15 * 60 * 1000,
-        path: '/',
-      });
-      
-      res.redirect(`${frontendUrl}/auth/callback`);
+      res.redirect(`${frontendUrl}/auth/callback?access_token=${encodeURIComponent(token.access_token)}`);
     } catch (error) {
-      res.status(HttpStatus.UNAUTHORIZED).json({
-        error: 'Authentication failed',
-        message: error.message,
-      });
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+      res.redirect(`${frontendUrl}/auth/callback?error=${encodeURIComponent(error.message || 'Authentication failed')}`);
     }
   }
 
   @Post('verify')
   async verifyToken(@Body() body: FortyTwoVerifyTokenDto): Promise<FortyTwoVerifyResponseDto> {
-    if (!body.token) {
+    if (!body.access_token) {
       return {
         success: false,
         error: 'No token provided',
@@ -55,7 +44,7 @@ export class FortyTwoOauthController {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(body.token);
+      const payload = await this.jwtService.verifyAsync(body.access_token);
       return {
         success: true,
         payload,

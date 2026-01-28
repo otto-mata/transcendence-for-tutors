@@ -23,18 +23,14 @@ export class GoogleOauthController {
     @Req() req: { user: GoogleUserDto },
     @Res() res: Response,
   ) {
-    const token = await this.googleOauthService.signIn(req.user);
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
-    const isProduction = process.env.NODE_ENV === 'production';
-    
-    res.cookie('access_token', token.access_token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? 'strict' : 'lax',
-      maxAge: 15 * 60 * 1000,
-      path: '/',
-    });
-    
-    res.redirect(`${frontendUrl}/auth/callback`);
+    try {
+      const token = await this.googleOauthService.signIn(req.user);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+      
+      res.redirect(`${frontendUrl}/auth/callback?access_token=${encodeURIComponent(token.access_token)}`);
+    } catch (error) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+      res.redirect(`${frontendUrl}/auth/callback?error=${encodeURIComponent(error.message || 'Authentication failed')}`);
+    }
   }
 }

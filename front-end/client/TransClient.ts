@@ -586,7 +586,7 @@ export class Backend {
 
 	// test le back tqt
 	private constructor() {
-		const token = process.env.NEXT_PUBLIC_API_TOKEN || '';
+		const token = localStorage.getItem('token') || '';
 		this._cl = ClientFactory(new Axios({ 
 			baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/',
 			headers: token ? {

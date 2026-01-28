@@ -28,7 +28,7 @@ export interface GoogleAuthResponseDto {
 
 // 42 oauth
 export interface FortyTwoVerifyTokenDto {
-	token: string;
+	access_token: string;
 }
 
 export interface FortyTwoVerifyResponseDto {
