@@ -67,9 +67,8 @@ model User {
     followers Follow[] @relation("UserFollowers")
     following Follow[] @relation("UserFollowing")
 
-    // Messages from chat
-    sentMessages     Message[] @relation("SentMessages")
-    receivedMessages Message[] @relation("ReceivedMessages")
+    chats     Chat[] @relation("Chats")
+    messages  Message[]
 
     @@index([username])
     @@index([email])
@@ -208,6 +207,7 @@ model Notification {
     updatedAt DateTime @updatedAt
 }
 
+<<<<<<< HEAD
 model Media {
   id        String   @id @default(cuid())
   userId    String
@@ -228,3 +228,24 @@ model Media {
   @@index([postId])
   @@index([createdAt])  
 }
+=======
+model Chat {
+    id        Int       @id @default(autoincrement())
+
+    users     User[]    @relation("Chats")
+    messages  Message[]
+}
+
+model Message {
+    id        Int        @id @default(autoincrement())
+
+    message   String
+    createdAt DateTime @default(now())
+
+    chatId    Int
+    chat      Chat       @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+    senderId  String
+    sender    User       @relation(fields: [senderId], references: [id])
+}
+>>>>>>> 50e4ff8 (feat: added chat table)
