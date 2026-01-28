@@ -1,6 +1,12 @@
-'use server';
 import { Axios } from 'axios';
-import { UpdateUserDto, UserProfileResponse } from './Users.dto';
+import {
+	UpdateUserDto,
+	UserProfileResponse,
+	UserPreferencesResponse,
+	UpdatePreferencesDto,
+	ChangePasswordDto,
+	ChangeEmailDto,
+} from './Users.dto';
 import {
 	LoginDto,
 	RegisterDto,
@@ -215,6 +221,92 @@ const ClientFactory = (client: Axios) => {
 					return Result.error(error as RequestError);
 				}
 			},
+			updateAvatar: async (file: File) => {
+				try {
+					const formData = new FormData();
+					formData.append('file', file);
+					const response = await client.patch<UserProfileResponse>(
+						'/users/me/avatar',
+						formData,
+						{
+							headers: {
+								'Content-Type': 'multipart/form-data',
+							},
+						},
+					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			updateCover: async (file: File) => {
+				try {
+					const formData = new FormData();
+					formData.append('file', file);
+					const response = await client.patch<UserProfileResponse>(
+						'/users/me/cover',
+						formData,
+						{
+							headers: {
+								'Content-Type': 'multipart/form-data',
+							},
+						},
+					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			preferences: {
+				get: async () => {
+					try {
+						const response = await client.get<UserPreferencesResponse>(
+							'/users/me/preferences',
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				patch: async (data: UpdatePreferencesDto) => {
+					try {
+						const response = await client.patch<UserPreferencesResponse>(
+							'/users/me/preferences',
+							data,
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+			},
+			changePassword: async (data: ChangePasswordDto) => {
+				try {
+					const response = await client.patch('/users/me/password', data);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			changeEmail: async (data: ChangeEmailDto) => {
+				try {
+					const response = await client.patch<UserProfileResponse>(
+						'/users/me/email',
+						data,
+					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			delete: async () => {
+				try {
+					const response = await client.delete('/users/me');
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
 		},
 		users: {
 			$: (id: string) => {
@@ -423,6 +515,66 @@ const ClientFactory = (client: Axios) => {
 				}
 			},
 		},
+		media: {
+			upload: async (file: File) => {
+				try {
+					const formData = new FormData();
+					formData.append('file', file);
+					const response = await client.post(
+						'/media/upload',
+						formData,
+						{
+							headers: {
+								'Content-Type': 'multipart/form-data',
+							},
+						},
+					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			$: (id: string) => {
+				return {
+					get: async () => {
+						try {
+							const response = await client.get(`/media/${id}`);
+							return Result.ok(response.data);
+						} catch (error) {
+							return Result.error(error as RequestError);
+						}
+					},
+					delete: async () => {
+						try {
+							const response = await client.delete(`/media/${id}`);
+							return Result.ok(response.data);
+						} catch (error) {
+							return Result.error(error as RequestError);
+						}
+					},
+				};
+			},
+			user: {
+				$: (userId: string) => {
+					return {
+						get: async (page?: number, limit?: number) => {
+							try {
+								const params = new URLSearchParams();
+								if (page) params.append('page', page.toString());
+								if (limit) params.append('limit', limit.toString());
+								const query = params.toString() ? `?${params.toString()}` : '';
+								const response = await client.get(
+									`/media/user/${userId}${query}`,
+								);
+								return Result.ok(response.data);
+							} catch (error) {
+								return Result.error(error as RequestError);
+							}
+						},
+					};
+				},
+			},
+		},
 	};
 };
 
@@ -432,14 +584,42 @@ export class Backend {
 	private static _instance: Backend | null = null;
 	private _cl: ClientType;
 
+	// test le back tqt
 	private constructor() {
-		this._cl = ClientFactory(new Axios({ baseURL: process.env.API_URL || 'http://localhost:3000/' }));
+		const token = process.env.NEXT_PUBLIC_API_TOKEN || '';
+		this._cl = ClientFactory(new Axios({ 
+			baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/',
+			headers: token ? {
+				'Authorization': `Bearer ${token}`,
+				'Content-Type': 'application/json',
+			} : {
+				'Content-Type': 'application/json',
+			},
+			transformRequest: [(data) => {
+				if (data instanceof FormData) return data;
+				return JSON.stringify(data);
+			}],
+			transformResponse: [(data) => {
+				try {
+					return JSON.parse(data);
+				} catch {
+					return data;
+				}
+			}],
+		}));
+	}
+
+	public static getInstance(): Backend {
+		if (Backend._instance == null) {
+			Backend._instance = new Backend();
+		}
+		return Backend._instance;
 	}
 
 	public get api(): ClientType {
-		if (Backend._instance == null) Backend._instance = new Backend();
-		return Backend._instance._cl;
+		return this._cl;
 	}
+
 	public async refresh() {
 		this._cl.auth.refresh({ refreshToken: 'coucou' });
 	}

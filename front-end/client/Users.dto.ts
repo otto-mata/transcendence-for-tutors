@@ -18,6 +18,11 @@ export interface UserProfileResponse {
 	createdAt: Date;
 }
 
+export interface UserPreferencesResponse {
+	theme: string;
+	language: string;
+}
+
 export class UpdateUserDto {
 	displayName?: string;
 	bio?: string;
@@ -30,4 +35,36 @@ export class UpdateUserDto {
 	instagramUrl?: string;
 	linkedinUrl?: string;
 	githubUrl?: string;
+}
+
+export interface UpdatePreferencesDto {
+	theme?: string;
+	language?: string;
+}
+
+export interface ChangePasswordDto {
+	currentPassword: string;
+	newPassword: string;
+}
+
+export interface ChangeEmailDto {
+	newEmail: string;
+	password: string;
+}
+
+export interface UserListItem {
+	id: string;
+	username: string;
+	displayName?: string;
+	avatarUrl?: string;
+	isVerified: boolean;
+	bio?: string;
+}
+
+export interface PaginatedUsers {
+	data: UserProfileResponse[];
+	page: number;
+	limit: number;
+	total: number;
+	hasMore: boolean;
 }

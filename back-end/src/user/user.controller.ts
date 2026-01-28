@@ -15,8 +15,10 @@ import {
 	UploadedFile,
 	UseGuards,
 	UseInterceptors,
+	BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from '@/media/multer.config';
 import type { Response } from 'express';
 import {
 	ChangeEmailDto,
@@ -25,11 +27,15 @@ import {
 	UpdateUserDto,
 } from './user.dto';
 import { UserService } from './user.service';
+import { MediaService } from '@/media/media.service';
 
 @Controller('users')
 @UseGuards(AuthGuard)
 export class UserController {
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly mediaService: MediaService,
+	) {}
 
 	@Get()
 	async getAllUsers(
@@ -275,15 +281,21 @@ export class UserController {
 	}
 
 	@Patch('me/avatar')
-	@UseInterceptors(FileInterceptor('file'))
+	@UseInterceptors(FileInterceptor('file', multerConfig))
 	async updateAvatar(
 		@UploadedFile() file: Express.Multer.File,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			if (!file) {
+				throw new BadRequestException('No file uploaded');
+			}
+			// Create media entry in database
+			await this.mediaService.uploadMedia(user.id, file);
+			
 			const updatedUser = await this.userService.update(user.id, {
-				avatarUrl: `/media/${file.filename}`,
+				avatarUrl: `/uploads/posts/${file.filename}`,
 			});
 			return JSON.stringify(updatedUser);
 		} catch (error) {
@@ -293,15 +305,21 @@ export class UserController {
 	}
 
 	@Patch('me/cover')
-	@UseInterceptors(FileInterceptor('file'))
+	@UseInterceptors(FileInterceptor('file', multerConfig))
 	async updateCover(
 		@UploadedFile() file: Express.Multer.File,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			if (!file) {
+				throw new BadRequestException('No file uploaded');
+			}
+			// Create media entry in database
+			await this.mediaService.uploadMedia(user.id, file);
+			
 			const updatedUser = await this.userService.update(user.id, {
-				coverImageUrl: `/media/${file.filename}`,
+				coverImageUrl: `/uploads/posts/${file.filename}`,
 			});
 			return JSON.stringify(updatedUser);
 		} catch (error) {
