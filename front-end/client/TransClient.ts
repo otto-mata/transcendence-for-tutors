@@ -76,9 +76,10 @@ const ClientFactory = (client: Axios) => {
 			register: async (data: RegisterDto) => {
 				console.log("datas are : ", data);
 				try {
-					const response = await client.post('/auth/register', {
-						...data,
-					});
+					const response = await client.post('/auth/register', JSON.stringify(data), {
+							headers : {
+							'Content-Type':'application/json'
+						}});
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);

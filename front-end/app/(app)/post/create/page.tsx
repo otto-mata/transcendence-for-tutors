@@ -1,11 +1,8 @@
 "use client"
-import { PostList } from "@/components/PostList";
 import { Image, Smile, Calendar } from "lucide-react";
 import { isLogged } from '@client/common.mock';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { PaginatedResponseDto  } from '@client/common.dto';
-import { PostResponseDto } from '@/client/post.dto';
 import { Backend } from "@/client/TransClient";
 
 
@@ -14,13 +11,13 @@ export default function Home() {
   const router = useRouter();
   const client = Backend.getInstance();
   const [PostInput, setPostInput] = useState('');
-  const [change, setChange] = useState(false);
-  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});;
-
+  
   async function PostIt(){
-    await client.posts.post({content : PostInput});
+    const res = await client.posts.post({content : PostInput});
     setPostInput('');
-    setChange(!change);
+    if (!res.ok) throw res.error;
+    const data = JSON.parse(res.value);
+    router.push('/post/' + data.postId);
   }
 
   useEffect(() => {
@@ -30,15 +27,9 @@ export default function Home() {
           router.push('/auth/login');
           return;
       }
-      const res = await client.posts.get();
-      if (!res.ok) throw res.error;
-      const data = JSON.parse(res?.value);
-      console.log("test", data);
-      setPosts({data : data});
-    
     }
     run();
-  }, [change]);
+  }, []);
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {/* Create Post Input */}
@@ -71,11 +62,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </div>
-
-      {/* Feed */}
-      <div className="space-y-6">
-        <PostList posts={posts} />
       </div>
     </div>
   );

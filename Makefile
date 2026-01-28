@@ -1,5 +1,7 @@
 
-all: backend-up frontend-up
+all: 
+	make backend-up &
+	make frontend-up
 
 frontend-up:
 	@echo Running 'frontend-up'...

@@ -1,5 +1,7 @@
 "use client";
 
+import { UserResponseDto } from '@/client/profile.dto';
+import { Backend } from '@/client/TransClient';
 import {
 	Home,
 	Compass,
@@ -14,24 +16,31 @@ import {
 	PlusCircle
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-// import { useRouter } from 'next/router';
+import { redirect, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function DesktopSidebar() {
 	const pathname = usePathname();
-	// const router = useRouter();
-
+	const client = Backend.getInstance();
+	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : "charging"});
 	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
 
 	function LogoutFunction(){
 		localStorage.setItem('access_token', " ");
-		// router.push('/auth/login')
+		redirect("/auth/login");
 	}
+
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
 			try {
+				const userRes = await client.me.get();
+				console.log("this is userRes :", userRes.value);
+				if (!userRes.ok)
+					redirect("/auth/login");
+				if (userRes.value !== null && typeof(userRes.value) == 'string')
+					setUser(JSON.parse(userRes.value));
+				// =====
 				const res = await fetch('/api/notifications');
 				if (!mounted) return;
 				if (!res.ok) {
@@ -82,7 +91,7 @@ export default function DesktopSidebar() {
 			</nav>
 
 			{/* Create Post Button */}
-			<button className="w-full mb-4 py-3 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+			<button onClick={() => {redirect("/post/create")}} className="w-full mb-4 py-3 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
 				<PlusCircle className="w-5 h-5" />
 				Create Post
 			</button>
@@ -92,8 +101,8 @@ export default function DesktopSidebar() {
 				<Link href="/profile" className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
 					<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
 					<div className="flex-1 min-w-0">
-						<p className="font-semibold text-sm text-gray-900 dark:text-gray-50 truncate">Sarah Anderson</p>
-						<p className="text-xs text-gray-500 truncate">@otto-mata</p>
+						<p className="font-semibold text-sm text-gray-900 dark:text-gray-50 truncate">{user.displayName? user.displayName : 'charging' }</p>
+						<p className="text-xs text-gray-500 truncate">@{user.username}</p>
 					</div>
 					<LogOut onClick={LogoutFunction} className="w-4 h-4 text-gray-400 dark:text-gray-600" />
 				</Link>

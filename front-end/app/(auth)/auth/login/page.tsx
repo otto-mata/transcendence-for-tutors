@@ -1,7 +1,8 @@
 "use client"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Backend } from '@/client/TransClient';
+import { isLogged } from '@/client/common.mock';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -9,6 +10,18 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ login?: string; password?: string; general?: string }>({});
+
+
+  useEffect(() => {
+      const run = async() => {
+        const logged = await isLogged();
+        console.log("tiue log : ", logged);
+         if (logged){
+            router.push('/');
+        }
+      }
+      run();
+    }, []);
 
   function validate() {
     const e: typeof errors = {};

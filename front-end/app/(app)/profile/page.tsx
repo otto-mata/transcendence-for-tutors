@@ -1,7 +1,23 @@
+"use client"
 import Image from 'next/image';
 import { MapPin, Link as LinkIcon, Calendar, Settings, Share2, Camera } from 'lucide-react';
+import { useEffect } from 'react';
+import { isLogged } from '@/client/common.mock';
+import { useRouter } from 'next/navigation';
 
 export default function MyProfilePage() {
+	const router = useRouter();
+
+	useEffect(() => {
+		  const run = async() => {
+			const logged = await isLogged();
+			 if (!logged){
+				router.push('/auth/login');
+			}
+		  }
+		  run();
+		}, []);
+
 	return (
 		<div className="min-h-screen bg-gray-50 dark:bg-gray-900 w-full">
 			{/* Cover Photo */}

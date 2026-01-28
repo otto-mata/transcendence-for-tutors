@@ -66,6 +66,8 @@ export const OnePost = ({post} : {post : PostResponseDto}) => {
 			if (!res.value) throw res.error;
 			const data = JSON.parse(res?.value);
 			setUser(data);
+			setBookmarked(await post.bookmarked);
+			setLiked(await post.liked);
 		}
 		
 		run();

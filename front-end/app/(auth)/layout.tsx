@@ -1,9 +1,6 @@
-import MobileNav from "@/components/MobileNav";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import ResponsiveNav from "@/components/ResponsiveNav";
-import ChatPopup from "@/components/Chat/ChatPopup";
+import "../globals.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,7 +17,7 @@ export const metadata: Metadata = {
   description: "whoop whoop 42",
 };
 
-export default function RootLayout({
+export default function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -30,9 +27,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased text-sm xl:text-base flex`}
       >
-        <ResponsiveNav />
         {children}
-        <ChatPopup />
       </body>
     </html>
   );

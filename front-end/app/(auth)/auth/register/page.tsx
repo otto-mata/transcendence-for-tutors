@@ -1,7 +1,8 @@
 "use client"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Backend } from '@/client/TransClient';
+import { isLogged } from '@/client/common.mock';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -15,6 +16,18 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ login?: string; password?: string; general?: string; email?:string; age?: string }>({});
 
+  
+  useEffect(() => {
+        const run = async() => {
+          const logged = await isLogged();
+           if (logged){
+              router.push("/");
+          }
+        }
+        run();
+      }, []);
+  
+  
   function validate() {
     const e: typeof errors = {};
     if (!emailRegex.test(email)) e.email = 'Please enter a valid email address';

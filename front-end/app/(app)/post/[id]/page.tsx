@@ -26,8 +26,8 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	  replyCount: 0,
 	  shares: 0,
 	  views: 0,
-	  liked: false,
-	  bookmarked: false,
+	  liked: true,
+	  bookmarked: true,
 	  createdAt: new Date(),
 	  updatedAt: new Date(),
 	});
@@ -51,17 +51,17 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		  const data = JSON.parse(res?.value);
 		  if (data)
 			setPost(data);
-		//   console.log("ceci est le post : ", data);
-		  }
+		  console.log("ici est le post",data);
+	    }
 		run();
 	  }, [change]);
 
 	  useEffect(() => {
 		const run = async() => {
-		  const useRes = await client.users.$({id : post.authorId}).get();
-		  const userData = JSON.parse(useRes?.value);
-		  if (userData)
-			setUser(userData);
+		  const res = await client.users.$({id : post.authorId}).get();
+		  if (!res.ok) return res.error;
+		  const data = JSON.parse(res?.value);
+		  setUser(data);
 		}
 		run();
 	  }, [post])

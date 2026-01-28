@@ -18,23 +18,40 @@ import {
 	Sun
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { redirect, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+import { Backend } from '@/client/TransClient';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDark, setIsDark] = useState(false);
 	const pathname = usePathname();
-
+	const client = Backend.getInstance();
+	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : "charging"});
 	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
+
+	function LogoutFunction(){
+		localStorage.setItem('access_token', " ");
+		redirect("/auth/login");
+	}
 
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
 			try {
+				const userRes = await client.me.get();
+				console.log("this is userRes :", userRes.value);
+				if (!userRes.ok)
+					redirect("/auth/login");
+				if (userRes.value !== null && typeof(userRes.value) == 'string')
+					setUser(JSON.parse(userRes.value));
+				// =====
 				const res = await fetch('/api/notifications');
 				if (!mounted) return;
-				if (!res.ok) { setNotifCount(0); return; }
+				if (!res.ok) {
+					setNotifCount(0);
+					return;
+				}
 				const data = await res.json();
 				if (Array.isArray(data)) {
 					const unread = data.filter((n: any) => n && n.read === false).length;
@@ -50,7 +67,6 @@ export default function MobileNav() {
 
 		return () => { mounted = false; };
 	}, []);
-
 	function isActive(href: string) {
 		if (!pathname) return false;
 		if (href === '/') return pathname === '/';
@@ -154,8 +170,8 @@ export default function MobileNav() {
 					<div className="my-4 border-t border-gray-200 dark:border-gray-700 " />
 
 					<div className="space-y-1 px-3">
-						<NavLink href="/bookmarks" icon={<Bookmark className="w-5 h-5" />} label="Bookmarks" onClick={closeMenu} active={isActive('/bookmarks')} />
-						<NavLink href="/likes" icon={<Heart className="w-5 h-5" />} label="Likes" onClick={closeMenu} active={isActive('/likes')} />
+						<NavLink href="/post/saved" icon={<Bookmark className="w-5 h-5" />} label="Bookmarks" onClick={closeMenu} active={isActive('/post/saved')} />
+						<NavLink href="/post/liked" icon={<Heart className="w-5 h-5" />} label="Likes" onClick={closeMenu} active={isActive('/post/liked')} />
 						<NavLink href="/trending" icon={<TrendingUp className="w-5 h-5" />} label="Trending" onClick={closeMenu} active={isActive('/trending')} />
 					</div>
 
@@ -184,7 +200,7 @@ export default function MobileNav() {
 
 				{/* Logout Button */}
 				<div className="p-4 border-t border-gray-200 dark:bg-gray-700 ">
-					<button className="w-full flex items-center justify-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium">
+					<button onClick={LogoutFunction} className="w-full flex items-center justify-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium">
 						<LogOut className="w-5 h-5" />
 						<span>Logout</span>
 					</button>
