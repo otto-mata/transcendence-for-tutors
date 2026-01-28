@@ -1,5 +1,5 @@
-import { Controller, Post, Body, HttpStatus, Res, HttpCode, HttpException } from '@nestjs/common';
-import type { Response } from 'express';
+import { Controller, Post, Get, Body, HttpStatus, Res, HttpCode, HttpException, UseGuards, Req } from '@nestjs/common';
+import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import {
 	CreateUserDto,
@@ -13,11 +13,30 @@ import {
 } from './auth.dto';
 import { Prisma } from '$prisma';
 import { AuthUserRegistration } from './auth.type';
+import { AuthGuard } from '@/guards/auth.guard';
+import { CurrentUser } from '@/decorators/current-user.decorator';
 import { env } from 'prisma/config';
 
 @Controller('auth')
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
+
+	@Get('me')
+	@UseGuards(AuthGuard)
+	async me(@CurrentUser() user: any) {
+		return user;
+	}
+
+	@Post('logout')
+	async logout(@Res({ passthrough: true }) res: Response) {
+		res.clearCookie('access_token', {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+			path: '/',
+		});
+		return { message: 'Logged out successfully' };
+	}
 
 	@Post('register')
 	async register(
@@ -38,6 +57,10 @@ export class AuthController {
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify({ message: 'Registered successfully' });
 		} catch (e) {
+			if (e instanceof HttpException) {
+				res.status(e.getStatus());
+				return JSON.stringify({ error: 'Registration failed', message: e.message });
+			}
 			if (e instanceof Prisma.PrismaClientKnownRequestError) {
 				if (e.code === 'P2002') {
 					res.status(HttpStatus.CONFLICT);
@@ -52,10 +75,7 @@ export class AuthController {
 					console.log(e);
 			}
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({
-				error: 'Registration failed',
-				message: e.message,
-			});
+			return JSON.stringify({ error: 'Registration failed', message: (e as any)?.message ?? 'Unknown error' });
 		}
 	}
 

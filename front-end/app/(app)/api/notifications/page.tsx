@@ -12,11 +12,11 @@ type Notification = {
 
 async function fetchNotifications(): Promise<Notification[]> {
   try {
-  const base = 'http://localhost:8080';
-  /* const res = await fetch(`${base}/api/notifications`);
+  const base = 'http://localhost:3000';
+   const res = await fetch(`${base}/api/notifications`);
     if (!res.ok) return [];
-    const data = await res.json(); */
-    return null;//data as Notification[];
+    const data = await res.json();
+    return data as Notification[];
   } catch (e) {
     console.error("Failed to fetch notifications:", e);
     return [];

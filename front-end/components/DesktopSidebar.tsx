@@ -35,30 +35,32 @@ export default function DesktopSidebar() {
 		(async () => {
 			try {
 				const userRes = await client.me.get();
-				console.log("this is userRes :", userRes.value);
+				// console.log("this is userRes :", userRes.value);
 				if (!userRes.ok)
 					redirect("/auth/login");
 				if (userRes.value !== null && typeof(userRes.value) == 'string')
 					setUser(JSON.parse(userRes.value));
 				// =====
-				const res = await fetch('/api/notifications');
-				if (!mounted) return;
-				if (!res.ok) {
-					setNotifCount(0);
-					return;
-				}
-				const data = await res.json();
-				if (Array.isArray(data)) {
-					const unread = data.filter((n: any) => n && n.read === false).length;
-					setNotifCount(unread);
-				} else {
-					setNotifCount(0);
-				}
+			// 	const res = await fetch('/api/notifications');
+			// 	if (!mounted) return;
+			// 	if (!res.ok) {
+			// 		setNotifCount(0);
+			// 		return;
+			// 	}
+			// 	const data = await res.json();
+			// 	if (Array.isArray(data)) {
+			// 		const unread = data.filter((n: any) => n && n.read === false).length;
+			// 		setNotifCount(unread);
+			// 	} else {
+			// 		setNotifCount(0);
+				// }
 			} catch (e) {
 				console.error('Failed to fetch notifications count', e);
+				console.log("error : ", e);
 				if (mounted) setNotifCount(0);
 			}
-		})();
+			}
+	)();
 
 		return () => { mounted = false; };
 	}, []);

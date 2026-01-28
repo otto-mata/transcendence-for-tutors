@@ -1,8 +1,23 @@
 // 'use server';
 import { Axios } from 'axios';
-import { UpdateUserDto, UserProfileResponse } from './Users.dto';
-import { LoginDto, RegisterDto } from './Auth.dto';
+import {
+	UpdateUserDto,
+	UserProfileResponse,
+	UserPreferencesResponse,
+	UpdatePreferencesDto,
+	ChangePasswordDto,
+	ChangeEmailDto,
+} from './Users.dto';
+import {
+	LoginDto,
+	RegisterDto,
+	GoogleTokenDto,
+	GoogleAuthResponseDto,
+	FortyTwoVerifyTokenDto,
+	FortyTwoVerifyResponseDto,
+} from './auth.dto';
 import { CreatePostDto, UpdatePostDto } from './Post.dto';
+import { CreateCommentDto, UpdateCommentDto } from './Comment.dto';
 
 type Ok<R> = ResultClass<R, never>;
 type Err<E> = ResultClass<never, E>;
@@ -150,7 +165,7 @@ const ClientFactory = (client: Axios) => {
 					return Result.error(error as RequestError);
 				}
 			},
-			verify2: async () => {
+			resend: async () => {
 				try {
 					const response = await client.post(
 						'/auth/resend-verification',
@@ -160,6 +175,46 @@ const ClientFactory = (client: Axios) => {
 				} catch (error) {
 					return Result.error(error as RequestError);
 				}
+			},
+			// Google oauth
+			google: {
+				signIn: async (data: GoogleTokenDto) => {
+					try {
+						const response =
+							await client.post<GoogleAuthResponseDto>(
+								'/auth/google',
+								data,
+							);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				getRedirectUrl: () => {
+					const baseUrl =
+						process.env.API_URL || 'http://localhost:3000';
+					return `${baseUrl}/auth/google/redirect`;
+				},
+			},
+			// 42 oauth
+			fortyTwo: {
+				getLoginUrl: () => {
+					const baseUrl =
+						process.env.API_URL || 'http://localhost:3000';
+					return `${baseUrl}/auth/42/login`;
+				},
+				verify: async (data: FortyTwoVerifyTokenDto) => {
+					try {
+						const response =
+							await client.post<FortyTwoVerifyResponseDto>(
+								'/auth/42/verify',
+								data,
+							);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
 			},
 		},
 		me: {
@@ -178,6 +233,92 @@ const ClientFactory = (client: Axios) => {
 						'/users/me',
 						data,
 					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			updateAvatar: async (file: File) => {
+				try {
+					const formData = new FormData();
+					formData.append('file', file);
+					const response = await client.patch<UserProfileResponse>(
+						'/users/me/avatar',
+						formData,
+						{
+							headers: {
+								'Content-Type': 'multipart/form-data',
+							},
+						},
+					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			updateCover: async (file: File) => {
+				try {
+					const formData = new FormData();
+					formData.append('file', file);
+					const response = await client.patch<UserProfileResponse>(
+						'/users/me/cover',
+						formData,
+						{
+							headers: {
+								'Content-Type': 'multipart/form-data',
+							},
+						},
+					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			preferences: {
+				get: async () => {
+					try {
+						const response = await client.get<UserPreferencesResponse>(
+							'/users/me/preferences',
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				patch: async (data: UpdatePreferencesDto) => {
+					try {
+						const response = await client.patch<UserPreferencesResponse>(
+							'/users/me/preferences',
+							data,
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+			},
+			changePassword: async (data: ChangePasswordDto) => {
+				try {
+					const response = await client.patch('/users/me/password', data);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			changeEmail: async (data: ChangeEmailDto) => {
+				try {
+					const response = await client.patch<UserProfileResponse>(
+						'/users/me/email',
+						data,
+					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			delete: async () => {
+				try {
+					const response = await client.delete('/users/me');
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);
@@ -284,39 +425,6 @@ const ClientFactory = (client: Axios) => {
 							return Result.error(error as RequestError);
 						}
 					},
-					share: async () => {
-						try {
-							const response = await client.post(
-								`/posts/${id}/share`,
-								{},
-							);
-							return Result.ok(response.data);
-						} catch (error) {
-							return Result.error(error as RequestError);
-						}
-					},
-					unshare: async () => {
-						try {
-							const response = await client.delete(
-								`/posts/${id}/share`,
-								{},
-							);
-							return Result.ok(response.data);
-						} catch (error) {
-							return Result.error(error as RequestError);
-						}
-					},
-					view: async () => {
-						try {
-							const response = await client.post(
-								`/posts/${id}/view`,
-								{},
-							);
-							return Result.ok(response.data);
-						} catch (error) {
-							return Result.error(error as RequestError);
-						}
-					},
 					comments: {
 						$: (commentId: string) => {
 							return {
@@ -332,7 +440,7 @@ const ClientFactory = (client: Axios) => {
 										);
 									}
 								},
-								patch: async (data) => {
+								patch: async (data: UpdateCommentDto) => {
 									try {
 										const response = await client.patch(
 											`/posts/${id}/comments/${commentId}`,
@@ -393,11 +501,11 @@ const ClientFactory = (client: Axios) => {
 										);
 									}
 								},
-								reply: async (data) => {
+								reply: async (data: CreateCommentDto) => {
 									try {
 										const response = await client.post(
 											`/posts/${id}/comments/${commentId}/reply`,
-											{},
+											data,
 										);
 										return Result.ok(response.data);
 									} catch (error) {
@@ -471,6 +579,66 @@ const ClientFactory = (client: Axios) => {
 				}
 			},
 		},
+		media: {
+			upload: async (file: File) => {
+				try {
+					const formData = new FormData();
+					formData.append('file', file);
+					const response = await client.post(
+						'/media/upload',
+						formData,
+						{
+							headers: {
+								'Content-Type': 'multipart/form-data',
+							},
+						},
+					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			$: (id: string) => {
+				return {
+					get: async () => {
+						try {
+							const response = await client.get(`/media/${id}`);
+							return Result.ok(response.data);
+						} catch (error) {
+							return Result.error(error as RequestError);
+						}
+					},
+					delete: async () => {
+						try {
+							const response = await client.delete(`/media/${id}`);
+							return Result.ok(response.data);
+						} catch (error) {
+							return Result.error(error as RequestError);
+						}
+					},
+				};
+			},
+			user: {
+				$: (userId: string) => {
+					return {
+						get: async (page?: number, limit?: number) => {
+							try {
+								const params = new URLSearchParams();
+								if (page) params.append('page', page.toString());
+								if (limit) params.append('limit', limit.toString());
+								const query = params.toString() ? `?${params.toString()}` : '';
+								const response = await client.get(
+									`/media/user/${userId}${query}`,
+								);
+								return Result.ok(response.data);
+							} catch (error) {
+								return Result.error(error as RequestError);
+							}
+						},
+					};
+				},
+			},
+		},
 	};
 };
 
@@ -480,6 +648,7 @@ export class Backend {
 	private static _instance: Backend | null = null;
 	private _cl: ClientType;
 
+	// test le back tqt
 	private constructor() {
 		this._cl = ClientFactory(new Axios({ baseURL: 'http://localhost:3000' })); //process.env.API_URL
 	}
@@ -487,8 +656,5 @@ export class Backend {
 	public static getInstance(): ClientType {
 		if (Backend._instance == null) Backend._instance = new Backend();
 		return Backend._instance._cl;
-	}
-	public async refresh() {
-		this._cl.auth.refresh({ refreshToken: 'coucou' });
 	}
 }

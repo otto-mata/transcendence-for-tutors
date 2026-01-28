@@ -5,6 +5,7 @@ import {
 	Injectable,
 	UnauthorizedException,
 } from '@nestjs/common';
+import { Prisma } from '$prisma';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -63,19 +64,41 @@ export class AuthService {
 		const hash = await bcrypt.hash(data.password, salt);
 		const verificationToken = crypto.randomBytes(32).toString('hex');
 
-		const user = await this.prisma.user.create({
-			data: {
-				email: data.email,
-				username: data.username,
-				passwordHash: hash,
-				displayName: data.displayName,
-				emailVerificationToken: verificationToken,
-				lastVerificationEmailSentAt: new Date(),
-			},
-		});
+		try {
+			const user = await this.prisma.user.create({
+				data: {
+					email: data.email,
+					username: data.username,
+					passwordHash: hash,
+					displayName: data.displayName,
+					emailVerificationToken: verificationToken,
+					lastVerificationEmailSentAt: new Date(),
+				},
+			});
 
-		await this.sendVerificationEmail(user.email, verificationToken);
-		return user;
+			await this.sendVerificationEmail(user.email, verificationToken);
+			return user;
+		} catch (e) {
+			if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+				const target = (e as any).meta?.target as string[] | undefined;
+				if (target && target.includes('email')) {
+					const existing = await this.prisma.user.findUnique({ where: { email: data.email } });
+					if (existing && (!existing.passwordHash || existing.passwordHash === '')) {
+						throw new HttpException(
+							'An account with this email exists using Google sign-in. Please sign in with Google.',
+							HttpStatus.CONFLICT,
+						);
+					}
+				}
+
+				// Generic conflict message
+				throw new HttpException(
+					'User with this username or email already exists',
+					HttpStatus.CONFLICT,
+				);
+			}
+			throw e;
+		}
 	}
 
 	async verifyEmail(token: string): Promise<void> {
@@ -204,6 +227,31 @@ export class AuthService {
 		};
 		return {
 			access_token: await this.jwtService.signAsync(payload),
+		};
+	}
+
+	async loginOauthUser(
+		login: string,
+	): Promise<{ access_token: string }> {
+		console.time('AuthService - loginOauthUser - findUnique');
+		const user = await this.prisma.user.findUnique({
+			where: { username: login },
+		});
+		console.timeEnd('AuthService - loginOauthUser - findUnique');
+
+		if (user == null)
+			throw new UnauthorizedException();
+
+		const payload = {
+			id: user.id,
+			username: user.username,
+			email: user.email,
+		};
+		console.time('AuthService - loginOauthUser - signAsync');
+		const accessToken = await this.jwtService.signAsync(payload);
+		console.timeEnd('AuthService - loginOauthUser - signAsync');
+		return {
+			access_token: accessToken,
 		};
 	}
 
