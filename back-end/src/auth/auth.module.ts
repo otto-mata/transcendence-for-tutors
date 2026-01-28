@@ -6,9 +6,11 @@ import { AuthService } from './auth.service';
 import { PrismaService } from '@/prisma/prisma.service';
 import { GoogleOauthModule } from './google/google.module';
 import { FortyTwoOauthModule } from './fortytwo/fortytwo.module';
+import { AuthGuard } from '@/guards/auth.guard';
 
 @Module({
 	imports: [
+		ConfigModule,
 		JwtModule.registerAsync({
 			imports: [ConfigModule],
 			inject: [ConfigService],
@@ -21,6 +23,6 @@ import { FortyTwoOauthModule } from './fortytwo/fortytwo.module';
 		FortyTwoOauthModule,
 	],
 	controllers: [AuthController],
-	providers: [AuthService, PrismaService],
+	providers: [AuthService, PrismaService, AuthGuard],
 })
 export class AuthModule {}

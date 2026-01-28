@@ -26,7 +26,17 @@ export class FortyTwoOauthController {
     try {
       const token = await this.fortyTwoOauthService.signIn(req.user);
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
-      res.redirect(`${frontendUrl}/auth/callback?token=${token.access_token}`);
+      const isProduction = process.env.NODE_ENV === 'production';
+      
+      res.cookie('access_token', token.access_token, {
+        httpOnly: true,  
+        secure: isProduction, 
+        sameSite: isProduction ? 'strict' : 'lax',
+        maxAge: 15 * 60 * 1000,
+        path: '/',
+      });
+      
+      res.redirect(`${frontendUrl}/auth/callback`);
     } catch (error) {
       res.status(HttpStatus.UNAUTHORIZED).json({
         error: 'Authentication failed',
