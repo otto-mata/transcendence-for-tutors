@@ -73,7 +73,7 @@ export class AuthController {
 			return JSON.stringify(result);
 		} catch (e) {
 			res.status(HttpStatus.UNAUTHORIZED);
-			return JSON.stringify({ error: 'Invalid credentials' });
+			return JSON.stringify({ error: e});
 		}
 	}
 

@@ -68,8 +68,21 @@ async findLiked(skip: number, take: number, userId : string): Promise<PostRespon
 			},
 		},
 		});
-	return posts;
-}
+	return Promise.all(posts.map(async (post) => {
+	return {
+		id: post.id,
+		content: post.content,
+		authorId: post.authorId,
+		visibility: post.visibility,
+		likeCount: post.likeCount,
+		replyCount: post.replyCount,
+		createdAt: post.createdAt,
+		updatedAt: post.updatedAt,
+		isReply: post.isReply,
+		liked: await this.prisma.like.findFirst({where : {userId : userId, postId : post.id}}) !== null,
+		bookmarked: await this.prisma.bookmark.findFirst({where : {userId : userId, postId : post.id}}) !== null,
+	}
+}));}
 
 async findSaved(skip: number, take: number, userId : string): Promise<PostResponseDto[]> {
 	const user = await this.prisma.user.findUnique({where : { id : userId}});
@@ -85,7 +98,21 @@ async findSaved(skip: number, take: number, userId : string): Promise<PostRespon
 			},
 		},
 		});
-	return posts;
+	return Promise.all(posts.map(async (post) => {
+	return {
+		id: post.id,
+		content: post.content,
+		authorId: post.authorId,
+		visibility: post.visibility,
+		likeCount: post.likeCount,
+		replyCount: post.replyCount,
+		createdAt: post.createdAt,
+		updatedAt: post.updatedAt,
+		isReply: post.isReply,
+		liked: await this.prisma.like.findFirst({where : {userId : userId, postId : post.id}}) !== null,
+		bookmarked: await this.prisma.bookmark.findFirst({where : {userId : userId, postId : post.id}}) !== null,
+	}
+	}));
 }
 
 
