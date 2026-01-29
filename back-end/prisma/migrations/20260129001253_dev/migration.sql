@@ -22,6 +22,8 @@ CREATE TABLE "User" (
     "passwordResetToken" TEXT,
     "passwordResetExpires" TIMESTAMP(3),
     "lastVerificationEmailSentAt" TIMESTAMP(3),
+    "oauthProvider" TEXT,
+    "oauthId" TEXT,
     "theme" TEXT NOT NULL DEFAULT 'auto',
     "language" TEXT NOT NULL DEFAULT 'en',
 
@@ -31,8 +33,9 @@ CREATE TABLE "User" (
 -- CreateTable
 CREATE TABLE "Post" (
     "id" TEXT NOT NULL,
-    "content" TEXT NOT NULL,
     "authorId" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "mediaUrl" TEXT,
     "likeCount" INTEGER NOT NULL DEFAULT 0,
     "commentCount" INTEGER NOT NULL DEFAULT 0,
     "visibility" TEXT NOT NULL DEFAULT 'public',
@@ -103,6 +106,22 @@ CREATE TABLE "Notification" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Media" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "postId" TEXT,
+    "filename" TEXT NOT NULL,
+    "mimetype" TEXT NOT NULL,
+    "size" INTEGER NOT NULL,
+    "url" TEXT NOT NULL,
+    "type" TEXT NOT NULL DEFAULT 'image',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Media_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -177,6 +196,15 @@ CREATE INDEX "Follow_followingId_idx" ON "Follow"("followingId");
 -- CreateIndex
 CREATE UNIQUE INDEX "Follow_followerId_followingId_key" ON "Follow"("followerId", "followingId");
 
+-- CreateIndex
+CREATE INDEX "Media_userId_idx" ON "Media"("userId");
+
+-- CreateIndex
+CREATE INDEX "Media_postId_idx" ON "Media"("postId");
+
+-- CreateIndex
+CREATE INDEX "Media_createdAt_idx" ON "Media"("createdAt");
+
 -- AddForeignKey
 ALTER TABLE "Post" ADD CONSTRAINT "Post_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
@@ -212,3 +240,9 @@ ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followerId_fkey" FOREIGN KEY ("follo
 
 -- AddForeignKey
 ALTER TABLE "Follow" ADD CONSTRAINT "Follow_followingId_fkey" FOREIGN KEY ("followingId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Media" ADD CONSTRAINT "Media_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Media" ADD CONSTRAINT "Media_postId_fkey" FOREIGN KEY ("postId") REFERENCES "Post"("id") ON DELETE CASCADE ON UPDATE CASCADE;

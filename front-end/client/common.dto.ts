@@ -1,13 +1,13 @@
 
-export class ApiResponseDto<DataType>{
+export interface ApiResponseDto<DataType>{
   data?:DataType;
   message: string;
   code?:string;
-  error:bool;
+  error:boolean;
   timestamp:Date;
 }
 
-export class PaginatedResponseDto<T> {
+export interface PaginatedResponseDto<T> {
 	data: T[];
 	page?: number;
 	limit?: number;
@@ -15,7 +15,7 @@ export class PaginatedResponseDto<T> {
 	hasMore?: boolean;
 }
 
-export class QueryParametersDto {
+export interface QueryParametersDto {
   page?   : number;
   limit?  : number;
   search? : string;

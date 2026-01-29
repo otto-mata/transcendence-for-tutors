@@ -1,13 +1,4 @@
-
-export class RegisterDto {
-  login         : string;
-  password      : string;
-  email         : string;
-  display_name  : string;
-  age           : numbe;
-}
-
-export class LoginResponseDto {
+export interface LoginResponseDto {
   access_token: string;
   refresh_token?: string;
   code?: string;
@@ -20,18 +11,10 @@ export class LoginResponseDto {
   };
 }
 
-export class AuthResponseDto {
+export interface AuthResponseDto {
   access_token: string;
   refresh_token?: string;
 }
-
-export class LoginDto {
-  login : string;
-  password : string;
-}
-
-export LoginResponseDto as RefreshResponse;
-
 
 export interface RegisterDto {
 	username: string;
@@ -92,3 +75,5 @@ export interface FortyTwoAuthResponseDto {
 		avatarUrl?: string;
 	};
 }
+
+export interface RefreshResponse extends LoginResponseDto{}

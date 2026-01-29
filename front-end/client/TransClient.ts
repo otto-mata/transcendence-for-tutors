@@ -229,7 +229,8 @@ const ClientFactory = (client: Axios) => {
 						await client.get<UserProfileResponse>('/users/me');
 				return Result.ok(response.data);
 				} catch (error) {
-					return Result.error(error as RequestError);
+					console.log("doesn go here");
+					return Result.error(error as Error);
 				}
 			},
 			patch: async (data: UpdateUserDto) => {
@@ -369,6 +370,8 @@ const ClientFactory = (client: Axios) => {
 					get: async () => {
 						try {
 							const response = await client.get(`/posts/${id}`);
+							if (response.statusText !== 'OK')
+								throw new Error(response.data.error);
 							return Result.ok(response.data);
 						} catch (error) {
 							return Result.error(error as RequestError);
@@ -557,36 +560,72 @@ const ClientFactory = (client: Axios) => {
 					},
 				};
 			},
-			get: async () => {
-				try {
-					const response = await client.get('/posts');
-					return Result.ok(response.data);
-				} catch (error) {
-					return Result.error(error as RequestError);
-				}
+			get: () => {
+				return {
+					all : async () => {
+						try {
+						const response = await client.get('/posts');
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				 byName : async (username : string) => {
+						try {
+						const response = await client.get(`/posts/user/${username}`);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				 }
+			};
 			},
-			liked: async () => {
-				try {
-					const response = await client.get('/posts/liked');
-					return Result.ok(response.data);
-				} catch (error) {
-					return Result.error(error as RequestError);
-				}
+			liked: () => {
+				return {
+					get : async () => {
+						try {
+						const response = await client.get('/posts/liked');
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				 byName : async (username : string) => {
+						try {
+						const response = await client.get(`/posts/liked/${username}`);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				 }
+			};
 			},
-			saved: async () => {
-				try {
-					const response = await client.get('/posts/saved');
-					return Result.ok(response.data);
-				} catch (error) {
-					return Result.error(error as RequestError);
-				}
+			saved: () => {
+				return {
+					get : async () => {
+						try {
+						const response = await client.get('/posts/saved');
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				 byName : async (username : string) => {
+						try {
+						const response = await client.get(`/posts/saved/${username}`);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				 }
+			};
 			},
 			post: async (data: CreatePostDto) => {
 				try {
-					const response = await client.post('/posts', JSON.stringify(data), {
-							headers : {
-							'Content-Type':'application/json'
-						}});
+					const formData = new FormData();
+					formData.append('content', data.content);
+					if (data.file) formData.append('file', data.file);
+					const response = await client.post('/posts', formData);
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);

@@ -1,4 +1,4 @@
-export class UserResponseDto {
+export interface UserResponseDto {
   id: number;
   username: string;
   email: string;
@@ -12,17 +12,17 @@ export class UserResponseDto {
   updatedAt: Date;
 }
 
-export class ChangePasswordDto {
+export interface ChangePasswordDto {
   currentPassword: string;    // required
   newPassword: string;        // 8-100 chars, required
 }
 
-export class ChangeEmailDto{
+export interface ChangeEmailDto{
   newEmail: string;           // valid email, required
   password: string;           // required
 }
 
-export class ChangePreferencesDto {
+export interface ChangePreferencesDto {
   theme?: string;             // "light" | "dark", optional
   language?: string;          // language code, optional
   emailNotifications?: boolean; // optional

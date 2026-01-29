@@ -44,8 +44,8 @@ export default function MobileNav() {
 				// console.log("this is userRes :", userRes.value);
 				if (!userRes.ok)
 					redirect("/auth/login");
-				if (userRes.value !== null && typeof(userRes.value) == 'string')
-					setUser(JSON.parse(userRes.value));
+				// if (userRes.value !== null && typeof(userRes.value) == 'string')
+				// 	setUser(JSON.parse(userRes.value));
 				// =====
 				// const res = await fetch('/api/notifications');
 				// if (!mounted) return;

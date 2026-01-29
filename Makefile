@@ -1,7 +1,5 @@
 
-all: 
-	make backend-up &
-	make frontend-up
+all: backend-up frontend-up
 
 frontend-up:
 	@echo Running 'frontend-up'...
@@ -13,7 +11,7 @@ frontend-down:
 
 backend-up:
 	@echo Running 'backend-up'...
-	docker compose -f back-end/docker-compose.yml up --build
+	docker compose -f back-end/docker-compose.yml up --build -d
 
 
 backend-down:

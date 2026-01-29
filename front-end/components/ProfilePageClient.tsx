@@ -6,6 +6,7 @@ import { Backend } from '@/client/TransClient';
 import { getMediaUrl } from '@/client/utils';
 import { UserProfileResponse } from '@/client/Users.dto';
 import EditProfileModal from './EditProfileModal';
+import { MansonPostGridByUsername, MansonPostGridLiked, MansonPostGridSaved } from './PostList';
 
 interface ProfilePageClientProps {
 	username: string;
@@ -354,7 +355,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 										: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
 								}`}
 							>
-								{tab}
+								{(index !== 3 || isOwnProfile) && tab}
 								{index === activeTab && (
 									<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
 								)}
@@ -366,10 +367,10 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 				{/* Content Area - Posts Grid placeholder */}
 				<div className="pb-12">
 					<div className="text-center py-12 text-gray-500 dark:text-gray-400">
-						{activeTab === 0 && 'Posts will appear here'}
+						{activeTab === 0 && <MansonPostGridByUsername username={user.username}/>}
 						{activeTab === 1 && 'Media posts will appear here'}
-						{activeTab === 2 && 'Liked posts will appear here'}
-						{activeTab === 3 && 'Collections will appear here'}
+						{activeTab === 2 && <MansonPostGridLiked { ...(isOwnProfile &&  {username})}/>}
+						{isOwnProfile &&  activeTab === 3 && <MansonPostGridSaved { ...(isOwnProfile &&  {username})}/>}
 					</div>
 				</div>
 			</div>
