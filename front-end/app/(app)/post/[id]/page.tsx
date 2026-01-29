@@ -69,21 +69,6 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		run();
 	  }, [change])
 
-	if (charging) {
-			return (
-			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-				<div className="text-center">
-					<h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-						Charging.....
-					</h2>
-					<p className="text-gray-600 dark:text-gray-400">
-						we are loading your post info
-					</p>
-				</div>
-			</div>
-		);
-	}
-	
 	if (error || !post) {
 		return (
 			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
@@ -99,6 +84,21 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		);
 	}
 
+	if (charging) {
+			return (
+			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+				<div className="text-center">
+					<h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+						Charging.....
+					</h2>
+					<p className="text-gray-600 dark:text-gray-400">
+						we are loading your post info
+					</p>
+				</div>
+			</div>
+		);
+	}
+	
 
 	return (
 	<div className="max-w-2xl mx-auto p-4">
