@@ -1,14 +1,8 @@
 "use client"
-import { PostList } from "@/components/PostList";
-import { Image, Smile, Calendar } from "lucide-react";
+import { MansonPostGridAll} from "@/components/PostList";
 import { isLogged } from '@client/common.mock';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { PaginatedResponseDto  } from '@client/common.dto';
-import { PostResponseDto } from '@/client/post.dto';
-import { Backend } from "@/client/TransClient";
-import { Search, TrendingUp, Hash, MapPin, Save, Bookmark } from 'lucide-react';
-import Link from 'next/link';
 
 function printit(){
 	console.log("Button clicked");
@@ -16,91 +10,18 @@ function printit(){
 
 export default function ExplorePage() {
 	const router = useRouter();
-	const client = Backend.getInstance();
-	  const [PostInput, setPostInput] = useState('');
-	  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});;
-	
-	  async function PostIt(){
-		const res = await client.createPost({content : PostInput});
-		console.log('my message is : ' + res.getMessage());
-	  }
-	
-	  useEffect(() => {
-		const run = async() => {
-		  const logged = await isLogged();
-		   if (!logged)
-			  router.push('/auth/login');
-		  const res = await client.posts.get();
-		  const data = JSON.parse(res?.value);
-		  if (data) setPosts({data : data});
-		}
-		run();
-	  }, [router]);
+
+	useEffect(() => {
+	const run = async() => {
+		const logged = await isLogged();
+		if (!logged)
+			router.push('/auth/login');
+	}
+	run();
+	}, [router]);
 
 	return (
-
-		<div className='w-full p-4'>
-			<div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
-				{/* SearchBar */}
-				<div className="max-w-xs sm:max-w-lg md:max-w-full mx-auto px-4 py-4">
-					<div className="relative">
-						<Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-200 w-5 h-5" />
-						<input
-							type="text"
-							placeholder="Search content, app settings..."
-							className="w-full pl-12 pr-4 py-3 bg-gray-100 dark:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all"
-						/>
-					</div>
-				</div>
-
-				{/* Masonry Grid */}
-				<div className="columns-1 sm:columns-2 md:columns-3 gap-4 space-y-4">
-					{MockPosts.map((post, index) => (
-						<div
-							key={index}
-							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group"
-						>
-							{post.gradient && <div className="relative overflow-hidden">
-								<div
-									className={`w-full bg-linear-to-br ${post.gradient} `}
-									style={{ height: post.height }}
-								>
-									{/* Overlay on hover */}
-									<div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity" />
-								</div>
-							</div>}
-							<div className="p-4">
-								<div className="flex items-center gap-3 mb-3">
-									<Link href={`profile/${post.username} `} className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
-									<div>
-										<Link href={`profile/${post.username} `}>
-											<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">
-												{post.author}
-											</h4>
-										</Link>
-										<p className="text-xs text-gray-500">{post.time}</p>
-									</div>
-								</div>
-								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{post.description}</p>
-								<div className="flex items-center justify-between text-gray-500">
-									<div className="flex gap-4 text-sm">
-										<button onClick={printit} className="hover:text-red-500 transition-colors cursor-pointer">
-											❤️ {post.likes}
-										</button>
-										<button onClick={printit} className="hover:text-blue-500 transition-colors cursor-pointer">
-											💬 {post.comments}
-										</button>
-									</div>
-									<button className="text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400">
-										<Bookmark />
-									</button>
-								</div>
-							</div>
-						</div>
-					))}
-				</div>
-			</div>
-		</div>
+		<MansonPostGridAll/>
 	);
 }
 
@@ -109,7 +30,7 @@ const MockPosts = [
 		author: 'Alex Chen',
 		username: 'AlexChen',
 		time: '2h ago',
-		description: 'Minimalist workspace setup for maximum productivity 🚀',
+		description: 'Minimalist workspace setup for maximum productivity 🚀 Minimalist workspace setup for maximum productivity 🚀 Minimalist workspace setup for maximum productivity 🚀 Minimalist workspace  maximum productivity 🚀 Minimalist workspace setup for maximum productivity 🚀 Minimalist ',
 		gradient: null,
 		height: '200px',
 		likes: '2. 4K',

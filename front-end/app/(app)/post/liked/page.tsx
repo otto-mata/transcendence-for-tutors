@@ -1,5 +1,5 @@
 "use client"
-import { PostList } from "@/components/PostList";
+import { MansonPostGrid, PostList } from "@/components/PostList";
 import { isLogged } from '@client/common.mock';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -12,6 +12,8 @@ export default function LikePosts() {
   const router = useRouter();
   const client = Backend.getInstance();
   const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});;
+  const [charging, setCharging] = useState(true);
+
 
   useEffect(() => {
     const run = async() => {
@@ -20,20 +22,21 @@ export default function LikePosts() {
           router.push('/auth/login');
           return;
       }
-      const res = await client.posts.liked();
+      const res = await client.posts.liked().get();
       if (!res.ok) throw res.error;
       const data = JSON.parse(res?.value);
       console.log("test", data);
       setPosts({data : data});
+      setCharging(false);
     
     }
     run();
-  }, []);
+  }, [charging]);
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {/* Feed */}
       <div className="space-y-6">
-        <PostList posts={posts} />
+        <MansonPostGrid posts={posts} charging={charging}/>
       </div>
     </div>
   );

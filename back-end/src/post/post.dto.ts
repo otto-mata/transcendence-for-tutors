@@ -71,9 +71,7 @@ export class PostResponseDto {
 	isReply: boolean;
 	liked?: boolean;
 	bookmarked?: boolean;
-	media?: PostMediaDto[];
-	hashtags?: string[];
-	mentions?: string[];
+	mediaUrl?: string;
 }
 
 export class PaginatedPostsDto {

@@ -17,6 +17,14 @@ export class MediaRepository {
 						avatarUrl: true,
 					},
 				},
+				...(data.post && {
+					post : {
+						select : {
+							id: true,
+							mediaUrl: true,
+						}
+					}}
+				)
 			},
 		});
 	}

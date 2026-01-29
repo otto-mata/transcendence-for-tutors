@@ -9,6 +9,7 @@ export class PostResponseDto {
   shares: number;
   views: number;
   liked: boolean;
+  mediaUrl? : string;
   bookmarked: boolean;
   createdAt: Date;
   updatedAt: Date;

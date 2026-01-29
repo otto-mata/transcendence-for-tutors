@@ -2,7 +2,7 @@ export interface CreatePostDto {
 	content: string;
 	visibility?: string;
 	mentions?: string[];
-	mediaIds?: string[];
+	file? : File;
 }
 
 export interface UpdatePostDto {

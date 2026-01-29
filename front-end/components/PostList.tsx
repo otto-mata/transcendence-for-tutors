@@ -7,6 +7,7 @@ import { Backend } from '@/client/TransClient';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { UserResponseDto } from '@/client/profile.dto';
+import { getMediaUrl } from '@/client/utils';
 
 function printit(){
 	console.log("Button clicked");
@@ -19,13 +20,14 @@ function buttonApearance(alreadyDone?: boolean){
 
 
 
-export const OnePost = ({post} : {post : PostResponseDto}) => {
+export const OnePost = (params : {post : PostResponseDto, charging : boolean}) => {
 	const router = useRouter();
 	const client = Backend.getInstance();
 	const [user, setUser] = useState<{username : string, displayName : string}>({username : "charging...", displayName : "charging..."});
-	const [Liked, setLiked] = useState(post.liked);
-	const [Bookmarked, setBookmarked] = useState(post.bookmarked);
-	const createdAt = new Date(post.createdAt).toDateString();
+	const [Liked, setLiked] = useState(params.post.liked);
+	const [Bookmarked, setBookmarked] = useState(params.post.bookmarked);
+	const postImage = getMediaUrl(params.post.mediaUrl) || null;
+	const createdAt = new Date(params.post.createdAt).toDateString();
 
 	async function LikePost(post : PostResponseDto){
 	if (!Liked){
@@ -62,29 +64,38 @@ export const OnePost = ({post} : {post : PostResponseDto}) => {
   }
   	useEffect(() => {
 		const run = async () => {
-			const res = await client.users.$({id :  post.authorId}).get();
+			if (params.charging)
+				return ;
+			const res = await client.users.$({id :  params.post.authorId}).get();
 			if (!res.value) throw res.error;
 			const data = JSON.parse(res?.value);
 			setUser(data);
-			setBookmarked(await post.bookmarked);
-			setLiked(await post.liked);
+			setBookmarked(await params.post.bookmarked);
+			setLiked(await params.post.liked);
 		}
 		
 		run();
-  }, [post.id])
+  }, [params.post.id])
 
    return (<div
 							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group mt-1"
 						>
-							{/* {post.gradient && <div className="relative overflow-hidden">
-								<div
-									className={`w-full bg-linear-to-br ${post.gradient} `}
-									style={{ height: post.height }}
-								> }
-									{*//* Overlay on hover *//*}
-									{ <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-20 transition-opacity" />
+							<div 
+								className="relative fill rounded-xl overflow-hidden cursor-pointer group"
+								onClick={() => {}}
+							>
+								{postImage ? (
+									<img 
+										src={postImage} 
+										alt="Post" 
+										className="w-full h-full object-cover"
+									/>
+								) : (
+									<div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400" />
+								)}
+								<div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
 								</div>
-							</div>} */}
+							</div>
 							<div className="p-4">
 								<div className="flex items-center gap-3 mb-3">
 									<Link href={`profile/${user.username} `} className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
@@ -97,17 +108,17 @@ export const OnePost = ({post} : {post : PostResponseDto}) => {
 										<p className="text-xs text-gray-500">{createdAt}</p>
 									</div>
 								</div>
-								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{post.content}</p>
+								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{params.post.content}</p>
 								<div className="flex items-center justify-between text-gray-500">
 									<div className="flex gap-4 text-sm">
-										<button onClick={() => LikePost(post)} className={ Liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>
-											❤️ {post.likeCount}
+										<button onClick={() => LikePost(params.post)} className={ Liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>
+											❤️ {params.post.likeCount}
 										</button>
-										<button onClick={() => CommentPost(post.id)} className="hover:text-blue-500 transition-colors cursor-pointer">
-											💬 {post.replyCount}
+										<button onClick={() => CommentPost(params.post.id)} className="hover:text-blue-500 transition-colors cursor-pointer">
+											💬 {params.post.replyCount}
 										</button>
 									</div>
-									<button onClick={() => SavePost(post)} className={ Bookmarked ? "text-blue-500 hover:text-gray-600 dark:text-blue-500 dark:hover:text-gray-400" : "text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"}>
+									<button onClick={() => SavePost(params.post)} className={ Bookmarked ? "text-blue-500 hover:text-gray-600 dark:text-blue-500 dark:hover:text-gray-400" : "text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"}>
 										<Bookmark />
 									</button>
 								</div>
@@ -119,109 +130,146 @@ export const OnePost = ({post} : {post : PostResponseDto}) => {
 }
 
 
-export const PostList = ({posts}: {posts : PaginatedResponseDto<PostResponseDto>}) => {
-  if (!posts)
-		return (<div>Error</div>);
+export const PostList = (params: {posts : PaginatedResponseDto<PostResponseDto>, charging : boolean}) => {
+  if (!params.posts || params.charging)
+		return (<div>Posts are charging...</div>);
 
-	//const posts = await axios.get<MockPostData[]>(`https://jsonplaceholder.typicode.com/posts`, { params: { userId: id } })
-	if (posts)
+	if (params.posts)
 	return (<div className="flex flex-col bg">
-		{posts.data.map(post => <OnePost key={post.id} post={post} />)}
+		{params.posts.data.map(post => <OnePost key={post.id} post={post} charging={params.charging}/>)}
 		</div >
 	);
 };
 
+export const MansonPostGrid = (params: {posts : PaginatedResponseDto<PostResponseDto>, charging : boolean}) => {
+  if (!params.posts || params.charging)
+		return (<div>Posts are charging...</div>);
+
+	if (params.posts)
+	return (
+	<div className='w-full p-4'>
+			<div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
+				{/* Masonry Grid */}
+				<div className="columns-1 sm:columns-2 md:columns-3 gap-4 space-y-4">
+					{params.posts.data?.map((post, index) => (
+						<OnePost key={index} post={post} charging={params.charging}/>
+					))}
+				</div>
+			</div>
+		</div>
+	);
+};
 
 
-const MockPosts = [
-	{
-		author: 'Alex Chen',
-		username: 'AlexChen',
-		time: '2h ago',
-		description: 'Minimalist workspace setup for maximum productivity 🚀',
-		gradient: null,
-		height: '200px',
-		likes: '2. 4K',
-		comments: '89',
-	},
-	{
-		author: 'Sarah Kim',
-		username: 'SarahKim',
-		time: '4h ago',
-		description: 'Golden hour at the beach never disappoints ✨',
-		gradient: 'from-orange-400 to-pink-400',
-		height: '20px',
-		likes: '3.1K',
-		comments: '124',
-	},
-	{
-		author: 'Mike Johnson',
-		username: 'MikeJohnson',
-		time: '6h ago',
-		description: 'New UI design concept for mobile banking app',
-		gradient: 'from-purple-400 to-indigo-500',
-		height: '240px',
-		likes: '1.8K',
-		comments: '56',
-	},
-	{
-		author: 'Emma Davis',
-		username: 'EmmaDavis',
-		time: '8h ago',
-		description: 'Coffee and code.  Best combination!  ☕',
-		gradient: 'from-amber-400 to-orange-500',
-		height: '300px',
-		likes: '2.9K',
-		comments: '102',
-	},
-	{
-		author: 'James Wilson',
-		username: 'JamesWilson',
-		time: '10h ago',
-		description: 'Abstract architecture photography from downtown',
-		gradient: null,
-		height: '360px',
-		likes: '4.2K',
-		comments: '167',
-	},
-	{
-		author: 'Olivia Brown',
-		username: 'OliviaBrown',
-		time: '12h ago',
-		description: 'Nature-inspired color palette for your next project 🎨',
-		gradient: 'from-green-400 to-teal-400',
-		height: '260px',
-		likes: '1.6K',
-		comments: '43',
-	},
-	{
-		author: 'Lucas Garcia',
-		username: 'LucasGarcia',
-		time: '14h ago',
-		description: 'Street art brings color to urban spaces',
-		gradient: 'from-red-400 to-pink-500',
-		height: '340px',
-		likes: '3.7K',
-		comments: '145',
-	},
-	{
-		author: 'Sophia Lee',
-		username: 'SophiaLee',
-		time: '16h ago',
-		description: 'Experimental typography studies',
-		gradient: 'from-violet-400 to-purple-500',
-		height: '220px',
-		likes: '2.1K',
-		comments: '78',
-	},
-	{
-		author: 'Noah Martinez',
-		username: 'NoahMartinez',
-		time: '18h ago',
-		description: 'Mountain peaks above the clouds ⛰️',
-		gradient: 'from-sky-400 to-blue-500',
-		height: '380px',
-		likes: '5.3K',
-		comments: '201',
-	},
-];
+export const MansonPostGridAll = () => {
+const router = useRouter();
+  const client = Backend.getInstance();
+  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});
+  const [charging, setCharging] = useState(true);
+
+  useEffect(() => {
+	const run = async() => {
+	  const res = await client.posts.get().all();
+	  if (!res.ok) throw res.error;
+	  const data = JSON.parse(res?.value);
+	  console.log("test", data);
+	  setPosts({data : data});
+	  setCharging(false);
+	
+	}
+	run();
+  }, []);
+  return (
+	<div className="max-w-2xl mx-auto py-8 px-4">
+	  {/* Feed */}
+	  <div className="space-y-6">
+		<MansonPostGrid posts={posts} charging={charging}/>
+	  </div>
+	</div>
+  );
+}
+
+export const MansonPostGridByUsername = (params : {username : string}) => {
+const router = useRouter();
+  const client = Backend.getInstance();
+  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});
+  const [charging, setCharging] = useState(true);
+
+  useEffect(() => {
+	const run = async() => {
+	  const res = await client.posts.get().byName(params.username);
+	  if (!res.ok) throw res.error;
+	  const data = JSON.parse(res?.value);
+	  console.log("test", data);
+	  setPosts({data : data});
+	  setCharging(false);
+	
+	}
+	run();
+  }, []);
+  return (
+	<div className="max-w-2xl mx-auto py-8 px-4">
+	  {/* Feed */}
+	  <div className="space-y-6">
+		<MansonPostGrid posts={posts} charging={charging}/>
+	  </div>
+	</div>
+  );
+}
+
+
+export const MansonPostGridSaved = (params : {username? : string}) => {
+const router = useRouter();
+  const client = Backend.getInstance();
+  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});
+  const [charging, setCharging] = useState(true);
+
+  useEffect(() => {
+		const run = async() => {
+	  const res = params.username ?  await client.posts.saved().byName(params.username) : await client.posts.saved().get();
+	  if (!res.ok) throw res.error;
+	  const data = JSON.parse(res?.value);
+	  console.log("test", data);
+	  setPosts({data : data});
+	  setCharging(false);
+	
+	}
+	run();
+  }, []);
+  return (
+	<div className="max-w-2xl mx-auto py-8 px-4">
+	  {/* Feed */}
+	  <div className="space-y-6">
+		<MansonPostGrid posts={posts} charging={charging}/>
+	  </div>
+	</div>
+  );
+}
+
+export const MansonPostGridLiked = (params : {username? : string}) => {
+const router = useRouter();
+  const client = Backend.getInstance();
+  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});
+  const [charging, setCharging] = useState(true);
+
+  useEffect(() => {
+		const run = async() => {
+	  const res = params.username ?  await client.posts.liked().byName(params.username) : await client.posts.liked().get();
+	  if (!res.ok) throw res.error;
+	  const data = JSON.parse(res?.value);
+	  console.log("test", data);
+	  setPosts({data : data});
+	  setCharging(false);
+	
+	}
+	run();
+  }, []);
+  return (
+	<div className="max-w-2xl mx-auto py-8 px-4">
+	  {/* Feed */}
+	  <div className="space-y-6">
+		<MansonPostGrid posts={posts} charging={charging}/>
+	  </div>
+	</div>
+  );
+}

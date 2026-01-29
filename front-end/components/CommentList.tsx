@@ -49,9 +49,6 @@ export const OneComment = ({comment} : {comment : CommentResponseDto}) => {
 						<button onClick={() => LikeComment(comment)} className={ Liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>
 							❤️ {comment.likeCount}
 						</button>
-						{/* <button onClick={() => {}} className="hover:text-blue-500 transition-colors cursor-pointer">
-							💬 {"trkl"}
-						</button> */}
 					</div>
 				</div>
 			</div>
@@ -66,12 +63,7 @@ export const CommentList = ({comments}: {comments : PaginatedResponseDto<Comment
   if (!comments)
 		return (<div>Error</div>);
 	
-  const client = Backend.getInstance();
-  const router = useRouter();
-
-
-  	//const comments = await axios.get<MockPostData[]>(`https://jsonplaceholder.typicode.com/comments`, { params: { userId: id } })
-	if (comments)
+  	if (comments)
 	return (<div className="flex flex-col bg">
 		{comments.data?.map(comment => <OneComment key={comment.id} comment={comment}/>)}
 	</div>);

@@ -6,8 +6,6 @@ import { PostResponseDto } from "@/client/post.dto";
 import { Backend } from "@/client/TransClient";
 import { CommentList } from "@/components/CommentList";
 import { OnePost } from "@/components/PostList";
-import { Bookmark} from "lucide-react";
-import Link from "next/link";
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
 
@@ -17,6 +15,7 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	const { id } = useParams<{ id : string }>();
 	const [CommentInput, setCommentInput] = useState('');
 	const [change, setChange] = useState(false);
+	const [charging, setCharging] = useState(true);
 	const [comments, setComments] = useState<PaginatedResponseDto<CommentResponseDto>>({data : []});
 	const [post, setPost] = useState<PostResponseDto>({
 	  id: "charging",
@@ -31,8 +30,6 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	  createdAt: new Date(),
 	  updatedAt: new Date(),
 	});
-	const [user, setUser] = useState<{username : string, displayName : string}>({username : "charging...", displayName : "charging..."});
-	const createdAt = new Date(post.createdAt).toDateString();
 
 	async function commentIt(post : PostResponseDto){
 		console.log(CommentInput);
@@ -51,20 +48,10 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		  const data = JSON.parse(res?.value);
 		  if (data)
 			setPost(data);
-		  console.log("ici est le post",data);
+		  setCharging(false);
 	    }
 		run();
 	  }, [change]);
-
-	  useEffect(() => {
-		const run = async() => {
-		  const res = await client.users.$({id : post.authorId}).get();
-		  if (!res.ok) return res.error;
-		  const data = JSON.parse(res?.value);
-		  setUser(data);
-		}
-		run();
-	  }, [post])
 
 	  useEffect(()=> {
 		const run = async() => {
@@ -72,13 +59,12 @@ export default function PostPage({ params }: { params: { id : string } }) {
 			if (!res.ok) throw res.error;
 			const data = JSON.parse(res?.value);
 			setComments({data : data});
-			console.log("les commentaires sont : ", data);
 		}
 		run();
 	  }, [change])
 	return (
 	<div className="max-w-2xl mx-auto p-4">
-		<OnePost post={post} />
+		<OnePost post={post} charging={charging}/>
 		{/* Comment something */}
 		<div className="px-4">
 		<div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 mt-4 mb-1">

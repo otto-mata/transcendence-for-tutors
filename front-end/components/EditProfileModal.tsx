@@ -63,7 +63,7 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 
 			// Update avatar if changed
 			if (avatarFile) {
-				const avatarResult = await backend.api.me.updateAvatar(avatarFile);
+				const avatarResult = await backend.me.updateAvatar(avatarFile);
 				if (!avatarResult.ok) {
 					throw new Error('Failed to update avatar');
 				}
@@ -72,7 +72,7 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 
 			// Update cover if changed
 			if (coverFile) {
-				const coverResult = await backend.api.me.updateCover(coverFile);
+				const coverResult = await backend.me.updateCover(coverFile);
 				if (!coverResult.ok) {
 					throw new Error('Failed to update cover image');
 				}
@@ -87,7 +87,7 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 				isPrivate: formData.isPrivate,
 			};
 
-			const result = await backend.api.me.patch(updateData);
+			const result = await backend.me.patch(updateData);
 			if (!result.ok) {
 				throw new Error('Failed to update profile');
 			}

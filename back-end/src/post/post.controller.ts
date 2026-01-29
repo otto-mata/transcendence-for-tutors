@@ -13,16 +13,23 @@ import {
 	Post,
 	Query,
 	Res,
+	UploadedFile,
 	UseGuards,
+	UseInterceptors,
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { CreatePostDto, UpdatePostDto } from './post.dto';
 import { PostService } from './post.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from '@/media/multer.config';
+import { MediaService } from '@/media/media.service';
 
 @Controller('posts')
 @UseGuards(AuthGuard)
 export class PostController {
-	constructor(private readonly postService: PostService) {}
+	constructor(private readonly postService: PostService,
+				private readonly mediaService: MediaService,
+	) {}
 
 	@Get()
 	async getAllPosts(
@@ -59,6 +66,50 @@ export class PostController {
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
 			return JSON.stringify({ message: 'Error retrieving feed', error });
+		}
+	}
+
+	@Get('saved/:username')
+	async getUserSaved(
+		@Param('username') username: string,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			const posts = await this.postService.findSaved(skip, limitNum, username);
+			return JSON.stringify(posts);
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({
+				message: 'Error retrieving user posts',
+				error,
+			});
+		}
+	}
+
+	@Get('user/:username')
+	async getUserPosts(
+		@Param('username') username: string,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			const posts = await this.postService.findByName(skip, limitNum, username);
+			return JSON.stringify(posts);
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({
+				message: 'Error retrieving user posts',
+				error,
+			});
 		}
 	}
 
@@ -137,21 +188,32 @@ export class PostController {
 	}
 
 	@Post()
+	@UseInterceptors(FileInterceptor('file', multerConfig))
 	async createPost(
-		@Body() data: CreatePostDto,
+		@UploadedFile() file: Express.Multer.File,
+		@Body() content : CreatePostDto,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			if (!content.content) throw new Error('No content');
 			const post = await this.postService.create({
-				...data,
+				...content,
 				author: { connect: { id: user.id } },
 			});
+			if (file) {
+				console.log("ca vas bien la sale batard");
+				await this.mediaService.uploadMedia(user.id, file, post.id);
+				const updatedPost = await this.postService.update(post.id, {
+					mediaUrl: `/uploads/posts/${file.filename}`,
+				});
+				res.status(HttpStatus.CREATED);
+				return JSON.stringify(updatedPost);
+			}
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify(post);
 		} catch (error) {
 			res.status(HttpStatus.BAD_REQUEST);
-			console.log(error);
 			return JSON.stringify({ message: 'Invalid post data', error });
 		}
 	}

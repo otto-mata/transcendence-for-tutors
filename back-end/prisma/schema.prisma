@@ -74,8 +74,11 @@ model User {
 
 model Post {
   id       String @id @default(cuid())
-  content  String @db.Text
   authorId String
+
+  // Content
+  content  String @db.Text
+  mediaUrl String?
 
   // Stats
   likeCount    Int @default(0)

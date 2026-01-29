@@ -90,8 +90,8 @@ export class UserController {
 		}
 	}
 
-	@Get('me/bookmarks')
-	async getMyBookmarks(
+	@Get('me/saved')
+	async getMySaved(
 		@CurrentUser() user: CurrentUserType,
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
