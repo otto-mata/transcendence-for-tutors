@@ -342,7 +342,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 				{/* Content Area - Posts Grid placeholder */}
 				<div className="pb-12">
 					<div className="text-center py-12 text-gray-500 dark:text-gray-400">
-						{activeTab === 0 && <MansonPostGridByUsername username={username}/>}
+						{activeTab === 0 && <MansonPostGridByUsername username={user.username}/>}
 						{activeTab === 1 && 'Media posts will appear here'}
 						{activeTab === 2 && <MansonPostGridLiked { ...(isOwnProfile &&  {username})}/>}
 						{activeTab === 3 && <MansonPostGridSaved { ...(isOwnProfile &&  {username})}/>}
