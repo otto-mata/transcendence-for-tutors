@@ -1,8 +1,8 @@
 "use client"
-import { CommentResponseDto } from "@/client/comment.dto";
+import { CommentResponseDto } from "@/client/Comment.dto";
 import { PaginatedResponseDto } from "@/client/common.dto";
 import { isLogged } from "@/client/common.mock";
-import { PostResponseDto } from "@/client/post.dto";
+import { PostResponseDto } from "@/client/Post.dto";
 import { Backend } from "@/client/TransClient";
 import { CommentList } from "@/components/CommentList";
 import { OnePost } from "@/components/PostList";
@@ -15,6 +15,7 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	const { id } = useParams<{ id : string }>();
 	const [CommentInput, setCommentInput] = useState('');
 	const [change, setChange] = useState(false);
+	const [error, setError] = useState('');
 	const [charging, setCharging] = useState(true);
 	const [comments, setComments] = useState<PaginatedResponseDto<CommentResponseDto>>({data : []});
 	const [post, setPost] = useState<PostResponseDto>({
@@ -45,11 +46,16 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		   if (!logged)
 			  router.push('/auth/login');
 		  const res = await client.posts.$(id).get();
+		  if (!res.ok){
+			console.log("cavapala");
+			setError(res.error?.message);
+			return;
+		  }
 		  const data = JSON.parse(res?.value);
 		  if (data)
 			setPost(data);
 		  setCharging(false);
-	    }
+	}
 		run();
 	  }, [change]);
 
@@ -62,6 +68,38 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		}
 		run();
 	  }, [change])
+
+	if (charging) {
+			return (
+			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+				<div className="text-center">
+					<h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+						Charging.....
+					</h2>
+					<p className="text-gray-600 dark:text-gray-400">
+						we are loading your post info
+					</p>
+				</div>
+			</div>
+		);
+	}
+	
+	if (error || !post) {
+		return (
+			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+				<div className="text-center">
+					<h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+						{error || 'User not found'}
+					</h2>
+					<p className="text-gray-600 dark:text-gray-400">
+						The Post you're looking for doesn't exist or has been removed.
+					</p>
+				</div>
+			</div>
+		);
+	}
+
+
 	return (
 	<div className="max-w-2xl mx-auto p-4">
 		<OnePost post={post} charging={charging}/>

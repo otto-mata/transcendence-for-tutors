@@ -1,5 +1,5 @@
 
-export class MediaUploadResponseDto {
+export interface MediaUploadResponseDto {
   id: string;
   url: string;
   mediaType: string;
@@ -7,7 +7,7 @@ export class MediaUploadResponseDto {
   uploadedAt: Date;
 }
 
-export class MediaUrlDto {
+export interface MediaUrlDto {
   id: string;
   url: string;
   mediaType: string;

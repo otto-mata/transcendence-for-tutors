@@ -42,9 +42,11 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			const client = Backend.getInstance();
 			if (isOwnProfile) {
 				const result = await client.me.get();
-				if (!result.ok)
-					throw new Error('Failed to fetch profile'); ;
-				const data = JSON.parse(result?.value);
+				if (!result.ok){
+					console.log("ca casse pas trois pattes a un canard");
+					throw new Error('Failed to fetch profile');
+				}
+				const data = result?.value;
 				setUser(data);
 			} else {
 				const result = await client.users.$({username}).get();
@@ -330,7 +332,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 										: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
 								}`}
 							>
-								{tab}
+								{(index !== 3 || isOwnProfile) && tab}
 								{index === activeTab && (
 									<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
 								)}
@@ -345,7 +347,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 						{activeTab === 0 && <MansonPostGridByUsername username={user.username}/>}
 						{activeTab === 1 && 'Media posts will appear here'}
 						{activeTab === 2 && <MansonPostGridLiked { ...(isOwnProfile &&  {username})}/>}
-						{activeTab === 3 && <MansonPostGridSaved { ...(isOwnProfile &&  {username})}/>}
+						{isOwnProfile &&  activeTab === 3 && <MansonPostGridSaved { ...(isOwnProfile &&  {username})}/>}
 					</div>
 				</div>
 			</div>

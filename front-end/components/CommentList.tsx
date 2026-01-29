@@ -1,5 +1,5 @@
 "use client"
-import { CommentResponseDto } from "@/client/comment.dto";
+import { CommentResponseDto } from "@/client/Comment.dto";
 import { PaginatedResponseDto } from "@/client/common.dto";
 import { Backend } from "@/client/TransClient";
 import Link from "next/link";

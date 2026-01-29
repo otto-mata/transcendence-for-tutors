@@ -1,6 +1,6 @@
 "use client"
 import { PaginatedResponseDto  } from '@client/common.dto';
-import { PostResponseDto } from '@/client/post.dto';
+import { PostResponseDto } from '@/client/Post.dto';
 import { Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import { Backend } from '@/client/TransClient';

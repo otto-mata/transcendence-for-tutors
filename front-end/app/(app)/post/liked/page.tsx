@@ -4,7 +4,7 @@ import { isLogged } from '@client/common.mock';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { PaginatedResponseDto  } from '@client/common.dto';
-import { PostResponseDto } from '@/client/post.dto';
+import { PostResponseDto } from '@/client/Post.dto';
 import { Backend } from "@/client/TransClient";
 
 

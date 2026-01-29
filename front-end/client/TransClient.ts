@@ -221,10 +221,11 @@ const ClientFactory = (client: Axios) => {
 			get: async () => {
 				try {
 					const response =
-						await client.get<UserProfileResponse>('/users/me');
+						await client.get('/users/me');
 					return Result.ok(response.data);
 				} catch (error) {
-					return Result.error(error as RequestError);
+					console.log("doesn go here");
+					return Result.error(error as Error);
 				}
 			},
 			patch: async (data: UpdateUserDto) => {
@@ -355,6 +356,8 @@ const ClientFactory = (client: Axios) => {
 					get: async () => {
 						try {
 							const response = await client.get(`/posts/${id}`);
+							if (response.statusText !== 'OK')
+								throw new Error(response.data.error);
 							return Result.ok(response.data);
 						} catch (error) {
 							return Result.error(error as RequestError);

@@ -1,8 +1,11 @@
-export class UnreadCountDto {
+import { PostResponseDto } from "./Post.dto";
+import { UserResponseDto } from "./profile.dto";
+
+export interface UnreadCountDto {
     unreadCount : number;
 }
 
-export class NotificationResponseDto {
+export interface NotificationResponseDto {
   id: number;
   type: string;
   message: string;
