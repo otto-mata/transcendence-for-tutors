@@ -1,5 +1,4 @@
 "use client"
-"use client"
 import { CommentResponseDto } from "@/client/Comment.dto";
 import { PaginatedResponseDto } from "@/client/common.dto";
 import { Backend } from "@/client/TransClient";

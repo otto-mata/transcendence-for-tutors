@@ -45,6 +45,16 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		  const logged = await isLogged();
 		   if (!logged)
 			  router.push('/auth/login');
+		  
+		  // Fetch current user for comment avatar
+		  const userRes = await client.me.get();
+		  if (userRes.ok && userRes.value) {
+			const userData = typeof userRes.value === 'string' 
+			  ? JSON.parse(userRes.value) 
+			  : userRes.value;
+			setCurrentUser(userData);
+		  }
+		  
 		  const res = await client.posts.$(id).get();
 		  if (!res.ok){
 			console.log("cavapala");
@@ -107,7 +117,15 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		<div className="px-4">
 		<div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 mt-4 mb-1">
 			<div className="flex gap-4">
-			<div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shrink-0" />
+			{currentUser?.avatarUrl ? (
+				<img 
+					src={getMediaUrl(currentUser.avatarUrl)} 
+					alt={currentUser.displayName || currentUser.username}
+					className="w-10 h-10 rounded-full object-cover shrink-0"
+				/>
+			) : (
+				<div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shrink-0" />
+			)}
 			<div className="flex-1">
 				<input
 				value={CommentInput}
