@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { MapPin, Link as LinkIcon, Calendar, Settings, Share2, Camera, MoreHorizontal, Loader2 } from 'lucide-react';
 import { Backend } from '@/client/TransClient';
 import { getMediaUrl } from '@/client/utils';
@@ -23,6 +23,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	const [activeTab, setActiveTab] = useState(0);
 	const [isUploadingCover, setIsUploadingCover] = useState(false);
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+	const [refreshKey, setRefreshKey] = useState(0);
 	
 	const coverInputRef = useRef<HTMLInputElement>(null);
 	const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -30,11 +31,10 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	useEffect(() => {
 		if (!initialUser) {
 			fetchUserProfile();
-			console.log("this is user : ", user);
 		}
-	}, [isUploadingAvatar, isUploadingCover, username, initialUser]);
+	}, [username, initialUser]);
 
-	const fetchUserProfile = async () => {
+	const fetchUserProfile = useCallback(async () => {
 		setIsLoading(true);
 		setError(null);
 		try {
@@ -42,14 +42,18 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			if (isOwnProfile) {
 				const result = await client.me.get();
 				if (!result.ok)
-					throw new Error('Failed to fetch profile'); ;
-				const data = JSON.parse(result?.value);
+					throw new Error('Failed to fetch profile');
+				const data = typeof result.value === 'string' 
+					? JSON.parse(result.value) as UserProfileResponse 
+					: result.value as UserProfileResponse;
 				setUser(data);
 			} else {
 				const result = await client.users.$({username}).get();
 				if (!result.ok)
-					throw new Error('Failed to fetch profile'); ;
-				const data = JSON.parse(result?.value);
+					throw new Error('Failed to fetch profile');
+				const data = typeof result.value === 'string' 
+					? JSON.parse(result.value) as UserProfileResponse 
+					: result.value as UserProfileResponse;
 				setUser(data);
 			}
 		} catch (err) {
@@ -57,7 +61,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 		} finally {
 			setIsLoading(false);
 		}
-	};
+	}, [isOwnProfile, username]);
 
 	const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -68,7 +72,9 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			const client = Backend.getInstance();
 			const result = await client.me.updateCover(file);
 			if (result.ok) {
-				const updatedUser = result.value as UserProfileResponse;
+				const updatedUser = typeof result.value === 'string' 
+					? JSON.parse(result.value) as UserProfileResponse 
+					: result.value as UserProfileResponse;
 				setUser(updatedUser);
 			}
 		} catch (err) {
@@ -87,7 +93,9 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			const client = Backend.getInstance();
 			const result = await client.me.updateAvatar(file);
 			if (result.ok) {
-				const updatedUser = result.value as UserProfileResponse;
+				const updatedUser = typeof result.value === 'string' 
+					? JSON.parse(result.value) as UserProfileResponse 
+					: result.value as UserProfileResponse;
 				setUser(updatedUser);
 			}
 		} catch (err) {
@@ -97,9 +105,24 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 		}
 	};
 
-	const handleUserUpdate = (updatedUser: UserProfileResponse) => {
+	const handleUserUpdate = useCallback(async (updatedUser: UserProfileResponse) => {
+		console.log('handleUserUpdate called with:', updatedUser);
 		setUser(updatedUser);
-	};
+		setRefreshKey(prev => prev + 1);
+		
+		try {
+			const client = Backend.getInstance();
+			const result = await client.me.get();
+			if (result.ok) {
+				const freshData = typeof result.value === 'string' 
+					? JSON.parse(result.value) as UserProfileResponse 
+					: result.value as UserProfileResponse;
+				setUser(freshData);
+			}
+		} catch (err) {
+			console.error('Failed to re-fetch profile after update:', err);
+		}
+	}, []);
 
 	const formatDate = (date: Date) => {
 		return new Date(date).toLocaleDateString('en-US', {
@@ -147,6 +170,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			<div className="relative h-64 group">
 				{user.coverImageUrl ? (
 					<img
+						key={`cover-${refreshKey}-${user.coverImageUrl}`}
 						src={getMediaUrl(user.coverImageUrl)}
 						alt="Cover"
 						className="w-full h-full object-cover"
@@ -190,6 +214,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 						<div className="relative w-40 h-40 rounded-full border-4 border-white dark:border-gray-900 shadow-xl overflow-hidden">
 							{user.avatarUrl ? (
 								<img
+									key={`avatar-${refreshKey}-${user.avatarUrl}`}
 									src={getMediaUrl(user.avatarUrl)}
 									alt={user.displayName || user.username}
 									className="w-full h-full object-cover"

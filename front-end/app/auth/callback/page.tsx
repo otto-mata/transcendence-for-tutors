@@ -16,15 +16,15 @@ export default function AuthCallback() {
           throw new Error(errorParam);
         }
 
-        const tokenParam = searchParams.get("token");
+        const tokenParam = searchParams.get("access_token");
         if (tokenParam) {
-          localStorage.setItem("token", tokenParam);
+          localStorage.setItem("access_token", tokenParam);
           setStatus("success");
           setTimeout(() => router.push("/"), 1000);
           return;
         }
 
-        const existingToken = localStorage.getItem("token");
+        const existingToken = localStorage.getItem("access_token");
         if (!existingToken) {
           throw new Error("No authentication token found");
         }

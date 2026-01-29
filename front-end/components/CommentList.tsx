@@ -1,10 +1,4 @@
-"use client"
-import { CommentResponseDto } from "@/client/comment.dto";
-import { PaginatedResponseDto } from "@/client/common.dto";
-import { Backend } from "@/client/TransClient";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+"use client"\nimport { CommentResponseDto } from "@/client/comment.dto";\nimport { PaginatedResponseDto } from "@/client/common.dto";\nimport { Backend } from "@/client/TransClient";\nimport { getMediaUrl } from "@/client/utils";\nimport Link from "next/link";\nimport { useRouter } from "next/navigation";\nimport { useEffect, useState } from "react";
 
 
 export const OneComment = ({comment} : {comment : CommentResponseDto}) => {
@@ -33,7 +27,17 @@ export const OneComment = ({comment} : {comment : CommentResponseDto}) => {
 		>
 			<div className="p-4">
 				<div className="flex items-center gap-3 mb-3">
-					<Link href={`profile/${comment.author?.username} `} className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+					<Link href={`profile/${comment.author?.username} `} className="shrink-0">
+						{comment.author?.avatarUrl ? (
+							<img 
+								src={getMediaUrl(comment.author.avatarUrl)} 
+								alt={comment.author.username}
+								className="w-10 h-10 rounded-full object-cover"
+							/>
+						) : (
+							<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+						)}
+					</Link>
 					<div>
 						<Link href={`profile/${comment.author?.username} `}>
 							<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">

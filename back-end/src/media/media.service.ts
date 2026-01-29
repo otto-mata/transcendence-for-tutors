@@ -116,4 +116,37 @@ export class MediaService {
 
 		await this.mediaRepository.delete(id);
 	}
+
+	async deleteMediaByUrl(url: string): Promise<void> {
+		if (!url) return;
+
+		const media = await this.mediaRepository.findByUrl(url);
+		if (!media) {
+			const filename = url.split('/').pop();
+			if (filename) {
+				const filePath = this.buildFilePath(filename);
+				const exists = await this.fileExists(filePath);
+				if (exists) {
+					try {
+						await unlink(filePath);
+					} catch (error) {
+						console.error(`Error deleting orphan file: ${error}`);
+					}
+				}
+			}
+			return;
+		}
+
+		const filePath = this.buildFilePath(media.filename);
+		const exists = await this.fileExists(filePath);
+		if (exists) {
+			try {
+				await unlink(filePath);
+			} catch (error) {
+				console.error(`Error deleting file: ${error}`);
+			}
+		}
+
+		await this.mediaRepository.delete(media.id);
+	}
 }

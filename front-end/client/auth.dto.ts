@@ -61,6 +61,15 @@ export interface GoogleAuthResponseDto {
 	};
 }
 
+// Verify email
+export interface VerifyEmailDto {
+	token: string;
+}
+
+export interface VerifyEmailResponseDto {
+	message: string;
+}
+
 // 42 oauth
 export interface FortyTwoVerifyTokenDto {
 	access_token: string;

@@ -7,6 +7,7 @@ import { Backend } from '@/client/TransClient';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { UserResponseDto } from '@/client/profile.dto';
+import { getMediaUrl } from '@/client/utils';
 
 function printit(){
 	console.log("Button clicked");
@@ -22,7 +23,7 @@ function buttonApearance(alreadyDone?: boolean){
 export const OnePost = ({post} : {post : PostResponseDto}) => {
 	const router = useRouter();
 	const client = Backend.getInstance();
-	const [user, setUser] = useState<{username : string, displayName : string}>({username : "charging...", displayName : "charging..."});
+	const [user, setUser] = useState<{username : string, displayName : string, avatarUrl? : string}>({username : "charging...", displayName : "charging..."});
 	const [Liked, setLiked] = useState(post.liked);
 	const [Bookmarked, setBookmarked] = useState(post.bookmarked);
 	const createdAt = new Date(post.createdAt).toDateString();
@@ -87,7 +88,17 @@ export const OnePost = ({post} : {post : PostResponseDto}) => {
 							</div>} */}
 							<div className="p-4">
 								<div className="flex items-center gap-3 mb-3">
-									<Link href={`profile/${user.username} `} className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+									<Link href={`profile/${user.username} `} className="shrink-0">
+										{user.avatarUrl ? (
+											<img 
+												src={getMediaUrl(user.avatarUrl)} 
+												alt={user.displayName || user.username}
+												className="w-10 h-10 rounded-full object-cover"
+											/>
+										) : (
+											<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+										)}
+									</Link>
 									<div>
 										<Link href={`profile/${user.username} `}>
 											<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">

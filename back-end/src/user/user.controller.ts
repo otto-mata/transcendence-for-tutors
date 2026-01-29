@@ -291,6 +291,14 @@ export class UserController {
 			if (!file) {
 				throw new BadRequestException('No file uploaded');
 			}
+
+			// Get current user to find old avatar
+			const currentUser = await this.userService.findById(user.id);
+			if (currentUser?.avatarUrl) {
+				// Delete old avatar file
+				await this.mediaService.deleteMediaByUrl(currentUser.avatarUrl);
+			}
+
 			// Create media entry in database
 			await this.mediaService.uploadMedia(user.id, file);
 			
@@ -315,6 +323,14 @@ export class UserController {
 			if (!file) {
 				throw new BadRequestException('No file uploaded');
 			}
+
+			// Get current user to find old cover
+			const currentUser = await this.userService.findById(user.id);
+			if (currentUser?.coverImageUrl) {
+				// Delete old cover file
+				await this.mediaService.deleteMediaByUrl(currentUser.coverImageUrl);
+			}
+
 			// Create media entry in database
 			await this.mediaService.uploadMedia(user.id, file);
 			

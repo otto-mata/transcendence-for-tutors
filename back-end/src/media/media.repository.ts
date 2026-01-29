@@ -52,6 +52,12 @@ export class MediaRepository {
 		});
 	}
 
+	async findByUrl(url: string): Promise<Media | null> {
+		return this.prisma.media.findFirst({
+			where: { url },
+		});
+	}
+
 	async delete(id: string): Promise<Media> {
 		return this.prisma.media.delete({
 			where: { id },

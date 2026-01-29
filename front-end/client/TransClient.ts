@@ -154,11 +154,16 @@ const ClientFactory = (client: Axios) => {
 					return Result.error(error as RequestError);
 				}
 			},
-			verify: async () => {
+			verify: async (data: { token: string }) => {
 				try {
 					const response = await client.post(
 						'/auth/verify-email',
-						{},
+						JSON.stringify(data),
+						{
+							headers: {
+								'Content-Type': 'application/json'
+							}
+						}
 					);
 					return Result.ok(response.data);
 				} catch (error) {
@@ -222,16 +227,25 @@ const ClientFactory = (client: Axios) => {
 				try {
 					const response =
 						await client.get<UserProfileResponse>('/users/me');
-					return Result.ok(response.data);
+				return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);
 				}
 			},
 			patch: async (data: UpdateUserDto) => {
 				try {
+					// Filter out undefined values to avoid sending them
+					const cleanData = Object.fromEntries(
+						Object.entries(data).filter(([_, v]) => v !== undefined)
+					);
 					const response = await client.patch<UserProfileResponse>(
 						'/users/me',
-						data,
+						JSON.stringify(cleanData),
+						{
+							headers: {
+								'Content-Type': 'application/json',
+							},
+						}
 					);
 					return Result.ok(response.data);
 				} catch (error) {

@@ -34,6 +34,10 @@ export class UpdateUserDto {
 	@IsOptional()
 	bio?: string;
 
+	@IsString()
+	@IsOptional()
+	website?: string;
+
 	@IsBoolean()
 	@IsOptional()
 	isPrivate?: boolean;

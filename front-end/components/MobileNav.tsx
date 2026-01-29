@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { redirect, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { Backend } from '@/client/TransClient';
+import { getMediaUrl } from '@/client/utils';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
@@ -107,10 +108,18 @@ export default function MobileNav() {
 				{/* Profile Section */}
 				<div className="p-6 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500">
 					<div className="flex items-center gap-4 mb-4">
-						<div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white" />
+						{user.avatarUrl ? (
+							<img 
+								src={getMediaUrl(user.avatarUrl)} 
+								alt={user.displayName || user.username}
+								className="w-16 h-16 rounded-full object-cover border-2 border-white"
+							/>
+						) : (
+							<div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white" />
+						)}
 						<div className="flex-1">
-							<h3 className="text-white font-bold text-lg">Sarah Anderson</h3>
-							<p className="text-white/80 text-sm">@otto-mata</p>
+							<h3 className="text-white font-bold text-lg">{user.displayName || user.username}</h3>
+							<p className="text-white/80 text-sm">@{user.username}</p>
 						</div>
 					</div>
 

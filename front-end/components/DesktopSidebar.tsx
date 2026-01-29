@@ -2,6 +2,7 @@
 
 import { UserResponseDto } from '@/client/profile.dto';
 import { Backend } from '@/client/TransClient';
+import { getMediaUrl } from '@/client/utils';
 import {
 	Home,
 	Compass,
@@ -101,7 +102,15 @@ export default function DesktopSidebar() {
 			{/* Profile */}
 			<div className="pt-4 border-t border-gray-200 dark:border-gray-700">
 				<Link href="/profile" className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
-					<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+					{user.avatarUrl ? (
+						<img 
+							src={getMediaUrl(user.avatarUrl)} 
+							alt={user.displayName || user.username}
+							className="w-10 h-10 rounded-full object-cover"
+						/>
+					) : (
+						<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+					)}
 					<div className="flex-1 min-w-0">
 						<p className="font-semibold text-sm text-gray-900 dark:text-gray-50 truncate">{user.displayName? user.displayName : 'charging' }</p>
 						<p className="text-xs text-gray-500 truncate">@{user.username}</p>
