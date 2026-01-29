@@ -24,9 +24,9 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 	const router = useRouter();
 	const client = Backend.getInstance();
 	const [user, setUser] = useState<{username : string, displayName : string, avatarUrl? : string}>({username : "charging...", displayName : "charging..."});
-	const [Liked, setLiked] = useState(post.liked);
-	const [Bookmarked, setBookmarked] = useState(post.bookmarked);
-	const createdAt = new Date(post.createdAt).toDateString();
+	const [Liked, setLiked] = useState(params.post.liked);
+	const [Bookmarked, setBookmarked] = useState(params.post.bookmarked);
+	const createdAt = new Date(params.post.createdAt).toDateString();
 	const postImage = getMediaUrl(params.post.mediaUrl) || null;
 	
 	async function LikePost(post : PostResponseDto){

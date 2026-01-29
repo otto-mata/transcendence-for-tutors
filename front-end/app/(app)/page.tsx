@@ -30,7 +30,7 @@ export default function Home() {
           router.push("/auth/login");
           return;
       }
-      const res = await client.posts.get();
+      const res = await client.posts.get().all();
       if (!res.ok) throw res.error;
       const data = JSON.parse(res?.value);
       setPosts({data : data});

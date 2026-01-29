@@ -2,6 +2,7 @@
 
 import { UserResponseDto } from '@/client/profile.dto';
 import { Backend } from '@/client/TransClient';
+import { UserProfileResponse } from '@/client/Users.dto';
 import { getMediaUrl } from '@/client/utils';
 import {
 	Home,
@@ -35,26 +36,13 @@ export default function DesktopSidebar() {
 		let mounted = true;
 		(async () => {
 			try {
-				const userRes = await client.me.get();
-				// console.log("this is userRes :", userRes.value);
-				if (!userRes.ok)
-					redirect("/auth/login");
-				// if (userRes.value !== null && typeof(userRes.value) == 'string')
-				// 	setUser(JSON.parse(userRes.value));
-				// =====
-			// 	const res = await fetch('/api/notifications');
-			// 	if (!mounted) return;
-			// 	if (!res.ok) {
-			// 		setNotifCount(0);
-			// 		return;
-			// 	}
-			// 	const data = await res.json();
-			// 	if (Array.isArray(data)) {
-			// 		const unread = data.filter((n: any) => n && n.read === false).length;
-			// 		setNotifCount(unread);
-			// 	} else {
-			// 		setNotifCount(0);
-				// }
+				const result = await client.me.get();
+								if (!result.ok)
+									throw new Error('Failed to fetch profile');
+								const data = typeof result.value === 'string' 
+									? JSON.parse(result.value) as UserProfileResponse 
+									: result.value as UserProfileResponse;
+								setUser(data);
 			} catch (e) {
 				console.error('Failed to fetch notifications count', e);
 				console.log("error : ", e);

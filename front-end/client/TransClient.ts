@@ -226,7 +226,7 @@ const ClientFactory = (client: Axios) => {
 			get: async () => {
 				try {
 					const response =
-						await client.get<UserProfileResponse>('/users/me');
+						await client.get('/users/me');
 				return Result.ok(response.data);
 				} catch (error) {
 					console.log("doesn go here");

@@ -21,6 +21,7 @@ import Link from 'next/link';
 import { redirect, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { Backend } from '@/client/TransClient';
+import { UserProfileResponse } from '@/client/Users.dto';
 import { getMediaUrl } from '@/client/utils';
 
 export default function MobileNav() {
@@ -28,7 +29,7 @@ export default function MobileNav() {
 	const [isDark, setIsDark] = useState(false);
 	const pathname = usePathname();
 	const client = Backend.getInstance();
-	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : "charging"});
+	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : ""});
 	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
 
 	function LogoutFunction(){
@@ -40,26 +41,13 @@ export default function MobileNav() {
 		let mounted = true;
 		(async () => {
 			try {
-				const userRes = await client.me.get();
-				// console.log("this is userRes :", userRes.value);
-				if (!userRes.ok)
-					redirect("/auth/login");
-				// if (userRes.value !== null && typeof(userRes.value) == 'string')
-				// 	setUser(JSON.parse(userRes.value));
-				// =====
-				// const res = await fetch('/api/notifications');
-				// if (!mounted) return;
-				// if (!res.ok) {
-				// 	setNotifCount(0);
-				// 	return;
-				// }
-				// const data = await res.json();
-				// if (Array.isArray(data)) {
-				// 	const unread = data.filter((n: any) => n && n.read === false).length;
-				// 	setNotifCount(unread);
-				// } else {
-				// 	setNotifCount(0);
-				// }
+				const result = await client.me.get();
+								if (!result.ok)
+									throw new Error('Failed to fetch profile');
+								const data = typeof result.value === 'string' 
+									? JSON.parse(result.value) as UserProfileResponse 
+									: result.value as UserProfileResponse;
+								setUser(data);
 			} catch (e) {
 				console.error('Failed to fetch notifications count', e);
 				if (mounted) setNotifCount(0);
@@ -109,16 +97,16 @@ export default function MobileNav() {
 				<div className="p-6 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500">
 					<div className="flex items-center gap-4 mb-4">
 						{user.avatarUrl ? (
-							<img 
-								src={getMediaUrl(user.avatarUrl)} 
-								alt={user.displayName || user.username}
-								className="w-16 h-16 rounded-full object-cover border-2 border-white"
-							/>
-						) : (
-							<div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white" />
-						)}
+												<img 
+													src={getMediaUrl(user.avatarUrl)} 
+													alt={user.displayName || user.username}
+													className="w-10 h-10 rounded-full object-cover"
+												/>
+											) : (
+												<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+											)}
 						<div className="flex-1">
-							<h3 className="text-white font-bold text-lg">{user.displayName || user.username}</h3>
+							<h3 className="text-white font-bold text-lg">{user.displayName}</h3>
 							<p className="text-white/80 text-sm">@{user.username}</p>
 						</div>
 					</div>

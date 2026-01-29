@@ -93,7 +93,6 @@ export const CreatePost = (params : {goto : boolean, setChange? : (arg : boolean
 								</div>
 							</div>
         <div className="flex gap-4">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shrink-0" />
           {currentUser?.avatarUrl ? (
             <img 
               src={getMediaUrl(currentUser.avatarUrl)} 
