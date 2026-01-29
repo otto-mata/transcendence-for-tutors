@@ -603,6 +603,17 @@ const ClientFactory = (client: Axios) => {
 				 }
 			};
 			},
+			post: async (data: CreatePostDto) => {
+				try {
+					const formData = new FormData();
+					formData.append('content', data.content);
+					if (data.file) formData.append('file', data.file);
+					const response = await client.post('/posts', formData);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
 		},
 		media: {
 			upload: async (file: File) => {
