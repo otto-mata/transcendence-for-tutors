@@ -6,6 +6,7 @@ import { PostResponseDto } from "@/client/post.dto";
 import { Backend } from "@/client/TransClient";
 import { CommentList } from "@/components/CommentList";
 import { OnePost } from "@/components/PostList";
+import { getMediaUrl } from "@/client/utils";
 import { Bookmark} from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from 'next/navigation';
@@ -32,6 +33,7 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	  updatedAt: new Date(),
 	});
 	const [user, setUser] = useState<{username : string, displayName : string}>({username : "charging...", displayName : "charging..."});
+	const [currentUser, setCurrentUser] = useState<{username: string, displayName?: string, avatarUrl?: string} | null>(null);
 	const createdAt = new Date(post.createdAt).toDateString();
 
 	async function commentIt(post : PostResponseDto){
@@ -47,8 +49,18 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		  const logged = await isLogged();
 		   if (!logged)
 			  router.push('/auth/login');
+		  
+		  // Fetch current user for comment avatar
+		  const userRes = await client.me.get();
+		  if (userRes.ok && userRes.value) {
+			const userData = typeof userRes.value === 'string' 
+			  ? JSON.parse(userRes.value) 
+			  : userRes.value;
+			setCurrentUser(userData);
+		  }
+		  
 		  const res = await client.posts.$(id).get();
-		  const data = JSON.parse(res?.value);
+		  const data = typeof res?.value === 'string' ? JSON.parse(res.value) : res?.value;
 		  if (data)
 			setPost(data);
 		  console.log("ici est le post",data);
@@ -83,7 +95,15 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		<div className="px-4">
 		<div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 mt-4 mb-1">
 			<div className="flex gap-4">
-			<div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shrink-0" />
+			{currentUser?.avatarUrl ? (
+				<img 
+					src={getMediaUrl(currentUser.avatarUrl)} 
+					alt={currentUser.displayName || currentUser.username}
+					className="w-10 h-10 rounded-full object-cover shrink-0"
+				/>
+			) : (
+				<div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 shrink-0" />
+			)}
 			<div className="flex-1">
 				<input
 				value={CommentInput}

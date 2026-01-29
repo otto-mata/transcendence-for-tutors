@@ -47,8 +47,8 @@ export default function Home() {
       
       const res = await client.posts.get();
       if (!res.ok) throw res.error;
-      const data = JSON.parse(res?.value);
-      setPosts({data : data});
+      const data = typeof res.value === 'string' ? JSON.parse(res.value) : res.value;
+      setPosts({data : Array.isArray(data) ? data : (data?.data || [])});
     
     }
     run();

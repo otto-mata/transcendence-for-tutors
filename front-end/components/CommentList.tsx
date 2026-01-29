@@ -1,4 +1,11 @@
-"use client"\nimport { CommentResponseDto } from "@/client/comment.dto";\nimport { PaginatedResponseDto } from "@/client/common.dto";\nimport { Backend } from "@/client/TransClient";\nimport { getMediaUrl } from "@/client/utils";\nimport Link from "next/link";\nimport { useRouter } from "next/navigation";\nimport { useEffect, useState } from "react";
+"use client"
+import { CommentResponseDto } from "@/client/comment.dto";
+import { PaginatedResponseDto } from "@/client/common.dto";
+import { Backend } from "@/client/TransClient";
+import { getMediaUrl } from "@/client/utils";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 
 export const OneComment = ({comment} : {comment : CommentResponseDto}) => {

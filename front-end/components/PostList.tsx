@@ -63,16 +63,24 @@ export const OnePost = ({post} : {post : PostResponseDto}) => {
   }
   	useEffect(() => {
 		const run = async () => {
+			// Check if authorId exists before fetching
+			if (!post.authorId) {
+				console.warn('Post has no authorId:', post.id);
+				return;
+			}
 			const res = await client.users.$({id :  post.authorId}).get();
-			if (!res.value) throw res.error;
-			const data = JSON.parse(res?.value);
+			if (!res.ok || !res.value) {
+				console.error('Failed to fetch user:', res.error);
+				return;
+			}
+			const data = typeof res.value === 'string' ? JSON.parse(res.value) : res.value;
 			setUser(data);
-			setBookmarked(await post.bookmarked);
-			setLiked(await post.liked);
+			setBookmarked(post.bookmarked);
+			setLiked(post.liked);
 		}
 		
 		run();
-  }, [post.id])
+  }, [post.id, post.authorId])
 
    return (<div
 							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group mt-1"
