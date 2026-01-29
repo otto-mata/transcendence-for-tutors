@@ -1,9 +1,6 @@
-import MobileNav from "@/components/MobileNav";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ResponsiveNav from "@/components/ResponsiveNav";
-import ChatPopup from "@/components/Chat/ChatPopup";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,11 +25,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased text-sm xl:text-base flex`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased text-sm xl:text-base`}
       >
-        <ResponsiveNav />
         {children}
-        <ChatPopup />
       </body>
     </html>
   );

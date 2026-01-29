@@ -1,5 +1,5 @@
-import { Controller, Post, Body, HttpStatus, Res, HttpCode, HttpException } from '@nestjs/common';
-import type { Response } from 'express';
+import { Controller, Post, Get, Body, HttpStatus, Res, HttpCode, HttpException, UseGuards, Req } from '@nestjs/common';
+import type { Response, Request } from 'express';
 import { AuthService } from './auth.service';
 import {
 	CreateUserDto,
@@ -13,10 +13,30 @@ import {
 } from './auth.dto';
 import { Prisma } from '$prisma';
 import { AuthUserRegistration } from './auth.type';
+import { AuthGuard } from '@/guards/auth.guard';
+import { CurrentUser } from '@/decorators/current-user.decorator';
+import { env } from 'prisma/config';
 
 @Controller('auth')
 export class AuthController {
 	constructor(private readonly authService: AuthService) {}
+
+	@Get('me')
+	@UseGuards(AuthGuard)
+	async me(@CurrentUser() user: any) {
+		return user;
+	}
+
+	@Post('logout')
+	async logout(@Res({ passthrough: true }) res: Response) {
+		res.clearCookie('access_token', {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === 'production',
+			sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
+			path: '/',
+		});
+		return { message: 'Logged out successfully' };
+	}
 
 	@Post('register')
 	async register(
@@ -24,6 +44,8 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			console.log("it does goes here : ", env("DATABASE_URL"));
+			
 			const userData: AuthUserRegistration = {
 				displayName:
 					data.displayName === undefined
@@ -39,16 +61,19 @@ export class AuthController {
 				res.status(e.getStatus());
 				return JSON.stringify({ error: 'Registration failed', message: e.message });
 			}
-
-			if ((e as any)?.code === 'P2002') {
-				res.status(HttpStatus.CONFLICT);
-				return JSON.stringify({
-					error: 'Cannot create User',
-					code: 'P2002',
-					message: 'User with this username or email already exists',
-				});
+			if (e instanceof Prisma.PrismaClientKnownRequestError) {
+				if (e.code === 'P2002') {
+					res.status(HttpStatus.CONFLICT);
+					return JSON.stringify({
+						error: 'Cannot create User',
+						code: 'P2002',
+						message:
+							'User with this username or email already exists',
+					});
+				}
+				else 
+					console.log(e);
 			}
-
 			res.status(HttpStatus.BAD_REQUEST);
 			return JSON.stringify({ error: 'Registration failed', message: (e as any)?.message ?? 'Unknown error' });
 		}
@@ -68,7 +93,7 @@ export class AuthController {
 			return JSON.stringify(result);
 		} catch (e) {
 			res.status(HttpStatus.UNAUTHORIZED);
-			return JSON.stringify({ error: 'Invalid credentials' });
+			return JSON.stringify({ error: e});
 		}
 	}
 

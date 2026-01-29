@@ -3,7 +3,6 @@ import {
 	IsEmail,
 	IsOptional,
 	IsString,
-	IsUrl,
 	IsArray,
 } from 'class-validator';
 
@@ -35,15 +34,19 @@ export class UpdateUserDto {
 	@IsOptional()
 	bio?: string;
 
+	@IsString()
+	@IsOptional()
+	website?: string;
+
 	@IsBoolean()
 	@IsOptional()
 	isPrivate?: boolean;
 
-	@IsUrl()
+	@IsString()
 	@IsOptional()
 	avatarUrl?: string;
 
-	@IsUrl()
+	@IsString()
 	@IsOptional()
 	coverImageUrl?: string;
 }

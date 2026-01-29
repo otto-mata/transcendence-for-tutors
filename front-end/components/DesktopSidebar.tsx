@@ -1,5 +1,9 @@
 "use client";
 
+import { UserResponseDto } from '@/client/profile.dto';
+import { Backend } from '@/client/TransClient';
+import { UserProfileResponse } from '@/client/Users.dto';
+import { getMediaUrl } from '@/client/utils';
 import {
 	Home,
 	Compass,
@@ -14,36 +18,38 @@ import {
 	PlusCircle
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { redirect, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function DesktopSidebar() {
 	const pathname = usePathname();
-
+	const client = Backend.getInstance();
+	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : "charging"});
 	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
+
+	function LogoutFunction(){
+		localStorage.setItem('access_token', " ");
+		redirect("/auth/login");
+	}
 
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
 			try {
-				const res = await fetch('/api/notifications');
-				if (!mounted) return;
-				if (!res.ok) {
-					setNotifCount(0);
-					return;
-				}
-				const data = await res.json();
-				if (Array.isArray(data)) {
-					const unread = data.filter((n: any) => n && n.read === false).length;
-					setNotifCount(unread);
-				} else {
-					setNotifCount(0);
-				}
+				const result = await client.me.get();
+								if (!result.ok)
+									throw new Error('Failed to fetch profile');
+								const data = typeof result.value === 'string' 
+									? JSON.parse(result.value) as UserProfileResponse 
+									: result.value as UserProfileResponse;
+								setUser(data);
 			} catch (e) {
 				console.error('Failed to fetch notifications count', e);
+				console.log("error : ", e);
 				if (mounted) setNotifCount(0);
 			}
-		})();
+			}
+	)();
 
 		return () => { mounted = false; };
 	}, []);
@@ -69,14 +75,14 @@ export default function DesktopSidebar() {
 				<SidebarLink href="/notifications" icon={<Bell />} label="Notifications" badge={notifCount} active={isActive('/notifications')} />
 				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" badge={3} active={isActive('/messages')} />
 				<SidebarLink href="/profile" icon={<User />} label="Profile" active={isActive('/profile')} />
-				<SidebarLink href="/bookmarks" icon={<Bookmark />} label="Bookmarks" active={isActive('/bookmarks')} />
-				<SidebarLink href="/likes" icon={<Heart />} label="Likes" active={isActive('/likes')} />
+				<SidebarLink href="/post/saved" icon={<Bookmark />} label="Bookmarks" active={isActive('/post/saved')} />
+				<SidebarLink href="/post/liked" icon={<Heart />} label="Likes" active={isActive('/post/liked')} />
 				<SidebarLink href="/trending" icon={<TrendingUp />} label="Trending" active={isActive('/trending')} />
 				<SidebarLink href="/settings" icon={<Settings />} label="Settings" active={isActive('/settings')} />
 			</nav>
 
 			{/* Create Post Button */}
-			<button className="w-full mb-4 py-3 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+			<button onClick={() => {redirect("/post/create")}} className="w-full mb-4 py-3 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
 				<PlusCircle className="w-5 h-5" />
 				Create Post
 			</button>
@@ -84,12 +90,20 @@ export default function DesktopSidebar() {
 			{/* Profile */}
 			<div className="pt-4 border-t border-gray-200 dark:border-gray-700">
 				<Link href="/profile" className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
-					<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+					{user.avatarUrl ? (
+						<img 
+							src={getMediaUrl(user.avatarUrl)} 
+							alt={user.displayName || user.username}
+							className="w-10 h-10 rounded-full object-cover"
+						/>
+					) : (
+						<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+					)}
 					<div className="flex-1 min-w-0">
-						<p className="font-semibold text-sm text-gray-900 dark:text-gray-50 truncate">Sarah Anderson</p>
-						<p className="text-xs text-gray-500 truncate">@otto-mata</p>
+						<p className="font-semibold text-sm text-gray-900 dark:text-gray-50 truncate">{user.displayName? user.displayName : 'charging' }</p>
+						<p className="text-xs text-gray-500 truncate">@{user.username}</p>
 					</div>
-					<LogOut className="w-4 h-4 text-gray-400 dark:text-gray-600" />
+					<LogOut onClick={LogoutFunction} className="w-4 h-4 text-gray-400 dark:text-gray-600" />
 				</Link>
 			</div>
 		</aside>

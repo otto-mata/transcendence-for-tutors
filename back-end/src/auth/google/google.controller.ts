@@ -8,6 +8,10 @@ import { GoogleTokenDto, GoogleUserDto, GoogleAuthResponseDto } from './google.d
 export class GoogleOauthController {
   constructor(private readonly googleOauthService: GoogleOauthService) {}
 
+  @Get('login')
+  @UseGuards(AuthGuard('google'))
+  async googleLogin() {}
+
   @Post()
   async googleAuth(@Body() body: GoogleTokenDto): Promise<GoogleAuthResponseDto> {
     return this.googleOauthService.signInWithToken(body.token);
@@ -19,8 +23,14 @@ export class GoogleOauthController {
     @Req() req: { user: GoogleUserDto },
     @Res() res: Response,
   ) {
-    const token = await this.googleOauthService.signIn(req.user);
-    // res.redirect(`http://localhost:3000/auth/callback?token=${token.access_token}`);
-    res.json(token)
+    try {
+      const token = await this.googleOauthService.signIn(req.user);
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+      
+      res.redirect(`${frontendUrl}/auth/callback?access_token=${encodeURIComponent(token.access_token)}`);
+    } catch (error) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+      res.redirect(`${frontendUrl}/auth/callback?error=${encodeURIComponent(error.message || 'Authentication failed')}`);
+    }
   }
 }

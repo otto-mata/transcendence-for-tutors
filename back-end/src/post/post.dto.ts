@@ -63,22 +63,15 @@ export class PostResponseDto {
 	id: string;
 	content: string;
 	authorId: string;
-	author?: {
-		id: string;
-		username: string;
-		avatarUrl?: string;
-	};
 	visibility: string;
 	likeCount: number;
-	commentCount: number;
+	replyCount: number;
 	createdAt: Date;
 	updatedAt: Date;
 	isReply: boolean;
 	liked?: boolean;
 	bookmarked?: boolean;
-	media?: PostMediaDto[];
-	hashtags?: string[];
-	mentions?: string[];
+	mediaUrl?: string;
 }
 
 export class PaginatedPostsDto {

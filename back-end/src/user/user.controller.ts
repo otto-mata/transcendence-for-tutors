@@ -15,8 +15,10 @@ import {
 	UploadedFile,
 	UseGuards,
 	UseInterceptors,
+	BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { multerConfig } from '@/media/multer.config';
 import type { Response } from 'express';
 import {
 	ChangeEmailDto,
@@ -25,11 +27,15 @@ import {
 	UpdateUserDto,
 } from './user.dto';
 import { UserService } from './user.service';
+import { MediaService } from '@/media/media.service';
 
 @Controller('users')
 @UseGuards(AuthGuard)
 export class UserController {
-	constructor(private readonly userService: UserService) {}
+	constructor(
+		private readonly userService: UserService,
+		private readonly mediaService: MediaService,
+	) {}
 
 	@Get()
 	async getAllUsers(
@@ -84,8 +90,8 @@ export class UserController {
 		}
 	}
 
-	@Get('me/bookmarks')
-	async getMyBookmarks(
+	@Get('me/saved')
+	async getMySaved(
 		@CurrentUser() user: CurrentUserType,
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
@@ -244,7 +250,7 @@ export class UserController {
 		}
 	}
 
-	@Get(':id')
+	@Get('by-id/:id')
 	async getUserById(
 		@Param('id') id: string,
 		@Res({ passthrough: true }) res: Response,
@@ -275,15 +281,29 @@ export class UserController {
 	}
 
 	@Patch('me/avatar')
-	@UseInterceptors(FileInterceptor('file'))
+	@UseInterceptors(FileInterceptor('file', multerConfig))
 	async updateAvatar(
 		@UploadedFile() file: Express.Multer.File,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			if (!file) {
+				throw new BadRequestException('No file uploaded');
+			}
+
+			// Get current user to find old avatar
+			const currentUser = await this.userService.findById(user.id);
+			if (currentUser?.avatarUrl) {
+				// Delete old avatar file
+				await this.mediaService.deleteMediaByUrl(currentUser.avatarUrl);
+			}
+
+			// Create media entry in database
+			await this.mediaService.uploadMedia(user.id, file);
+			
 			const updatedUser = await this.userService.update(user.id, {
-				avatarUrl: `/media/${file.filename}`,
+				avatarUrl: `/uploads/posts/${file.filename}`,
 			});
 			return JSON.stringify(updatedUser);
 		} catch (error) {
@@ -293,15 +313,29 @@ export class UserController {
 	}
 
 	@Patch('me/cover')
-	@UseInterceptors(FileInterceptor('file'))
+	@UseInterceptors(FileInterceptor('file', multerConfig))
 	async updateCover(
 		@UploadedFile() file: Express.Multer.File,
 		@CurrentUser() user: CurrentUserType,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			if (!file) {
+				throw new BadRequestException('No file uploaded');
+			}
+
+			// Get current user to find old cover
+			const currentUser = await this.userService.findById(user.id);
+			if (currentUser?.coverImageUrl) {
+				// Delete old cover file
+				await this.mediaService.deleteMediaByUrl(currentUser.coverImageUrl);
+			}
+
+			// Create media entry in database
+			await this.mediaService.uploadMedia(user.id, file);
+			
 			const updatedUser = await this.userService.update(user.id, {
-				coverImageUrl: `/media/${file.filename}`,
+				coverImageUrl: `/uploads/posts/${file.filename}`,
 			});
 			return JSON.stringify(updatedUser);
 		} catch (error) {

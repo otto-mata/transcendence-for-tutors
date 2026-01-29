@@ -18,30 +18,36 @@ import {
 	Sun
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { redirect, usePathname } from 'next/navigation';
 import { useEffect } from 'react';
+import { Backend } from '@/client/TransClient';
+import { UserProfileResponse } from '@/client/Users.dto';
+import { getMediaUrl } from '@/client/utils';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDark, setIsDark] = useState(false);
 	const pathname = usePathname();
-
+	const client = Backend.getInstance();
+	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : ""});
 	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
+
+	function LogoutFunction(){
+		localStorage.setItem('access_token', " ");
+		redirect("/auth/login");
+	}
 
 	useEffect(() => {
 		let mounted = true;
 		(async () => {
 			try {
-				const res = await fetch('/api/notifications');
-				if (!mounted) return;
-				if (!res.ok) { setNotifCount(0); return; }
-				const data = await res.json();
-				if (Array.isArray(data)) {
-					const unread = data.filter((n: any) => n && n.read === false).length;
-					setNotifCount(unread);
-				} else {
-					setNotifCount(0);
-				}
+				const result = await client.me.get();
+								if (!result.ok)
+									throw new Error('Failed to fetch profile');
+								const data = typeof result.value === 'string' 
+									? JSON.parse(result.value) as UserProfileResponse 
+									: result.value as UserProfileResponse;
+								setUser(data);
 			} catch (e) {
 				console.error('Failed to fetch notifications count', e);
 				if (mounted) setNotifCount(0);
@@ -50,7 +56,6 @@ export default function MobileNav() {
 
 		return () => { mounted = false; };
 	}, []);
-
 	function isActive(href: string) {
 		if (!pathname) return false;
 		if (href === '/') return pathname === '/';
@@ -91,10 +96,18 @@ export default function MobileNav() {
 				{/* Profile Section */}
 				<div className="p-6 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500">
 					<div className="flex items-center gap-4 mb-4">
-						<div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm border-2 border-white" />
+						{user.avatarUrl ? (
+												<img 
+													src={getMediaUrl(user.avatarUrl)} 
+													alt={user.displayName || user.username}
+													className="w-10 h-10 rounded-full object-cover"
+												/>
+											) : (
+												<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
+											)}
 						<div className="flex-1">
-							<h3 className="text-white font-bold text-lg">Sarah Anderson</h3>
-							<p className="text-white/80 text-sm">@otto-mata</p>
+							<h3 className="text-white font-bold text-lg">{user.displayName}</h3>
+							<p className="text-white/80 text-sm">@{user.username}</p>
 						</div>
 					</div>
 
@@ -154,8 +167,8 @@ export default function MobileNav() {
 					<div className="my-4 border-t border-gray-200 dark:border-gray-700 " />
 
 					<div className="space-y-1 px-3">
-						<NavLink href="/bookmarks" icon={<Bookmark className="w-5 h-5" />} label="Bookmarks" onClick={closeMenu} active={isActive('/bookmarks')} />
-						<NavLink href="/likes" icon={<Heart className="w-5 h-5" />} label="Likes" onClick={closeMenu} active={isActive('/likes')} />
+						<NavLink href="/post/saved" icon={<Bookmark className="w-5 h-5" />} label="Bookmarks" onClick={closeMenu} active={isActive('/post/saved')} />
+						<NavLink href="/post/liked" icon={<Heart className="w-5 h-5" />} label="Likes" onClick={closeMenu} active={isActive('/post/liked')} />
 						<NavLink href="/trending" icon={<TrendingUp className="w-5 h-5" />} label="Trending" onClick={closeMenu} active={isActive('/trending')} />
 					</div>
 
@@ -184,7 +197,7 @@ export default function MobileNav() {
 
 				{/* Logout Button */}
 				<div className="p-4 border-t border-gray-200 dark:bg-gray-700 ">
-					<button className="w-full flex items-center justify-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium">
+					<button onClick={LogoutFunction} className="w-full flex items-center justify-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium">
 						<LogOut className="w-5 h-5" />
 						<span>Logout</span>
 					</button>

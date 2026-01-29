@@ -23,7 +23,7 @@ export class CommentRepository {
 		take: number,
 	): Promise<Comment[]> {
 		return this.prisma.comment.findMany({
-			where: {parentCommentId: null },
+			where: {postId: postId },
 			skip,
 			take,
 			include: {

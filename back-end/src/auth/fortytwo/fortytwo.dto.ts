@@ -26,7 +26,7 @@ export class FortyTwoUserDto {
 
 export class FortyTwoVerifyTokenDto {
 	@IsString()
-	token: string;
+	access_token: string;
 }
 
 export class FortyTwoVerifyResponseDto {
