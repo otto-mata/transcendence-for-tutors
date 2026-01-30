@@ -6,7 +6,6 @@ export interface UserProfileResponse {
 	bio?: string;
 	avatarUrl?: string;
 	coverImageUrl?: string;
-	website?: string;
 	isVerified: boolean;
 	isPrivate: boolean;
 	isActive: boolean;
@@ -27,7 +26,6 @@ export interface UserPreferencesResponse {
 export class UpdateUserDto {
 	displayName?: string;
 	bio?: string;
-	website?: string;
 	isPrivate?: boolean;
 	avatarUrl?: string;
 	coverImageUrl?: string;

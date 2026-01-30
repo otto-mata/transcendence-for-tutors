@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MapPin, Link as LinkIcon, Calendar, Settings, Share2, Camera, MoreHorizontal, Loader2 } from 'lucide-react';
+import { MapPin, Calendar, Settings, Camera, MoreHorizontal, Loader2 } from 'lucide-react';
 import { Backend } from '@/client/TransClient';
 import { getMediaUrl } from '@/client/utils';
 import { UserProfileResponse } from '@/client/Users.dto';
 import EditProfileModal from './EditProfileModal';
-import { MansonPostGridByUsername, MansonPostGridLiked, MansonPostGridSaved } from './PostList';
+import { MansonPostGridByUsername, MansonPostGridLiked } from './PostList';
 
 interface ProfilePageClientProps {
 	username: string;
@@ -14,7 +14,7 @@ interface ProfilePageClientProps {
 	initialUser?: UserProfileResponse;
 }
 
-const tabs = ['Posts', 'Media', 'Likes', 'Collections'];
+const tabs = ['Posts', 'Media', 'Likes'];
 
 export default function ProfilePageClient({ username, isOwnProfile, initialUser }: ProfilePageClientProps) {
 	const [user, setUser] = useState<UserProfileResponse | null>(initialUser || null);
@@ -251,10 +251,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 
 					{/* Action Buttons */}
 					<div className="pt-6 pb-4 flex justify-end gap-3">
-						<button className="p-2.5 bg-white dark:bg-gray-800 rounded-full shadow-md hover:shadow-lg transition-shadow">
-							<Share2 className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-						</button>
-						
 						{isOwnProfile ? (
 							<button 
 								onClick={() => setShowEditModal(true)}
@@ -300,19 +296,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 					)}
 
 					<div className="flex flex-wrap gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
-						{user.website && (
-							<div className="flex items-center gap-1.5">
-								<LinkIcon className="w-4 h-4" />
-								<a 
-									href={user.website.startsWith('http') ? user.website : `https://${user.website}`}
-									target="_blank"
-									rel="noopener noreferrer"
-									className="text-blue-500 hover:underline"
-								>
-									{user.website.replace(/^https?:\/\//, '')}
-								</a>
-							</div>
-						)}
 						<div className="flex items-center gap-1.5">
 							<Calendar className="w-4 h-4" />
 							<span>Joined {formatDate(user.createdAt)}</span>
@@ -355,7 +338,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 										: 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
 								}`}
 							>
-								{(index !== 3 || isOwnProfile) && tab}
+								{tab}
 								{index === activeTab && (
 									<div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-500" />
 								)}
@@ -370,7 +353,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 						{activeTab === 0 && <MansonPostGridByUsername username={user.username}/>}
 						{activeTab === 1 && 'Media posts will appear here'}
 						{activeTab === 2 && <MansonPostGridLiked { ...(isOwnProfile &&  {username})}/>}
-						{isOwnProfile &&  activeTab === 3 && <MansonPostGridSaved { ...(isOwnProfile &&  {username})}/>}
 					</div>
 				</div>
 			</div>

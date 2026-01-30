@@ -16,7 +16,6 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 	const [formData, setFormData] = useState({
 		displayName: user.displayName || '',
 		bio: user.bio || '',
-		website: user.website || '',
 		isPrivate: user.isPrivate || false,
 	});
 	const [isLoading, setIsLoading] = useState(false);
@@ -89,7 +88,6 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 			const updateData: UpdateUserDto = {
 				displayName: formData.displayName || undefined,
 				bio: formData.bio || undefined,
-				website: formData.website || undefined,
 				isPrivate: formData.isPrivate,
 			};
 
@@ -242,20 +240,6 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 						<p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
 							{formData.bio.length}/160 characters
 						</p>
-					</div>
-
-					{/* Website */}
-					<div>
-						<label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-							Website
-						</label>
-						<input
-							type="url"
-							value={formData.website}
-							onChange={(e) => setFormData({ ...formData, website: e.target.value })}
-							placeholder="https://yourwebsite.com"
-							className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-600 transition-all text-gray-900 dark:text-gray-100"
-						/>
 					</div>
 
 					{/* Private Account Toggle */}
