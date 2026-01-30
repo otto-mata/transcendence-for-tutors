@@ -6,13 +6,10 @@ import {
 	X,
 	Home,
 	Compass,
-	Bell,
 	MessageCircle,
 	User,
-	Settings,
 	Bookmark,
 	Heart,
-	TrendingUp,
 	LogOut,
 	Moon,
 	Sun
@@ -30,7 +27,6 @@ export default function MobileNav() {
 	const pathname = usePathname();
 	const client = Backend.getInstance();
 	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : ""});
-	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
 
 	function LogoutFunction(){
 		localStorage.setItem('access_token', " ");
@@ -49,8 +45,7 @@ export default function MobileNav() {
 									: result.value as UserProfileResponse;
 								setUser(data);
 			} catch (e) {
-				console.error('Failed to fetch notifications count', e);
-				if (mounted) setNotifCount(0);
+				console.error('Failed to fetch profile', e);
 			}
 		})();
 
@@ -139,14 +134,6 @@ export default function MobileNav() {
 							active={isActive('/explore')}
 						/>
 						<NavLink
-							href="/notifications"
-							icon={<Bell className="w-5 h-5" />}
-							label="Notifications"
-							badge={notifCount}
-							onClick={closeMenu}
-							active={isActive('/notifications')}
-						/>
-						<NavLink
 							href="/messages"
 							icon={<MessageCircle className="w-5 h-5" />}
 							label="Messages"
@@ -169,15 +156,12 @@ export default function MobileNav() {
 					<div className="space-y-1 px-3">
 						<NavLink href="/post/saved" icon={<Bookmark className="w-5 h-5" />} label="Bookmarks" onClick={closeMenu} active={isActive('/post/saved')} />
 						<NavLink href="/post/liked" icon={<Heart className="w-5 h-5" />} label="Likes" onClick={closeMenu} active={isActive('/post/liked')} />
-						<NavLink href="/trending" icon={<TrendingUp className="w-5 h-5" />} label="Trending" onClick={closeMenu} active={isActive('/trending')} />
 					</div>
 
 					{/* Divider */}
 					<div className="my-4 border-t border-gray-200 dark:border-gray-700 " />
 
 					<div className="space-y-1 px-3">
-						<NavLink href="/settings" icon={<Settings className="w-5 h-5" />} label="Settings" onClick={closeMenu} active={isActive('/settings')} />
-
 						{/* Dark Mode Toggle */}
 						<button
 							onClick={() => setIsDark(!isDark)}

@@ -7,13 +7,10 @@ import { getMediaUrl } from '@/client/utils';
 import {
 	Home,
 	Compass,
-	Bell,
 	MessageCircle,
 	User,
-	Settings,
 	Bookmark,
 	Heart,
-	TrendingUp,
 	LogOut,
 	PlusCircle
 } from 'lucide-react';
@@ -25,7 +22,6 @@ export default function DesktopSidebar() {
 	const pathname = usePathname();
 	const client = Backend.getInstance();
 	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : "charging"});
-	const [notifCount, setNotifCount] = useState<number | undefined>(undefined);
 
 	function LogoutFunction(){
 		localStorage.setItem('access_token', " ");
@@ -44,10 +40,9 @@ export default function DesktopSidebar() {
 									: result.value as UserProfileResponse;
 								setUser(data);
 			} catch (e) {
-				console.error('Failed to fetch notifications count', e);
+				console.error('Failed to fetch profile', e);
 				console.log("error : ", e);
-				if (mounted) setNotifCount(0);
-			}
+				}
 			}
 	)();
 
@@ -72,13 +67,10 @@ export default function DesktopSidebar() {
 			<nav className="flex-1 space-y-2">
 				<SidebarLink href="/" icon={<Home />} label="Home" active={isActive('/')} />
 				<SidebarLink href="/explore" icon={<Compass />} label="Explore" active={isActive('/explore')} />
-				<SidebarLink href="/notifications" icon={<Bell />} label="Notifications" badge={notifCount} active={isActive('/notifications')} />
 				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" badge={3} active={isActive('/messages')} />
 				<SidebarLink href="/profile" icon={<User />} label="Profile" active={isActive('/profile')} />
 				<SidebarLink href="/post/saved" icon={<Bookmark />} label="Bookmarks" active={isActive('/post/saved')} />
 				<SidebarLink href="/post/liked" icon={<Heart />} label="Likes" active={isActive('/post/liked')} />
-				<SidebarLink href="/trending" icon={<TrendingUp />} label="Trending" active={isActive('/trending')} />
-				<SidebarLink href="/settings" icon={<Settings />} label="Settings" active={isActive('/settings')} />
 			</nav>
 
 			{/* Create Post Button */}
