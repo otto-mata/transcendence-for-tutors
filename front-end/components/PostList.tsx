@@ -183,7 +183,7 @@ const router = useRouter();
 	  if (!res.ok) throw res.error;
 	  const data = JSON.parse(res?.value);
 	  console.log("test", data);
-	  setPosts({data : data});
+	  setPosts(Array.isArray(data) ? {data: data} : data);
 	  setCharging(false);
 	
 	}
@@ -211,7 +211,7 @@ const router = useRouter();
 	  if (!res.ok) throw res.error;
 	  const data = JSON.parse(res?.value);
 	  console.log("test", data);
-	  setPosts({data : data});
+	  setPosts(Array.isArray(data) ? {data: data} : data);
 	  setCharging(false);
 	
 	}
@@ -240,7 +240,7 @@ const router = useRouter();
 	  if (!res.ok) throw res.error;
 	  const data = JSON.parse(res?.value);
 	  console.log("test", data);
-	  setPosts({data : data});
+	  setPosts(Array.isArray(data) ? {data: data} : data);
 	  setCharging(false);
 	
 	}
@@ -268,7 +268,8 @@ const router = useRouter();
 	  if (!res.ok) throw res.error;
 	  const data = JSON.parse(res?.value);
 	  console.log("test", data);
-	  setPosts({data : data});
+	  // If data is already a PaginatedResponseDto, use it directly; otherwise wrap it
+	  setPosts(Array.isArray(data) ? {data: data} : data);
 	  setCharging(false);
 	
 	}

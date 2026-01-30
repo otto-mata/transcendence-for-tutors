@@ -4,10 +4,17 @@ import { PaginatedResponseDto } from "@/client/common.dto";
 import { isLogged } from "@/client/common.mock";
 import { PostResponseDto } from "@/client/Post.dto";
 import { Backend } from "@/client/TransClient";
+import { getMediaUrl } from "@/client/utils";
 import { CommentList } from "@/components/CommentList";
 import { OnePost } from "@/components/PostList";
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from "react";
+
+interface CurrentUser {
+  username: string;
+  displayName?: string;
+  avatarUrl?: string;
+}
 
 export default function PostPage({ params }: { params: { id : string } }) {
 	const client = Backend.getInstance();
@@ -18,6 +25,7 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	const [error, setError] = useState('');
 	const [charging, setCharging] = useState(true);
 	const [comments, setComments] = useState<PaginatedResponseDto<CommentResponseDto>>({data : []});
+	const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
 	const [post, setPost] = useState<PostResponseDto>({
 	  id: "charging",
 	  content: "charging",
