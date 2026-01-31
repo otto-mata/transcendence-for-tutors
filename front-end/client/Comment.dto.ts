@@ -13,7 +13,7 @@ export interface CommentResponseDto {
 	replyCount: number;
 	createdAt: Date;
 	updatedAt: Date;
-	liked?: boolean;
+	liked: boolean;
 	// media?: CommentMediaDto[];
 	mentions?: string[];
 }

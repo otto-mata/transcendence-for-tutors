@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Comment, Prisma } from '$prisma';
 import { CommentRepository } from './comment.repository';
 import { PrismaService } from '@/prisma/prisma.service';
+import { CommentResponseDto } from './comment.dto';
 
 @Injectable()
 export class CommentService {
@@ -17,15 +18,29 @@ export class CommentService {
 		postId: string,
 		skip: number,
 		take: number,
-	): Promise<Comment[]> {
-		return this.commentRepository.findByPostId(postId, skip, take);
+		userId : string,
+	): Promise<CommentResponseDto[]> {
+		const res = await this.commentRepository.findByPostId(postId, skip, take);
+		return Promise.all(res.map(async (comment) => {
+			return {
+				id : comment.id,
+				postId : comment.postId,
+				content: comment.content,
+				authorId: comment.authorId,
+				likeCount : comment.likeCount,
+				liked: await this.prisma.like.findFirst({where : {userId : userId, commentId : comment.id}}) !== null,
+				createdAt : comment.createdAt,
+				updatedAt : comment.updatedAt,
+			}
+		}
+		))
 	}
 
 	async findReplies(
 		parentCommentId: string,
 		skip: number,
-		take: number,
-	): Promise<Comment[]> {
+		take: number
+	): Promise<CommentResponseDto[]> {
 		return this.commentRepository.findReplies(parentCommentId, skip, take);
 	}
 

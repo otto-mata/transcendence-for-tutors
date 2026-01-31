@@ -57,8 +57,10 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 	setBookmarked(false);
   }
 
-  function CommentPost(id : string){
-	router.push('/post/' + id);
+  function profileRef(e : React.MouseEvent<HTMLElement>){
+	e.preventDefault();
+  	e.stopPropagation();
+	router.push('/profile/' + user.username);
   }
   	useEffect(() => {
 		const run = async () => {
@@ -76,8 +78,9 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
   }, [params.post.id])
 
    return (<div 			key={params.post.id}
-							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group mt-1"
+							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group mt-1 p-4"
 						>
+							<Link href={`/post/${params.post.id}`}>
 							<div 
 								className="relative fill rounded-xl overflow-hidden cursor-pointer group"
 								onClick={() => {}}
@@ -94,9 +97,8 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 								<div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
 								</div>
 							</div>
-							<div className="p-4">
 								<div className="flex items-center gap-3 mb-3">
-									<Link href={`profile/${user.username} `} className="shrink-0">
+									<button onClick={(e) => profileRef(e)} className="shrink-0">
 										{user.avatarUrl ? (
 											<img 
 												src={getMediaUrl(user.avatarUrl)} 
@@ -106,31 +108,31 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 										) : (
 											<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
 										)}
-									</Link>
+									</button>
 									<div>
-										<Link href={`profile/${user.username} `}>
+										<button onClick={(e) => profileRef(e)}>
 											<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">
 												{user.displayName}
 											</h4>
-										</Link>
+										</button>
 										<p className="text-xs text-gray-500">{createdAt}</p>
 									</div>
 								</div>
+							</Link>
 								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{params.post.content}</p>
 								<div className="flex items-center justify-between text-gray-500">
 									<div className="flex gap-4 text-sm">
 										<button onClick={() => LikePost(params.post)} className={ Liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>
 											❤️ {params.post.likeCount}
 										</button>
-										<button onClick={() => CommentPost(params.post.id)} className="hover:text-blue-500 transition-colors cursor-pointer">
+										<Link  href={`/post/${params.post.id}`} className="hover:text-blue-500 transition-colors cursor-pointer">
 											💬 {params.post.replyCount}
-										</button>
+										</Link>
 									</div>
 									<button onClick={() => SavePost(params.post)} className={ Bookmarked ? "text-blue-500 hover:text-gray-600 dark:text-blue-500 dark:hover:text-gray-600" : "text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"}>
 										<Bookmark />
 									</button>
 								</div>
-							</div>
 						</div>
 					
 
@@ -211,6 +213,7 @@ export const MansonPostGridAll = () => {
 		}
 
 		const data = JSON.parse(res?.value);
+
 		setPosts([...posts, ...data]);
 		setCharging(false);
 		// observer.observe(sentinelRef);
@@ -290,6 +293,7 @@ export const MansonPostGridByUsername = (params : {username : string}) => {
 		}
 
 		const data = JSON.parse(res?.value);
+
 		setPosts([...posts, ...data]);
 		setCharging(false);
 		// observer.observe(sentinelRef);
@@ -369,6 +373,7 @@ export const MansonPostGridSaved = (params : {username? : string}) => {
 		}
 
 		const data = JSON.parse(res?.value);
+
 		setPosts([...posts, ...data]);
 		setCharging(false);
 		// observer.observe(sentinelRef);

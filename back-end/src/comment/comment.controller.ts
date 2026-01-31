@@ -26,6 +26,7 @@ export class CommentController {
 
 	@Get()
 	async getComments(
+		@CurrentUser() user: CurrentUserType,
 		@Param('postId') postId: string,
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
@@ -39,6 +40,7 @@ export class CommentController {
 				postId,
 				skip,
 				limitNum,
+				user.id
 			);
 			return JSON.stringify(comments);
 		} catch (error) {
