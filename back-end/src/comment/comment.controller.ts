@@ -35,7 +35,6 @@ export class CommentController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			console.log("ceci est sense etre le id : ", postId);
 			const comments = await this.commentService.findByPostId(
 				postId,
 				skip,

@@ -41,7 +41,6 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	});
 
 	async function commentIt(post : PostResponseDto){
-		console.log(CommentInput);
 		await client.posts.$(post.id).comments.post(CommentInput);
 		setCommentInput('');
 		setChange(!change);

@@ -89,28 +89,6 @@ export class PostController {
 		}
 	}
 
-	@Get('saved/:username')
-	async getUserSaved(
-		@Param('username') username: string,
-		@Query('page') page?: string,
-		@Query('limit') limit?: string,
-		@Res({ passthrough: true }) res?: Response,
-	): Promise<string> {
-		try {
-			const pageNum = page ? parseInt(page) : 1;
-			const limitNum = limit ? parseInt(limit) : 20;
-			const skip = (pageNum - 1) * limitNum;
-			const posts = await this.postService.findSaved(skip, limitNum, username);
-			return JSON.stringify(posts);
-		} catch (error) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving user posts',
-				error,
-			});
-		}
-	}
-
 	@Get('user/:username')
 	async getUserPosts(
 		@CurrentUser() user: CurrentUserType,
@@ -152,6 +130,30 @@ export class PostController {
 			return JSON.stringify({ message: 'Error retrieving feed', error });
 		}
 	}
+
+	@Get('liked/:username')
+	async getUserLiked(
+		@CurrentUser() user: CurrentUserType,
+		@Param('username') username: string,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			const posts = await this.postService.findLikedByName(skip, limitNum, username, user.id);
+			return JSON.stringify(posts);
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({
+				message: 'Error retrieving user posts',
+				error,
+			});
+		}
+	}
+
 
 	@Get('latest')
 	async getLatestPosts(
@@ -224,7 +226,6 @@ export class PostController {
 				author: { connect: { id: user.id } },
 			}, user.id);
 			if (file) {
-				console.log("ca vas bien la sale batard");
 				await this.mediaService.uploadMedia(user.id, file, post.id);
 				const updatedPost = await this.postService.update(post.id, {
 					mediaUrl: `/uploads/posts/${file.filename}`,

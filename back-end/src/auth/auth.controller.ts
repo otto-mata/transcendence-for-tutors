@@ -44,8 +44,6 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			console.log("it does goes here : ", env("DATABASE_URL"));
-			
 			const userData: AuthUserRegistration = {
 				displayName:
 					data.displayName === undefined

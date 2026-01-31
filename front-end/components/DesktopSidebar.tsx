@@ -38,7 +38,6 @@ export default function DesktopSidebar() {
 					setError('You must be logged in to view this page.');
 					return;	
 				}
-				console.log("mounted : ", mounted);
 				const result = await client.me.get();
 								if (!result.ok)
 									setError('Failed to fetch profile');
@@ -49,7 +48,6 @@ export default function DesktopSidebar() {
 			} catch (e : any) {
 				setError(e.message);
 				console.error('Failed to fetch profile', e);
-				console.log("error : ", e);
 				}
 			}
 	)();

@@ -10,6 +10,8 @@ import EditProfileModal from './EditProfileModal';
 import FollowListModal from './FollowListModal';
 import { MansonPostGridByUsername, MansonPostGridLiked } from './PostList';
 import { isLogged } from '@/client/common.mock';
+import { CharginPage } from './CharginPage';
+import { ErrorPage } from './ErrorPage';
 
 interface ProfilePageClientProps {
 	username: string;
@@ -17,7 +19,7 @@ interface ProfilePageClientProps {
 	initialUser?: UserProfileResponse;
 }
 
-const tabs = ['Posts', 'Media', 'Likes'];
+const tabs = ['Posts', 'Likes'];
 
 export default function ProfilePageClient({ username, isOwnProfile, initialUser }: ProfilePageClientProps) {
 	const [user, setUser] = useState<UserProfileResponse | null>(initialUser || null);
@@ -168,7 +170,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 				setUser(data);
 			} else {
 				const result = await client.users.$({username}).get();
-				console.log("result:", result);
 				if (!result.ok)
 					throw new Error('Failed to fetch profile');
 				const data = typeof result.value === 'string' 
@@ -225,7 +226,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	};
 
 	const handleUserUpdate = useCallback(async (updatedUser: UserProfileResponse) => {
-		console.log('handleUserUpdate called with:', updatedUser);
 		setUser(updatedUser);
 		setRefreshKey(prev => prev + 1);
 		
@@ -261,26 +261,14 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	};
 
 	if (isLoading) {
-		return (
-			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-				<Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-			</div>
-		);
+		<CharginPage/>
 	}
 
 	if (error || !user) {
-		return (
-			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-				<div className="text-center">
-					<h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-						{error || 'User not found'}
-					</h2>
-					<p className="text-gray-600 dark:text-gray-400">
-						The profile you're looking for doesn't exist or has been removed.
-					</p>
-				</div>
-			</div>
-		);
+		return (<ErrorPage
+						error={error || 'User not found'}
+						message={"The profile you're looking for doesn't exist or has been removed."}
+						/>);
 	}
 
 	return (
@@ -526,8 +514,8 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 				<div className="pb-12">
 					<div className="text-center py-12 text-gray-500 dark:text-gray-400">
 						{activeTab === 0 && <MansonPostGridByUsername username={username ? username : user.username}/>}
-						{activeTab === 1 && 'Media posts will appear here'}
-						{activeTab === 2 && <MansonPostGridLiked { ...(isOwnProfile &&  {username})}/>}
+						{activeTab === 1 && <MansonPostGridLiked { ...(!isOwnProfile &&  {username})}/>}
+						{/* {activeTab === 2 && 'Media posts will appear here'} */}
 					</div>
 				</div>
 			</div>

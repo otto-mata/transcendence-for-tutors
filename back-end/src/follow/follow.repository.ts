@@ -11,7 +11,6 @@ export class FollowRepository {
 		skip: number,
 		take: number,
 	): Promise<any[]> {
-		console.log('findFollowers called with:', userIdOrUsername);
 		
 		// First, try to find the user by username or by id
 		const user = await this.prisma.user.findFirst({
@@ -23,7 +22,6 @@ export class FollowRepository {
 			},
 		});
 
-		console.log('Found user:', user?.id, user?.username);
 
 		if (!user) return [];
 
@@ -45,7 +43,6 @@ export class FollowRepository {
 		skip: number,
 		take: number,
 	): Promise<any[]> {
-		console.log('findFollowing called with:', userIdOrUsername);
 		
 		// First, try to find the user by username or by id
 		const user = await this.prisma.user.findFirst({
@@ -57,7 +54,6 @@ export class FollowRepository {
 			},
 		});
 
-		console.log('Found user:', user?.id, user?.username);
 
 		if (!user) return [];
 
@@ -72,7 +68,6 @@ export class FollowRepository {
 			orderBy: { createdAt: 'desc' },
 		});
 
-		console.log('Found following:', following.length);
 		return following;
 	}
 

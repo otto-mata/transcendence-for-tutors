@@ -11,7 +11,7 @@ interface ChatListProps {
 export function ChatList({ users, selectedUserId, onSelectUser, hideTitle }: ChatListProps) {
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800">
-      <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+      {/* <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         {!hideTitle && <h2 className="text-xl font-bold mb-4">Messages</h2>}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -21,7 +21,7 @@ export function ChatList({ users, selectedUserId, onSelectUser, hideTitle }: Cha
             className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
-      </div>
+      </div> */}
       <div className="flex-1 overflow-y-auto">
         {users.map((user) => (
           <button

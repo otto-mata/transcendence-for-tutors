@@ -23,7 +23,7 @@ export default function savedPosts() {
     <div className="max-w-2xl mx-auto py-8 px-4">
       {/* Feed */}
       <div className="space-y-6">
-        <MansonPostGridSaved/>
+        <MansonPostGridSaved key="Yaygrid"/>
       </div>
     </div>
   );

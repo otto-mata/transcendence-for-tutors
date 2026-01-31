@@ -265,11 +265,8 @@ export default function FollowListModal({
 					? JSON.parse(result.value) 
 					: result.value;
 				
-				console.log('Fetched data:', data);
 				
 				const newItems = Array.isArray(data) ? data : (data.data || []);
-				
-				console.log('Processed items:', newItems);
 				
 				if (pageNum === 1) {
 					setItems(newItems);

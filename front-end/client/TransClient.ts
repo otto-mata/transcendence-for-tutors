@@ -24,6 +24,7 @@ import {
 	RelationshipStatusDto,
 	FollowActionResponseDto,
 } from './follow.dto';
+import { QueryParametersDto } from './common.dto';
 
 type Ok<R> = ResultClass<R, never>;
 type Err<E> = ResultClass<never, E>;
@@ -95,7 +96,7 @@ const ClientFactory = (client: Axios) => {
 	return {
 		auth: {
 			register: async (data: RegisterDto) => {
-				console.log("datas are : ", data);
+		
 				try {
 					const response = await client.post('/auth/register', JSON.stringify(data), {
 							headers : {
@@ -235,7 +236,7 @@ const ClientFactory = (client: Axios) => {
 						await client.get('/users/me');
 				return Result.ok(response.data);
 				} catch (error) {
-					console.log("doesn go here");
+			
 					return Result.error(error as Error);
 				}
 			},
@@ -721,25 +722,25 @@ const ClientFactory = (client: Axios) => {
 			},
 			get: () => {
 				return {
-					all : async () => {
+					all : async (data : QueryParametersDto) => {
 						try {
-							const response = await client.get('/posts');
+							const response = await client.get(`/posts?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 							return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
 					}
 				},
-				feed : async () => {
+				feed : async (data : QueryParametersDto) => {
 						try {
-							const response = await client.get('/posts/feed');
+							const response = await client.get(`/posts/feed?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 							return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
 					}
 				},
-				 byName : async (username : string) => {
+				 byName : async (username : string, data : QueryParametersDto) => {
 						try {
-							const response = await client.get(`/posts/user/${username}`);
+							const response = await client.get(`/posts/user/${username}?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 							return Result.ok(response.data);
 					} catch (error) { 
 						return Result.error(error as RequestError);
@@ -749,17 +750,17 @@ const ClientFactory = (client: Axios) => {
 			},
 			liked: () => {
 				return {
-					get : async () => {
+					get : async (data : QueryParametersDto) => {
 						try {
-						const response = await client.get('/posts/liked');
+						const response = await client.get(`/posts/liked?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 						return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
 					}
 				},
-				 byName : async (username : string) => {
+				 byName : async (username : string, data : QueryParametersDto) => {
 						try {
-						const response = await client.get(`/posts/liked/${username}`);
+						const response = await client.get(`/posts/liked/${username}?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 						return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
@@ -769,17 +770,17 @@ const ClientFactory = (client: Axios) => {
 			},
 			saved: () => {
 				return {
-					get : async () => {
+					get : async (data : QueryParametersDto) => {
 						try {
-						const response = await client.get('/posts/saved');
+						const response = await client.get(`/posts/saved?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 						return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
 					}
 				},
-				 byName : async (username : string) => {
+				 byName : async (username : string, data : QueryParametersDto) => {
 						try {
-						const response = await client.get(`/posts/saved/${username}`);
+						const response = await client.get(`/posts/saved/${username}?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 						return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);

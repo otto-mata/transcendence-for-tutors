@@ -2,7 +2,7 @@
 import { PostList } from "@/components/PostList";
 import { isLogged } from '@client/common.mock';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { PaginatedResponseDto  } from '@client/common.dto';
 import { PostResponseDto } from '@/client/Post.dto';
 import { Backend } from "@/client/TransClient";
@@ -21,9 +21,41 @@ export default function Home() {
   const [change, setChange] = useState(false);
   const [error, setError] = useState('');
   const [charging, setCharging] = useState(true);
-  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});;
+  const [page, setPage] = useState(1);
+  const [posts, setPosts] = useState<PostResponseDto[]>([]);
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
-  
+  useEffect(() => {
+    const target = sentinelRef.current;
+    if (!target) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            if (charging) return;
+            if (posts.length < page * 10) return;
+            setCharging(true);
+            setPage(page + 1);
+            setChange(!change);
+            }
+        });
+      },
+      {
+        threshold: 0.1, // 10% visible
+      }
+    );
+
+    observer.observe(target);
+
+    return () => {
+      observer.unobserve(target);
+      observer.disconnect();
+    };
+  }, [posts]);
+
+
+
   useEffect(() => {
     const run = async() => {
        if (!await isLogged()){
@@ -31,15 +63,18 @@ export default function Home() {
           router.push("/auth/login");
           return;
       }
-      const res = await client.posts.get().feed();
+      const res = await client.posts.get().feed({limit : 10, page : page});
+      
       if (!res.ok) setError(res.error.message);
       const data = JSON.parse(res?.value);
-      setPosts({data : data});
+      setPosts([...posts, ...data]);
       setCharging(false);
-    
     }
     run();
   }, [change]);
+  
+
+
   if (error)
     if (error || !posts) {
 		return (
@@ -58,11 +93,12 @@ export default function Home() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {/* Create Post Input */}
-      <CreatePost goto={true} setChange={setChange}/>
+      <CreatePost goto={true}/>
       {/* Feed */}
       <div className="space-y-6">
-        <PostList posts={posts} charging={charging}/>
+        <PostList posts={posts}/>
       </div>
+      <div ref={sentinelRef}>{posts.length > page * 10 ? "Loading Posts..." : ''}</div>
     </div>
   );
 }
