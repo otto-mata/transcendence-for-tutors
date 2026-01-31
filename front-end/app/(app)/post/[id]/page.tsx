@@ -65,7 +65,6 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		  
 		  const res = await client.posts.$(id).get();
 		  if (!res.ok){
-			console.log("cavapala");
 			setError(res.error?.message);
 			return;
 		  }

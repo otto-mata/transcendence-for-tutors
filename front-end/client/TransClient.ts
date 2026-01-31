@@ -731,9 +731,10 @@ const ClientFactory = (client: Axios) => {
 				},
 				 byName : async (username : string) => {
 						try {
-						const response = await client.get(`/posts/user/${username}`);
+							const response = await client.get(`/posts/user/${username}`);
+							console.log("response in byName :", response);
 						return Result.ok(response.data);
-					} catch (error) {
+					} catch (error) { 
 						return Result.error(error as RequestError);
 					}
 				 }
@@ -862,7 +863,9 @@ export class Backend {
 
 	// test le back tqt
 	private constructor() {
-		this._cl = ClientFactory(new Axios({ baseURL: 'http://localhost:3000' })); //process.env.API_URL
+		this._cl = ClientFactory(new Axios({ baseURL: 'http://localhost:3000', validateStatus : (status) => {
+			return status >= 200 && status < 300;
+		}})); //process.env.API_URL
 	}
 
 	public static getInstance(): ClientType {

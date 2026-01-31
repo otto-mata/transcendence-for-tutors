@@ -207,6 +207,7 @@ const router = useRouter();
 
   useEffect(() => {
 	const run = async() => {
+	console.log("username dans MansonPostGridByUsername :", params.username);
 	  const res = await client.posts.get().byName(params.username);
 	  if (!res.ok) throw res.error;
 	  const data = JSON.parse(res?.value);

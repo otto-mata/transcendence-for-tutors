@@ -119,6 +119,8 @@ async findSaved(skip: number, take: number, userId : string): Promise<PostRespon
 
 async findLikedByName(skip: number, take: number, username : string): Promise<PostResponseDto[]> {
 	const user = await this.prisma.user.findUnique({where : { username : username}});
+	if (user === null)
+		return [];
 	const posts = await this.prisma.post.findMany({
 		skip,
 		take,
@@ -151,6 +153,8 @@ async findLikedByName(skip: number, take: number, username : string): Promise<Po
 
 async findSavedByName(skip: number, take: number, username : string): Promise<PostResponseDto[]> {
 	const user = await this.prisma.user.findUnique({where : { username : username}});
+	if (user === null)
+		return [];
 	const posts = await this.prisma.post.findMany({
 		skip,
 		take,
@@ -184,6 +188,8 @@ async findSavedByName(skip: number, take: number, username : string): Promise<Po
 
 async findByName(skip: number, take: number, username : string): Promise<PostResponseDto[]> {
 	const user = await this.prisma.user.findUnique({where : { username : username}});
+	if (user === null)
+		return [];
 	const posts = await this.prisma.post.findMany({
 		skip,
 		take,

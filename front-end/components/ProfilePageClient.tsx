@@ -164,6 +164,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 				setUser(data);
 			} else {
 				const result = await client.users.$({username}).get();
+				console.log("result:", result);
 				if (!result.ok)
 					throw new Error('Failed to fetch profile');
 				const data = typeof result.value === 'string' 
@@ -521,7 +522,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 				{/* Content Area - Posts Grid placeholder */}
 				<div className="pb-12">
 					<div className="text-center py-12 text-gray-500 dark:text-gray-400">
-						{activeTab === 0 && <MansonPostGridByUsername username={user.username}/>}
+						{activeTab === 0 && <MansonPostGridByUsername username={username ? username : user.username}/>}
 						{activeTab === 1 && 'Media posts will appear here'}
 						{activeTab === 2 && <MansonPostGridLiked { ...(isOwnProfile &&  {username})}/>}
 					</div>
