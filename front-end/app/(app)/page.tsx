@@ -8,6 +8,8 @@ import { PostResponseDto } from '@/client/Post.dto';
 import { Backend } from "@/client/TransClient";
 import { getMediaUrl } from "@/client/utils";
 import { CreatePost } from "@/components/createPost";
+import { ErrorPage } from "@/components/ErrorPage";
+import { CharginPage } from "@/components/CharginPage";
 
 interface CurrentUser {
   username: string;
@@ -74,22 +76,11 @@ export default function Home() {
   }, [change]);
   
 
-
-  if (error)
-    if (error || !posts) {
-		return (
-			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-				<div className="text-center">
-					<h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-						{error || 'User not found'}
-					</h2>
-					<p className="text-gray-600 dark:text-gray-400">
-						You cannot access this page.
-					</p>
-				</div>
-			</div>
-		);
-	}
+  if (charging)
+    return (<CharginPage/>)
+  if (error || !posts)
+    return (<ErrorPage error={error || 'User not found'} message="You cannot access this page."/>);
+  
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {/* Create Post Input */}
