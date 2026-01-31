@@ -72,7 +72,6 @@ export class AuthController {
 				else 
 					console.log(e);
 			}
-			res.status(HttpStatus.BAD_REQUEST);
 			return JSON.stringify({ error: 'Registration failed', message: (e as any)?.message ?? 'Unknown error' });
 		}
 	}
@@ -90,7 +89,6 @@ export class AuthController {
 			res.status(HttpStatus.OK);
 			return JSON.stringify(result);
 		} catch (e) {
-			res.status(HttpStatus.UNAUTHORIZED);
 			return JSON.stringify({ error: e});
 		}
 	}
@@ -104,7 +102,6 @@ export class AuthController {
 			const result = await this.authService.RefreshToken(data.token);
 			return JSON.stringify(result);
 		} catch (e) {
-			res.status(HttpStatus.UNAUTHORIZED);
 			return JSON.stringify({ error: 'Invalid or expired token' });
 		}
 	}
@@ -142,7 +139,6 @@ export class AuthController {
 				res.status(e.getStatus());
 				return { message: e.message };
 			}
-			res.status(HttpStatus.BAD_REQUEST);
 			return { message: 'Failed to send verification email' };
 		}
 	}
@@ -170,7 +166,6 @@ export class AuthController {
 				res.status(e.getStatus());
 				return { message: e.message };
 			}
-			res.status(HttpStatus.BAD_REQUEST);
 			return { message: 'Password reset failed' };
 		}
 	}
