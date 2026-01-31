@@ -69,14 +69,13 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			try {
 				const client = Backend.getInstance();
 				const result = await client.me.followRequests.count();
-				if (result.ok) {
+				if (!result.ok) throw result.error;
 					const data = typeof result.value === 'string' 
 						? JSON.parse(result.value) 
 						: result.value;
 					setPendingRequestCount(data.count);
-				}
-			} catch (err) {
-				console.error('Failed to fetch pending count:', err);
+			} catch (err : any) {
+				setError(err.message);
 			}
 		};
 		fetchPendingCount();

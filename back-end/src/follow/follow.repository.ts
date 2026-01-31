@@ -37,8 +37,6 @@ export class FollowRepository {
 			include: { follower: true },
 			orderBy: { createdAt: 'desc' },
 		});
-
-		console.log('Found followers:', followers.length);
 		return followers;
 	}
 

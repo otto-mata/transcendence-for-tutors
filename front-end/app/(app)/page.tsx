@@ -31,7 +31,7 @@ export default function Home() {
           router.push("/auth/login");
           return;
       }
-      const res = await client.posts.get().all();
+      const res = await client.posts.get().feed();
       if (!res.ok) setError(res.error.message);
       const data = JSON.parse(res?.value);
       setPosts({data : data});
@@ -58,7 +58,7 @@ export default function Home() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       {/* Create Post Input */}
-      <CreatePost goto={false} setChange={setChange}/>
+      <CreatePost goto={true} setChange={setChange}/>
       {/* Feed */}
       <div className="space-y-6">
         <PostList posts={posts} charging={charging}/>

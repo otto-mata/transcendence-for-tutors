@@ -723,8 +723,16 @@ const ClientFactory = (client: Axios) => {
 				return {
 					all : async () => {
 						try {
-						const response = await client.get('/posts');
-						return Result.ok(response.data);
+							const response = await client.get('/posts');
+							return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				feed : async () => {
+						try {
+							const response = await client.get('/posts/feed');
+							return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
 					}
@@ -732,8 +740,7 @@ const ClientFactory = (client: Axios) => {
 				 byName : async (username : string) => {
 						try {
 							const response = await client.get(`/posts/user/${username}`);
-							console.log("response in byName :", response);
-						return Result.ok(response.data);
+							return Result.ok(response.data);
 					} catch (error) { 
 						return Result.error(error as RequestError);
 					}
