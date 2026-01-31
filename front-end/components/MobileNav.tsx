@@ -20,10 +20,12 @@ import { useEffect } from 'react';
 import { Backend } from '@/client/TransClient';
 import { UserProfileResponse } from '@/client/Users.dto';
 import { getMediaUrl } from '@/client/utils';
+import { isLogged } from '@/client/common.mock';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDark, setIsDark] = useState(false);
+	const [error, setError] = useState('');
 	const pathname = usePathname();
 	const client = Backend.getInstance();
 	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : ""});
@@ -37,15 +39,19 @@ export default function MobileNav() {
 		let mounted = true;
 		(async () => {
 			try {
+				if (! await isLogged()){
+									setError('You must be logged in to view this page.');
+									return;	
+								}
 				const result = await client.me.get();
 								if (!result.ok)
-									throw new Error('Failed to fetch profile');
+									setError('Failed to fetch profile');
 								const data = typeof result.value === 'string' 
 									? JSON.parse(result.value) as UserProfileResponse 
 									: result.value as UserProfileResponse;
 								setUser(data);
-			} catch (e) {
-				console.error('Failed to fetch profile', e);
+			} catch (e : any) {
+				setError(e.message);
 			}
 		})();
 
@@ -60,6 +66,8 @@ export default function MobileNav() {
 	const toggleMenu = () => setIsOpen(!isOpen);
 	const closeMenu = () => setIsOpen(false);
 
+	if (error)
+		return ;
 	return (
 		<>
 			{/* Burger Menu Button - Fixed to top */}

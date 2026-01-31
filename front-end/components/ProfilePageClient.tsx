@@ -9,6 +9,7 @@ import { RelationshipStatusDto } from '@/client/follow.dto';
 import EditProfileModal from './EditProfileModal';
 import FollowListModal from './FollowListModal';
 import { MansonPostGridByUsername, MansonPostGridLiked } from './PostList';
+import { isLogged } from '@/client/common.mock';
 
 interface ProfilePageClientProps {
 	username: string;
@@ -42,6 +43,10 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	useEffect(() => {
 		const fetchCurrentUser = async () => {
 			try {
+				if (!await isLogged()){
+						  setError('You must be logged in to view this page.');
+						  return;
+					  }
 				const client = Backend.getInstance();
 				const result = await client.me.get();
 				if (result.ok) {
@@ -187,12 +192,11 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 		try {
 			const client = Backend.getInstance();
 			const result = await client.me.updateCover(file);
-			if (result.ok) {
+			if (!result.ok) throw new Error(result.error?.message || 'Failed to upload cover');
 				const updatedUser = typeof result.value === 'string' 
 					? JSON.parse(result.value) as UserProfileResponse 
 					: result.value as UserProfileResponse;
 				setUser(updatedUser);
-			}
 		} catch (err) {
 			console.error('Failed to upload cover:', err);
 		} finally {

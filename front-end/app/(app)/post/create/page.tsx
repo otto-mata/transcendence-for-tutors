@@ -19,10 +19,10 @@ export default function Home() {
 
   useEffect(() => {
     const run = async() => {
-      const logged = await isLogged();
-       if (!logged){
-          router.push('/auth/login');
-          return;
+      if (!await isLogged()){
+			router.push('/auth/login');
+			setError('You must be logged in to view this page.')
+			return;
       }
       // Fetch current user info
       const userRes = await client.me.get();

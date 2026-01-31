@@ -50,9 +50,11 @@ export default function PostPage({ params }: { params: { id : string } }) {
 
 	useEffect(() => {
 		const run = async() => {
-		  const logged = await isLogged();
-		   if (!logged)
-			  router.push('/auth/login');
+		  if (!await isLogged()){
+			router.push('/auth/login');
+			setError('You must be logged in to view this page.')
+			return;
+		}
 		  
 		  // Fetch current user for comment avatar
 		  const userRes = await client.me.get();

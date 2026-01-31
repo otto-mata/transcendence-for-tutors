@@ -10,12 +10,14 @@ function printit(){
 
 export default function ExplorePage() {
 	const router = useRouter();
+	const [error, setError] = useState('');
 
 	useEffect(() => {
 	const run = async() => {
-		const logged = await isLogged();
-		if (!logged)
+		if (!await isLogged()){
 			router.push('/auth/login');
+			setError('You must be logged in to view this page.')
+	}
 	}
 	run();
 	}, [router]);

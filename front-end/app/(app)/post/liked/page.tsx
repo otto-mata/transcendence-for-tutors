@@ -17,10 +17,10 @@ export default function LikePosts() {
 
   useEffect(() => {
     const run = async() => {
-      const logged = await isLogged();
-       if (!logged){
-          router.push('/auth/login');
-          return;
+      if (!await isLogged()){
+        router.push('/auth/login');
+        setError('You must be logged in to view this page.')
+        return;
       }
       const res = await client.posts.liked().get();
       if (!res.ok) throw res.error;
