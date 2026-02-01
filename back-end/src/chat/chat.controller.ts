@@ -9,12 +9,16 @@ import { ChatService } from './chat.service';
 export class ChatController {
 	constructor(private readonly chatService: ChatService,
 	) { }
-	//Default route will return the last 5 persons and their last messages
+	//Default route will return x persons and their last messages
 	@Get()
 	async getMessages(
 		@CurrentUser() user: CurrentUserType,
+		@Query() query: NumberQuery
 	): Promise<String> {
-		return (JSON.stringify({ message: "WIP" }));
+		try {
+			return (JSON.stringify(await this.chatService.getUserChatList(user, query.skip, query.take)));
+		} catch (e) { }
+		return (JSON.stringify({error: "An error occured"}));
 	}
 	//Will save a new message to the chat between current user and the param user
 	@Post('/:username')
@@ -36,6 +40,9 @@ export class ChatController {
 		@Param('username') username: string,
 		@Query() query: NumberQuery
 	): Promise<String> {
-		return (JSON.stringify(await this.chatService.getMessages(user, username, query.skip, query.takeg)));
+		try {
+			return (JSON.stringify(await this.chatService.getMessages(user, username, query.skip, query.take)));
+		} catch (e) { }
+		return (JSON.stringify({error: "An error occured"}));
 	}
 }
