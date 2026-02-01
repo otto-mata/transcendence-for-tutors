@@ -15,6 +15,7 @@ import { FollowModule } from './follow/follow.module';
 import { MediaModule } from './media/media.module';
 import { MailModule } from './mail/mail.module';
 import { GoogleOauthModule } from './auth/google/google.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
 	imports: [
@@ -46,6 +47,7 @@ import { GoogleOauthModule } from './auth/google/google.module';
 		MediaModule,
 		MailModule,
 		GoogleOauthModule,
+		ChatModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
