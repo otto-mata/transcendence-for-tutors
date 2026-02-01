@@ -1,7 +1,7 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { CurrentUser, type CurrentUserType } from '@/decorators/current-user.decorator';
 import { AuthGuard } from '@/guards/auth.guard';
-import { FormatMessage } from './chat.dto';
+import { FormatMessage, NumberQuery } from './chat.dto';
 import { ChatService } from './chat.service';
 
 @Controller('chat')
@@ -14,7 +14,6 @@ export class ChatController {
 	async getMessages(
 		@CurrentUser() user: CurrentUserType,
 	): Promise<String> {
-		console.log(user);
 		return (JSON.stringify({ message: "WIP" }));
 	}
 	//Will save a new message to the chat between current user and the param user
@@ -35,7 +34,8 @@ export class ChatController {
 	async getLastMessages(
 		@CurrentUser() user: CurrentUserType,
 		@Param('username') username: string,
+		@Query() query: NumberQuery
 	): Promise<String> {
-		return (JSON.stringify(await this.chatService.getMessages(user, username, 0, 5)));
+		return (JSON.stringify(await this.chatService.getMessages(user, username, query.skip, query.takeg)));
 	}
 }

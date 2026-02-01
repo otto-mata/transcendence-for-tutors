@@ -1,12 +1,28 @@
+import { Type } from 'class-transformer';
 import {
 	IsString,
-	IsEmail,
-	MinLength,
-	MaxLength,
 	IsOptional,
+	IsInt,
+	Min,
+	Max,
 } from 'class-validator';
 
 export class FormatMessage {
 	@IsString()
 	message: string;
+}
+
+export class NumberQuery {
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	@Min(0)
+	skip: number = 0;
+
+	@IsOptional()
+	@Type(() => Number)
+	@IsInt()
+	@Min(1)
+	@Max(50)
+	take: number = 5;
 }
