@@ -102,4 +102,36 @@ export class ChatService {
 		});
 		return (chats);
 	}
+
+	async getUserChatList(sender: CurrentUserType, x: number, y: number) : Promise<ChatDelegate> {
+		const chats = await this.prisma.chat.findMany({
+			where: {
+				users: {
+					some: { id: sender.id },
+				},
+			},
+			skip: x,
+			take: y,
+			include: {
+				users: {
+					select: {
+						id: true,
+						username: true,
+						avatarUrl: true,
+					},
+				},
+				messages: {
+					take: 1,
+					orderBy: { createdAt: 'desc' },
+					select: {
+						id: true,
+						message: true,
+						createdAt: true,
+						senderId: true,
+					},
+				},
+			},
+		});
+		return (chats);
+	}
 }
