@@ -1,12 +1,17 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MapPin, Calendar, Settings, Camera, MoreHorizontal, Loader2 } from 'lucide-react';
+import { MapPin, Calendar, Settings, Camera, MoreHorizontal, Loader2, UserPlus, UserCheck, Lock, Clock, Bell } from 'lucide-react';
 import { Backend } from '@/client/TransClient';
 import { getMediaUrl } from '@/client/utils';
 import { UserProfileResponse } from '@/client/Users.dto';
+import { RelationshipStatusDto } from '@/client/follow.dto';
 import EditProfileModal from './EditProfileModal';
+import FollowListModal from './FollowListModal';
 import { MansonPostGridByUsername, MansonPostGridLiked } from './PostList';
+import { isLogged } from '@/client/common.mock';
+import { CharginPage } from './CharginPage';
+import { ErrorPage } from './ErrorPage';
 
 interface ProfilePageClientProps {
 	username: string;
@@ -14,7 +19,7 @@ interface ProfilePageClientProps {
 	initialUser?: UserProfileResponse;
 }
 
-const tabs = ['Posts', 'Media', 'Likes'];
+const tabs = ['Posts', 'Likes'];
 
 export default function ProfilePageClient({ username, isOwnProfile, initialUser }: ProfilePageClientProps) {
 	const [user, setUser] = useState<UserProfileResponse | null>(initialUser || null);
@@ -26,14 +31,124 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
 	const [refreshKey, setRefreshKey] = useState(0);
 	
+	// Follow-related state
+	const [relationship, setRelationship] = useState<RelationshipStatusDto | null>(null);
+	const [isFollowLoading, setIsFollowLoading] = useState(false);
+	const [showFollowModal, setShowFollowModal] = useState<'followers' | 'following' | 'requests' | null>(null);
+	const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined);
+	const [pendingRequestCount, setPendingRequestCount] = useState(0);
+	
 	const coverInputRef = useRef<HTMLInputElement>(null);
 	const avatarInputRef = useRef<HTMLInputElement>(null);
+
+	// Fetch current user ID and pending request count if own profile
+	useEffect(() => {
+		const fetchCurrentUser = async () => {
+			try {
+				if (!await isLogged()){
+						  setError('You must be logged in to view this page.');
+						  return;
+					  }
+				const client = Backend.getInstance();
+				const result = await client.me.get();
+				if (result.ok) {
+					const data = typeof result.value === 'string' 
+						? JSON.parse(result.value) 
+						: result.value;
+					setCurrentUserId(data.id);
+				}
+			} catch (err) {
+				console.error('Failed to fetch current user:', err);
+			}
+		};
+		fetchCurrentUser();
+	}, []);
+
+	// Fetch pending request count for own profile with private account
+	useEffect(() => {
+		const fetchPendingCount = async () => {
+			if (!isOwnProfile || !user?.isPrivate) return;
+			try {
+				const client = Backend.getInstance();
+				const result = await client.me.followRequests.count();
+				if (!result.ok) throw result.error;
+					const data = result.value;
+					setPendingRequestCount(data.count);
+			} catch (err : any) {
+				setError(err.message);
+			}
+		};
+		fetchPendingCount();
+	}, [isOwnProfile, user?.isPrivate]);
 
 	useEffect(() => {
 		if (!initialUser) {
 			fetchUserProfile();
 		}
 	}, [username, initialUser]);
+
+	// Fetch relationship status for non-own profiles
+	useEffect(() => {
+		if (!isOwnProfile && user?.id) {
+			fetchRelationship();
+		}
+	}, [isOwnProfile, user?.id]);
+
+	const fetchRelationship = useCallback(async () => {
+		if (!user?.id) return;
+		try {
+			const client = Backend.getInstance();
+			const result = await client.users.$({ id: user.id }).relationship();
+			if (!result.ok) throw result.error;
+				const data = result.value as RelationshipStatusDto;
+				setRelationship(data);
+		} catch (err) {
+			console.error('Failed to fetch relationship:', err);
+		}
+	}, [user?.id]);
+
+	const handleFollowToggle = async () => {
+		if (!user?.id) return;
+		setIsFollowLoading(true);
+		try {
+			const client = Backend.getInstance();
+			if (relationship?.isFollowing) {
+				const result = await client.users.$({ id: user.id }).unfollow();
+				if (result.ok) {
+					setRelationship(prev => prev ? { ...prev, isFollowing: false } : null);
+					setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
+				}
+			} else if (relationship?.isPending) {
+				const result = await client.users.$({ id: user.id }).unfollow();
+				if (result.ok) {
+					setRelationship(prev => prev ? { ...prev, isPending: false } : null);
+				}
+			} else {
+				const result = await client.users.$({ id: user.id }).follow();
+				if (result.ok) {
+					if (user.isPrivate) {
+						setRelationship(prev => prev ? { ...prev, isPending: true, isFollowing: false } : null);
+					} else {
+						setRelationship(prev => prev ? { ...prev, isFollowing: true } : null);
+						setUser(prev => prev ? { ...prev, followerCount: prev.followerCount + 1 } : null);
+					}
+				}
+			}
+		} catch (err) {
+			console.error('Failed to toggle follow:', err);
+		} finally {
+			setIsFollowLoading(false);
+		}
+	};
+
+	const handleFollowerRemoved = () => {
+		setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
+	};
+
+	const handleRequestHandled = () => {
+		setPendingRequestCount(prev => Math.max(0, prev - 1));
+		fetchUserProfile();
+	};
 
 	const fetchUserProfile = useCallback(async () => {
 		setIsLoading(true);
@@ -72,12 +187,9 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 		try {
 			const client = Backend.getInstance();
 			const result = await client.me.updateCover(file);
-			if (result.ok) {
-				const updatedUser = typeof result.value === 'string' 
-					? JSON.parse(result.value) as UserProfileResponse 
-					: result.value as UserProfileResponse;
+			if (!result.ok) throw new Error(result.error?.message || 'Failed to upload cover');
+				const updatedUser = result.value as UserProfileResponse;
 				setUser(updatedUser);
-			}
 		} catch (err) {
 			console.error('Failed to upload cover:', err);
 		} finally {
@@ -94,9 +206,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			const client = Backend.getInstance();
 			const result = await client.me.updateAvatar(file);
 			if (result.ok) {
-				const updatedUser = typeof result.value === 'string' 
-					? JSON.parse(result.value) as UserProfileResponse 
-					: result.value as UserProfileResponse;
+				const updatedUser = result.value as UserProfileResponse;
 				setUser(updatedUser);
 			}
 		} catch (err) {
@@ -107,7 +217,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	};
 
 	const handleUserUpdate = useCallback(async (updatedUser: UserProfileResponse) => {
-		console.log('handleUserUpdate called with:', updatedUser);
 		setUser(updatedUser);
 		setRefreshKey(prev => prev + 1);
 		
@@ -143,26 +252,14 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	};
 
 	if (isLoading) {
-		return (
-			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-				<Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-			</div>
-		);
+		<CharginPage/>
 	}
 
 	if (error || !user) {
-		return (
-			<div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-				<div className="text-center">
-					<h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-						{error || 'User not found'}
-					</h2>
-					<p className="text-gray-600 dark:text-gray-400">
-						The profile you're looking for doesn't exist or has been removed.
-					</p>
-				</div>
-			</div>
-		);
+		return (<ErrorPage
+						error={error || 'User not found'}
+						message={"The profile you're looking for doesn't exist or has been removed."}
+						/>);
 	}
 
 	return (
@@ -251,7 +348,8 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 
 					{/* Action Buttons */}
 					<div className="pt-6 pb-4 flex justify-end gap-3">
-						{isOwnProfile ? (
+						{/* Show Edit Profile if own profile OR if currentUserId matches the profile user id */}
+						{(isOwnProfile || currentUserId === user.id) ? (
 							<button 
 								onClick={() => setShowEditModal(true)}
 								className="px-6 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full font-medium shadow-md hover:shadow-lg transition-shadow flex items-center gap-2"
@@ -264,9 +362,39 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 								<button className="p-2.5 bg-white dark:bg-gray-800 rounded-full shadow-md hover:shadow-lg transition-shadow">
 									<MoreHorizontal className="w-5 h-5 text-gray-700 dark:text-gray-300" />
 								</button>
-								<button className="px-6 py-2.5 bg-blue-500 text-white rounded-full font-medium shadow-md hover:bg-blue-600 hover:shadow-lg transition-all">
-									Follow
+								<button 
+									onClick={handleFollowToggle}
+									disabled={isFollowLoading}
+									className={`px-6 py-2.5 rounded-full font-medium shadow-md hover:shadow-lg transition-all flex items-center gap-2 ${
+										relationship?.isFollowing || relationship?.isPending
+											? 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-900/30 dark:hover:text-red-400'
+											: 'bg-blue-500 text-white hover:bg-blue-600'
+									}`}
+								>
+									{isFollowLoading ? (
+										<Loader2 className="w-4 h-4 animate-spin" />
+									) : relationship?.isFollowing ? (
+										<>
+											<UserCheck className="w-4 h-4" />
+											Following
+										</>
+									) : relationship?.isPending ? (
+										<>
+											<Clock className="w-4 h-4" />
+											Requested
+										</>
+									) : (
+										<>
+											<UserPlus className="w-4 h-4" />
+											Follow
+										</>
+									)}
 								</button>
+								{relationship?.isFollowedBy && !relationship?.isFollowing && (
+									<span className="px-3 py-1.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-sm rounded-full">
+										Follows you
+									</span>
+								)}
 								<button className="px-6 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full font-medium shadow-md hover:shadow-lg transition-shadow">
 									Message
 								</button>
@@ -286,6 +414,11 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 								<path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
 							</svg>
 						)}
+						{user.isPrivate && (
+							<span title="Private account">
+								<Lock className="w-5 h-5 text-gray-500" />
+							</span>
+						)}
 					</div>
 					<p className="text-gray-500 mb-3">@{user.username}</p>
 
@@ -304,24 +437,45 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 
 					{/* Stats */}
 					<div className="flex gap-6 text-sm">
-						<button className="hover:underline">
+						<div className="cursor-default">
 							<span className="font-bold text-gray-900 dark:text-gray-100">
 								{formatCount(user.postCount)}
 							</span>
 							<span className="text-gray-600 dark:text-gray-400 ml-1">Posts</span>
-						</button>
-						<button className="hover:underline">
+						</div>
+						<button 
+							onClick={() => setShowFollowModal('followers')}
+							className="hover:underline"
+						>
 							<span className="font-bold text-gray-900 dark:text-gray-100">
 								{formatCount(user.followerCount)}
 							</span>
 							<span className="text-gray-600 dark:text-gray-400 ml-1">Followers</span>
 						</button>
-						<button className="hover:underline">
+						<button 
+							onClick={() => setShowFollowModal('following')}
+							className="hover:underline"
+						>
 							<span className="font-bold text-gray-900 dark:text-gray-100">
 								{formatCount(user.followingCount)}
 							</span>
 							<span className="text-gray-600 dark:text-gray-400 ml-1">Following</span>
 						</button>
+						{/* Pending requests button - only for own private profile */}
+						{(isOwnProfile || currentUserId === user.id) && user.isPrivate && (
+							<button 
+								onClick={() => setShowFollowModal('requests')}
+								className="hover:underline relative flex items-center gap-1"
+							>
+								<Bell className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+								<span className="text-gray-600 dark:text-gray-400">Requests</span>
+								{pendingRequestCount > 0 && (
+									<span className="absolute -top-1 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+										{pendingRequestCount > 9 ? '9+' : pendingRequestCount}
+									</span>
+								)}
+							</button>
+						)}
 					</div>
 				</div>
 
@@ -350,9 +504,9 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 				{/* Content Area - Posts Grid placeholder */}
 				<div className="pb-12">
 					<div className="text-center py-12 text-gray-500 dark:text-gray-400">
-						{activeTab === 0 && <MansonPostGridByUsername username={user.username}/>}
-						{activeTab === 1 && 'Media posts will appear here'}
-						{activeTab === 2 && <MansonPostGridLiked { ...(isOwnProfile &&  {username})}/>}
+						{activeTab === 0 && <MansonPostGridByUsername username={username ? username : user.username}/>}
+						{activeTab === 1 && <MansonPostGridLiked { ...(!isOwnProfile &&  {username})}/>}
+						{/* {activeTab === 2 && 'Media posts will appear here'} */}
 					</div>
 				</div>
 			</div>
@@ -363,6 +517,21 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 					onClose={() => setShowEditModal(false)}
 					user={user}
 					onUpdate={handleUserUpdate}
+				/>
+			)}
+
+			{/* Follow List Modal */}
+			{showFollowModal && user && (
+				<FollowListModal
+					isOpen={!!showFollowModal}
+					onClose={() => setShowFollowModal(null)}
+					username={user.username}
+					userId={user.id}
+					type={showFollowModal}
+					isOwnProfile={isOwnProfile || currentUserId === user.id}
+					onFollowerRemoved={handleFollowerRemoved}
+					onRequestHandled={handleRequestHandled}
+					currentUserId={currentUserId}
 				/>
 			)}
 		</div>

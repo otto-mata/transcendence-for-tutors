@@ -41,7 +41,6 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	});
 
 	async function commentIt(post : PostResponseDto){
-		console.log(CommentInput);
 		await client.posts.$(post.id).comments.post(CommentInput);
 		setCommentInput('');
 		setChange(!change);
@@ -50,9 +49,11 @@ export default function PostPage({ params }: { params: { id : string } }) {
 
 	useEffect(() => {
 		const run = async() => {
-		  const logged = await isLogged();
-		   if (!logged)
-			  router.push('/auth/login');
+		  if (!await isLogged()){
+			router.push('/auth/login');
+			setError('You must be logged in to view this page.')
+			return;
+		}
 		  
 		  // Fetch current user for comment avatar
 		  const userRes = await client.me.get();
@@ -65,7 +66,6 @@ export default function PostPage({ params }: { params: { id : string } }) {
 		  
 		  const res = await client.posts.$(id).get();
 		  if (!res.ok){
-			console.log("cavapala");
 			setError(res.error?.message);
 			return;
 		  }

@@ -18,7 +18,11 @@ export class PostRepository {
 		});
 	}
 
-	async create(data: Prisma.PostCreateInput): Promise<Post> {
+	async create(data: Prisma.PostCreateInput, userId : string): Promise<Post> {
+		await this.prisma.user.update({
+				where: { id: userId },
+				data: { postCount: { increment: 1 } },
+			});
 		return this.prisma.post.create({ data });
 	}
 
@@ -30,8 +34,13 @@ export class PostRepository {
 	}
 
 	async delete(id: string): Promise<Post> {
-		return this.prisma.post.delete({
+		const post = await this.prisma.post.delete({
 			where: { id },
 		});
+		await this.prisma.user.update({
+				where: { id: post.authorId },
+				data: { postCount: { decrement: 1 } },
+			});
+		return post;
 	}
 }

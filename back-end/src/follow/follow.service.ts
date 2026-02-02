@@ -46,4 +46,28 @@ export class FollowService {
 			targetUserId,
 		);
 	}
+
+	async removeFollower(userId: string, followerId: string): Promise<void> {
+		return this.followRepository.removeFollower(userId, followerId);
+	}
+
+	async getPendingRequests(
+		userId: string,
+		skip: number,
+		take: number,
+	): Promise<any[]> {
+		return this.followRepository.findPendingRequests(userId, skip, take);
+	}
+
+	async acceptFollowRequest(userId: string, followerId: string): Promise<void> {
+		return this.followRepository.acceptFollowRequest(userId, followerId);
+	}
+
+	async rejectFollowRequest(userId: string, followerId: string): Promise<void> {
+		return this.followRepository.rejectFollowRequest(userId, followerId);
+	}
+
+	async getPendingRequestCount(userId: string): Promise<number> {
+		return this.followRepository.getPendingRequestCount(userId);
+	}
 }

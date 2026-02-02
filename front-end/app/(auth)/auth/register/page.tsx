@@ -57,7 +57,6 @@ export default function RegisterPage() {
       });
       const body = await res.json();
       if (!res.ok) throw new Error(body.message || 'Google login failed');
-      console.log(body);
       if (body.access_token) localStorage.setItem('access_token', body.access_token);
       router.push('/');
     } catch (err: any) {

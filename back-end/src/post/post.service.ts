@@ -13,8 +13,17 @@ export class PostService {
 		private readonly prisma: PrismaService,
 	) {}
 
-	async findById(id: string): Promise<PostResponseDto> {
+	async findById(id: string, userId : string): Promise<PostResponseDto> {
 		const post = await this.postRepository.findById(id);
+		const author = await this.prisma.user.findUnique({where : { id : post.authorId}});
+		if (author?.id != userId &&  author?.isPrivate){
+			const follow = await this.prisma.follow.findFirstOrThrow({where : {
+				followerId : userId,
+				following : author,
+				status : "accepted"
+			}})
+		}
+		
 		return ({
 			id: post.id,
 			content: post.content,
@@ -35,7 +44,30 @@ export class PostService {
 	const posts = await this.prisma.post.findMany({
 		skip,
 		take,
-		orderBy: { createdAt: 'desc' }
+		orderBy: { createdAt: 'desc' },
+		where : {
+			OR : [
+				{
+					author : {
+						isPrivate : false,
+					}
+				},
+				{
+				author : {
+					isPrivate : true,
+					followers : {
+						some : {
+							followerId : userId,
+							status : "accepted"
+						}
+					}
+				
+				}
+			},
+			{
+				authorId : userId
+			}]
+		}
 	});
 
   return Promise.all(posts.map(async (post) => {
@@ -56,12 +88,70 @@ export class PostService {
 }));
 }
 
+	async findFollowed(skip: number, take: number, userId? : string): Promise<PostResponseDto[]> {
+	const posts = await this.prisma.post.findMany({
+		skip,
+		take,
+		orderBy: { createdAt: 'desc' },
+		where : {
+			author : {
+				followers : {
+					some : {
+						followerId : userId,
+						status : "accepted"
+					}
+				}
+			
+			}
+		}
+	});
+
+  return Promise.all(posts.map(async (post) => {
+	return {
+		id: post.id,
+		content: post.content,
+		authorId: post.authorId,
+		visibility: post.visibility,
+		likeCount: post.likeCount,
+		replyCount: post.replyCount,
+		createdAt: post.createdAt,
+		updatedAt: post.updatedAt,
+		isReply: post.isReply,
+		liked: await this.prisma.like.findFirst({where : {userId : userId, postId : post.id}}) !== null,
+		bookmarked: await this.prisma.bookmark.findFirst({where : {userId : userId, postId : post.id}}) !== null,
+		...(post.mediaUrl && {mediaUrl : post.mediaUrl})
+	}
+}));
+}
+
+
 async findLiked(skip: number, take: number, userId : string): Promise<PostResponseDto[]> {
 	const posts = await this.prisma.post.findMany({
 		skip,
 		take,
 		orderBy: { createdAt: 'desc' },
 		where : {
+			OR : [
+				{
+					author : {
+						isPrivate : false,
+					}
+				},
+				{
+				author : {
+					isPrivate : true,
+					followers : {
+						some : {
+							followerId : userId,
+							status : "accepted"
+						}
+					}
+				
+				}
+			},
+			{
+				authorId : userId
+			}],
 			likes: {
 				some : {
 					userId : userId
@@ -97,6 +187,27 @@ async findSaved(skip: number, take: number, userId : string): Promise<PostRespon
 					userId : userId
 				}
 			},
+			OR : [
+				{
+					author : {
+						isPrivate : false,
+					}
+				},
+				{
+				author : {
+					isPrivate : true,
+					followers : {
+						some : {
+							followerId : userId,
+							status : "accepted"
+						}
+					}
+				
+				}
+			},
+			{
+				authorId : userId
+			}]
 		},
 		});
 	return Promise.all(posts.map(async (post) => {
@@ -117,13 +228,36 @@ async findSaved(skip: number, take: number, userId : string): Promise<PostRespon
 	}));
 }
 
-async findLikedByName(skip: number, take: number, username : string): Promise<PostResponseDto[]> {
+async findLikedByName(skip: number, take: number, username : string, userId : string): Promise<PostResponseDto[]> {
 	const user = await this.prisma.user.findUnique({where : { username : username}});
+	if (user === null)
+		return [];
 	const posts = await this.prisma.post.findMany({
 		skip,
 		take,
 		orderBy: { createdAt: 'desc' },
 		where : {
+			OR : [
+				{
+					author : {
+						isPrivate : false,
+					}
+				},
+				{
+				author : {
+					isPrivate : true,
+					followers : {
+						some : {
+							followerId : userId,
+							status : "accepted"
+						}
+					}
+				
+				}
+			},
+			{
+				authorId : userId
+			}],
 			likes : {
 				some : {
 					userId : user?.id
@@ -149,8 +283,10 @@ async findLikedByName(skip: number, take: number, username : string): Promise<Po
 	}));
 }
 
-async findSavedByName(skip: number, take: number, username : string): Promise<PostResponseDto[]> {
+async findSavedByName(skip: number, take: number, username : string, userId : string): Promise<PostResponseDto[]> {
 	const user = await this.prisma.user.findUnique({where : { username : username}});
+	if (user === null)
+		return [];
 	const posts = await this.prisma.post.findMany({
 		skip,
 		take,
@@ -161,6 +297,27 @@ async findSavedByName(skip: number, take: number, username : string): Promise<Po
 					userId : user?.id
 				}
 			},
+			OR : [
+				{
+					author : {
+						isPrivate : false,
+					}
+				},
+				{
+				author : {
+					isPrivate : true,
+					followers : {
+						some : {
+							followerId : userId,
+							status : "accepted"
+						}
+					}
+				
+				}
+			},
+			{
+				authorId : userId
+			}]
 		},
 		});
 	return Promise.all(posts.map(async (post) => {
@@ -182,14 +339,38 @@ async findSavedByName(skip: number, take: number, username : string): Promise<Po
 }
 
 
-async findByName(skip: number, take: number, username : string): Promise<PostResponseDto[]> {
+async findByName(skip: number, take: number, username : string, userId : string): Promise<PostResponseDto[]> {
 	const user = await this.prisma.user.findUnique({where : { username : username}});
+	if (user === null)
+		return [];
 	const posts = await this.prisma.post.findMany({
 		skip,
 		take,
 		orderBy: { createdAt: 'desc' },
 		where : {
-			authorId : user?.id
+			authorId : user?.id,
+			OR : [
+				{
+					author : {
+						isPrivate : false,
+					}
+				},
+				{
+				author : {
+					isPrivate : true,
+					followers : {
+						some : {
+							followerId : userId,
+							status : "accepted"
+						}
+					}
+				
+				}
+			},
+			{
+				authorId : userId
+			}
+		]
 		},
 		});
 	return Promise.all(posts.map(async (post) => {
@@ -213,8 +394,8 @@ async findByName(skip: number, take: number, username : string): Promise<PostRes
 
 
 
-	async create(data: Prisma.PostCreateInput): Promise<Post> {
-		return this.postRepository.create(data);
+	async create(data: Prisma.PostCreateInput, userId : string): Promise<Post> {
+		return this.postRepository.create(data, userId);
 	}
 
 	async update(id: string, data: Prisma.PostUpdateInput): Promise<Post> {

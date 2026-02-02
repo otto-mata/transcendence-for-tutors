@@ -18,6 +18,13 @@ import {
 } from './auth.dto';
 import { CreatePostDto, UpdatePostDto } from './Post.dto';
 import { CreateCommentDto, UpdateCommentDto } from './Comment.dto';
+import {
+	FollowerDto,
+	FollowingDto,
+	RelationshipStatusDto,
+	FollowActionResponseDto,
+} from './follow.dto';
+import { QueryParametersDto } from './common.dto';
 
 type Ok<R> = ResultClass<R, never>;
 type Err<E> = ResultClass<never, E>;
@@ -89,7 +96,7 @@ const ClientFactory = (client: Axios) => {
 	return {
 		auth: {
 			register: async (data: RegisterDto) => {
-				console.log("datas are : ", data);
+		
 				try {
 					const response = await client.post('/auth/register', JSON.stringify(data), {
 							headers : {
@@ -229,7 +236,7 @@ const ClientFactory = (client: Axios) => {
 						await client.get('/users/me');
 				return Result.ok(response.data);
 				} catch (error) {
-					console.log("doesn go here");
+			
 					return Result.error(error as Error);
 				}
 			},
@@ -339,6 +346,94 @@ const ClientFactory = (client: Axios) => {
 					return Result.error(error as RequestError);
 				}
 			},
+			followers: {
+				get: async (page?: number, limit?: number) => {
+					try {
+						const params = new URLSearchParams();
+						if (page) params.append('page', page.toString());
+						if (limit) params.append('limit', limit.toString());
+						const query = params.toString() ? `?${params.toString()}` : '';
+						const response = await client.get<FollowerDto[]>(
+							`/users/me/followers${query}`,
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				remove: async (followerId: string) => {
+					try {
+						const response = await client.delete<FollowActionResponseDto>(
+							`/users/me/followers/${followerId}`,
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+			},
+			following: {
+				get: async (page?: number, limit?: number) => {
+					try {
+						const params = new URLSearchParams();
+						if (page) params.append('page', page.toString());
+						if (limit) params.append('limit', limit.toString());
+						const query = params.toString() ? `?${params.toString()}` : '';
+						const response = await client.get<FollowingDto[]>(
+							`/users/me/following${query}`,
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+			},
+			followRequests: {
+				get: async (page?: number, limit?: number) => {
+					try {
+						const params = new URLSearchParams();
+						if (page) params.append('page', page.toString());
+						if (limit) params.append('limit', limit.toString());
+						const query = params.toString() ? `?${params.toString()}` : '';
+						const response = await client.get<FollowerDto[]>(
+							`/users/me/follow-requests${query}`,
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				count: async () => {
+					try {
+						const response = await client.get<{ count: number }>(
+							`/users/me/follow-requests/count`,
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				accept: async (followerId: string) => {
+					try {
+						const response = await client.post<FollowActionResponseDto>(
+							`/users/me/follow-requests/${followerId}/accept`,
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				reject: async (followerId: string) => {
+					try {
+						const response = await client.delete<FollowActionResponseDto>(
+							`/users/me/follow-requests/${followerId}`,
+						);
+						return Result.ok(response.data);
+					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+			},
 		},
 		users: {
 			$: ({id, username} : {id?: string, username? : string}) => {
@@ -348,6 +443,71 @@ const ClientFactory = (client: Axios) => {
 							if (!username && !id) throw new Error("wrong input");
 							const str = username ? username : "by-id/" + id; 
 							const response = await client.get(`/users/${str}`);
+							return Result.ok(response.data);
+						} catch (error) {
+							return Result.error(error as RequestError);
+						}
+					},
+					followers: async (page?: number, limit?: number) => {
+						try {
+							if (!username && !id) throw new Error("wrong input");
+							const str = username ? username : "by-id/" + id;
+							const params = new URLSearchParams();
+							if (page) params.append('page', page.toString());
+							if (limit) params.append('limit', limit.toString());
+							const query = params.toString() ? `?${params.toString()}` : '';
+							const response = await client.get<FollowerDto[]>(
+								`/users/${str}/followers${query}`,
+							);
+							return Result.ok(response.data);
+						} catch (error) {
+							return Result.error(error as RequestError);
+						}
+					},
+					following: async (page?: number, limit?: number) => {
+						try {
+							if (!username && !id) throw new Error("wrong input");
+							const str = username ? username : "by-id/" + id;
+							const params = new URLSearchParams();
+							if (page) params.append('page', page.toString());
+							if (limit) params.append('limit', limit.toString());
+							const query = params.toString() ? `?${params.toString()}` : '';
+							const response = await client.get<FollowingDto[]>(
+								`/users/${str}/following${query}`,
+							);
+							return Result.ok(response.data);
+						} catch (error) {
+							return Result.error(error as RequestError);
+						}
+					},
+					follow: async () => {
+						try {
+							if (!id) throw new Error("id is required for follow");
+							const response = await client.post<FollowActionResponseDto>(
+								`/users/${id}/follow`,
+							);
+							return Result.ok(response.data);
+						} catch (error) {
+							return Result.error(error as RequestError);
+						}
+					},
+					unfollow: async () => {
+						try {
+							if (!id) throw new Error("id is required for unfollow");
+							const response = await client.delete<FollowActionResponseDto>(
+								`/users/${id}/follow`,
+							);
+							return Result.ok(response.data);
+						} catch (error) {
+							return Result.error(error as RequestError);
+						}
+					},
+					relationship: async () => {
+						try {
+							if (!id) throw new Error("id is required for relationship");
+							const response = await client.get<RelationshipStatusDto>(
+								`/users/${id}/relationship`,
+							);
 							return Result.ok(response.data);
 						} catch (error) {
 							return Result.error(error as RequestError);
@@ -562,19 +722,27 @@ const ClientFactory = (client: Axios) => {
 			},
 			get: () => {
 				return {
-					all : async () => {
+					all : async (data : QueryParametersDto) => {
 						try {
-						const response = await client.get('/posts');
-						return Result.ok(response.data);
+							const response = await client.get(`/posts?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
+							return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
 					}
 				},
-				 byName : async (username : string) => {
+				feed : async (data : QueryParametersDto) => {
 						try {
-						const response = await client.get(`/posts/user/${username}`);
-						return Result.ok(response.data);
+							const response = await client.get(`/posts/feed?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
+							return Result.ok(response.data);
 					} catch (error) {
+						return Result.error(error as RequestError);
+					}
+				},
+				 byName : async (username : string, data : QueryParametersDto) => {
+						try {
+							const response = await client.get(`/posts/user/${username}?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
+							return Result.ok(response.data);
+					} catch (error) { 
 						return Result.error(error as RequestError);
 					}
 				 }
@@ -582,17 +750,17 @@ const ClientFactory = (client: Axios) => {
 			},
 			liked: () => {
 				return {
-					get : async () => {
+					get : async (data : QueryParametersDto) => {
 						try {
-						const response = await client.get('/posts/liked');
+						const response = await client.get(`/posts/liked?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 						return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
 					}
 				},
-				 byName : async (username : string) => {
+				 byName : async (username : string, data : QueryParametersDto) => {
 						try {
-						const response = await client.get(`/posts/liked/${username}`);
+						const response = await client.get(`/posts/liked/${username}?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 						return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
@@ -602,17 +770,17 @@ const ClientFactory = (client: Axios) => {
 			},
 			saved: () => {
 				return {
-					get : async () => {
+					get : async (data : QueryParametersDto) => {
 						try {
-						const response = await client.get('/posts/saved');
+						const response = await client.get(`/posts/saved?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 						return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
 					}
 				},
-				 byName : async (username : string) => {
+				 byName : async (username : string, data : QueryParametersDto) => {
 						try {
-						const response = await client.get(`/posts/saved/${username}`);
+						const response = await client.get(`/posts/saved/${username}?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
 						return Result.ok(response.data);
 					} catch (error) {
 						return Result.error(error as RequestError);
@@ -703,7 +871,9 @@ export class Backend {
 
 	// test le back tqt
 	private constructor() {
-		this._cl = ClientFactory(new Axios({ baseURL: 'http://localhost:3000' })); //process.env.API_URL
+		this._cl = ClientFactory(new Axios({ baseURL: 'http://localhost:3000', validateStatus : (status) => {
+			return status >= 200 && status < 300;
+		}})); //process.env.API_URL
 	}
 
 	public static getInstance(): ClientType {

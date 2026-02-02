@@ -12,7 +12,7 @@ interface CurrentUser {
   avatarUrl?: string;
 }
 
-export const CreatePost = (params : {goto : boolean, setChange? : (arg : boolean) => void}) => {
+export const CreatePost = (params : {goto : boolean}) => {
        const router = useRouter();
     const client = Backend.getInstance();
     const [postFile, setPostFile] = useState<File | null>(null);
@@ -56,18 +56,13 @@ export const CreatePost = (params : {goto : boolean, setChange? : (arg : boolean
     run();
     }, []);
 
-    async function PostIt(goto : boolean, setChange? : (arg : boolean) => void){
-        if (setChange)
-            setChange(false);
+    async function PostIt(goto : boolean){
         const res = await client.posts.post({content : PostInput, ...(postFile && {file : postFile})});
         setPostInput('');
         if (!res.ok) throw res.error;
         const data = JSON.parse(res.value);
-        console.log("data : ", data.id);
         if (goto)
             router.push('/post/' + data.id);
-        if (setChange)
-            setChange(true);
         setPostFile(null);
         setPostPreview(null);
       }
@@ -130,7 +125,7 @@ export const CreatePost = (params : {goto : boolean, setChange? : (arg : boolean
                   <Calendar className="w-5 h-5" />
                 </button>
               </div>
-              <button onClick={() => PostIt(params.goto, params.setChange )  } className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-600 transition-colors">
+              <button onClick={() => PostIt(params.goto )  } className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-600 transition-colors">
                 Post
               </button>
             </div>

@@ -69,9 +69,10 @@ export class PostController {
 		}
 	}
 
-	@Get('saved/:username')
-	async getUserSaved(
-		@Param('username') username: string,
+
+	@Get('feed')
+	async getFeed(
+		@CurrentUser() user: CurrentUserType,
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
 		@Res({ passthrough: true }) res?: Response,
@@ -80,19 +81,17 @@ export class PostController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const posts = await this.postService.findSaved(skip, limitNum, username);
+			const posts = await this.postService.findFollowed(skip, limitNum, user.id);
 			return JSON.stringify(posts);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
-			return JSON.stringify({
-				message: 'Error retrieving user posts',
-				error,
-			});
+			return JSON.stringify({ message: 'Error retrieving feed', error });
 		}
 	}
 
 	@Get('user/:username')
 	async getUserPosts(
+		@CurrentUser() user: CurrentUserType,
 		@Param('username') username: string,
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
@@ -102,7 +101,7 @@ export class PostController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			const posts = await this.postService.findByName(skip, limitNum, username);
+			const posts = await this.postService.findByName(skip, limitNum, username, user.id);
 			return JSON.stringify(posts);
 		} catch (error) {
 			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -132,6 +131,30 @@ export class PostController {
 		}
 	}
 
+	@Get('liked/:username')
+	async getUserLiked(
+		@CurrentUser() user: CurrentUserType,
+		@Param('username') username: string,
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
+	): Promise<string> {
+		try {
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 20;
+			const skip = (pageNum - 1) * limitNum;
+			const posts = await this.postService.findLikedByName(skip, limitNum, username, user.id);
+			return JSON.stringify(posts);
+		} catch (error) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return JSON.stringify({
+				message: 'Error retrieving user posts',
+				error,
+			});
+		}
+	}
+
+
 	@Get('latest')
 	async getLatestPosts(
 		@Query('page') page?: string,
@@ -155,11 +178,12 @@ export class PostController {
 
 	@Get(':id')
 	async getPostById(
+		@CurrentUser() user: CurrentUserType,
 		@Param('id') id: string,
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const post = await this.postService.findById(id);
+			const post = await this.postService.findById(id, user.id);
 			
 			return JSON.stringify(post);
 		} catch (error) {
@@ -172,20 +196,20 @@ export class PostController {
 		}
 	}
 
-	@Get(':id/thread')
-	async getPostThread(
-		@Param('id') id: string,
-		@Res({ passthrough: true }) res: Response,
-	): Promise<string> {
-		try {
-			// Get post and all related replies
-			const post = await this.postService.findById(id);
-			return JSON.stringify(post);
-		} catch (error) {
-			res.status(HttpStatus.NOT_FOUND);
-			return JSON.stringify({ message: 'Post thread not found', error });
-		}
-	}
+	// @Get(':id/thread')
+	// async getPostThread(
+	// 	@Param('id') id: string,
+	// 	@Res({ passthrough: true }) res: Response,
+	// ): Promise<string> {
+	// 	try {
+	// 		// Get post and all related replies
+	// 		const post = await this.postService.findById(id);
+	// 		return JSON.stringify(post);
+	// 	} catch (error) {
+	// 		res.status(HttpStatus.NOT_FOUND);
+	// 		return JSON.stringify({ message: 'Post thread not found', error });
+	// 	}
+	// }
 
 	@Post()
 	@UseInterceptors(FileInterceptor('file', multerConfig))
@@ -200,9 +224,8 @@ export class PostController {
 			const post = await this.postService.create({
 				...content,
 				author: { connect: { id: user.id } },
-			});
+			}, user.id);
 			if (file) {
-				console.log("ca vas bien la sale batard");
 				await this.mediaService.uploadMedia(user.id, file, post.id);
 				const updatedPost = await this.postService.update(post.id, {
 					mediaUrl: `/uploads/posts/${file.filename}`,

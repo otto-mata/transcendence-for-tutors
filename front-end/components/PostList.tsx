@@ -5,13 +5,11 @@ import { Bookmark } from 'lucide-react';
 import Link from 'next/link';
 import { Backend } from '@/client/TransClient';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { UserResponseDto } from '@/client/profile.dto';
 import { getMediaUrl } from '@/client/utils';
-
-function printit(){
-	console.log("Button clicked");
-}
+import { CharginPage } from './CharginPage';
+import { ErrorPage } from './ErrorPage';
 
 function buttonApearance(alreadyDone?: boolean){
 	if (alreadyDone) return ("w-1/3 flex justify-center bg-blue-600 hover:bg-gray-900 transition-colors");
@@ -59,8 +57,10 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 	setBookmarked(false);
   }
 
-  function CommentPost(id : string){
-	router.push('/post/' + id);
+  function profileRef(e : React.MouseEvent<HTMLElement>){
+	e.preventDefault();
+  	e.stopPropagation();
+	router.push('/profile/' + user.username);
   }
   	useEffect(() => {
 		const run = async () => {
@@ -77,9 +77,10 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 		run();
   }, [params.post.id])
 
-   return (<div
-							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group mt-1"
+   return (<div 			key={params.post.id}
+							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group mt-1 p-4"
 						>
+							<Link href={`/post/${params.post.id}`}>
 							<div 
 								className="relative fill rounded-xl overflow-hidden cursor-pointer group"
 								onClick={() => {}}
@@ -96,9 +97,8 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 								<div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
 								</div>
 							</div>
-							<div className="p-4">
 								<div className="flex items-center gap-3 mb-3">
-									<Link href={`profile/${user.username} `} className="shrink-0">
+									<button onClick={(e) => profileRef(e)} className="shrink-0">
 										{user.avatarUrl ? (
 											<img 
 												src={getMediaUrl(user.avatarUrl)} 
@@ -108,31 +108,31 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 										) : (
 											<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
 										)}
-									</Link>
+									</button>
 									<div>
-										<Link href={`profile/${user.username} `}>
+										<button onClick={(e) => profileRef(e)}>
 											<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">
 												{user.displayName}
 											</h4>
-										</Link>
+										</button>
 										<p className="text-xs text-gray-500">{createdAt}</p>
 									</div>
 								</div>
+							</Link>
 								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{params.post.content}</p>
 								<div className="flex items-center justify-between text-gray-500">
 									<div className="flex gap-4 text-sm">
 										<button onClick={() => LikePost(params.post)} className={ Liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>
 											❤️ {params.post.likeCount}
 										</button>
-										<button onClick={() => CommentPost(params.post.id)} className="hover:text-blue-500 transition-colors cursor-pointer">
+										<Link  href={`/post/${params.post.id}`} className="hover:text-blue-500 transition-colors cursor-pointer">
 											💬 {params.post.replyCount}
-										</button>
+										</Link>
 									</div>
-									<button onClick={() => SavePost(params.post)} className={ Bookmarked ? "text-blue-500 hover:text-gray-600 dark:text-blue-500 dark:hover:text-gray-400" : "text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"}>
+									<button onClick={() => SavePost(params.post)} className={ Bookmarked ? "text-blue-500 hover:text-gray-600 dark:text-blue-500 dark:hover:text-gray-600" : "text-gray-400 hover:text-gray-600 dark:text-gray-600 dark:hover:text-gray-400"}>
 										<Bookmark />
 									</button>
 								</div>
-							</div>
 						</div>
 					
 
@@ -140,29 +140,24 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 }
 
 
-export const PostList = (params: {posts : PaginatedResponseDto<PostResponseDto>, charging : boolean}) => {
-  if (!params.posts || params.charging)
-		return (<div>Posts are charging...</div>);
+export const PostList = (params: {posts : PostResponseDto[]}) => {
 
 	if (params.posts)
 	return (<div className="flex flex-col bg">
-		{params.posts.data.map(post => <OnePost key={post.id} post={post} charging={params.charging}/>)}
+		{params.posts.map(post => <OnePost key={post.id} post={post} charging={false}/>)}
 		</div >
 	);
 };
 
-export const MansonPostGrid = (params: {posts : PaginatedResponseDto<PostResponseDto>, charging : boolean}) => {
-  if (!params.posts || params.charging)
-		return (<div>Posts are charging...</div>);
-
-	if (params.posts)
+export const MansonPostGrid = (params: {posts : PostResponseDto[]}) => {
+  	if (params.posts)
 	return (
 	<div className='w-full p-4'>
 			<div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
 				{/* Masonry Grid */}
 				<div className="columns-1 sm:columns-2 md:columns-3 gap-4 space-y-4">
-					{params.posts.data?.map((post, index) => (
-						<OnePost key={index} post={post} charging={params.charging}/>
+					{params.posts.map((post, index) => (
+						<OnePost key={index} post={post} charging={false}/>
 					))}
 				</div>
 			</div>
@@ -172,115 +167,321 @@ export const MansonPostGrid = (params: {posts : PaginatedResponseDto<PostRespons
 
 
 export const MansonPostGridAll = () => {
-const router = useRouter();
   const client = Backend.getInstance();
-  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});
+  const [posts, setPosts] = useState<PostResponseDto[]>([]);
   const [charging, setCharging] = useState(true);
+  const [page, setPage] = useState(1);
+  const [change, setChange] = useState(false);
+  const [error, setError] = useState('');
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  
+	useEffect(() => {
+	  const target = sentinelRef.current;
+	  if (!target) return;
+  
+	  const observer = new IntersectionObserver(
+		(entries) => {
+		  entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+			  if (charging) return;
+			  if (posts.length < page * 10) return;
+			  setCharging(true);
+			  setPage(page + 1);
+			  setChange(!change);
+			  }
+		  });
+		},
+		{
+		  threshold: 0.1, // 10% visible
+		}
+	  );
+  
+	  observer.observe(target);
+  
+	  return () => {
+		observer.unobserve(target);
+		observer.disconnect();
+	  };
+	}, [posts]);
 
-  useEffect(() => {
-	const run = async() => {
-	  const res = await client.posts.get().all();
-	  if (!res.ok) throw res.error;
-	  const data = JSON.parse(res?.value);
-	  console.log("test", data);
-	  setPosts(Array.isArray(data) ? {data: data} : data);
-	  setCharging(false);
+    useEffect(() => {
+	  const run = async() => {
+		const res = await client.posts.get().all({limit : 10, page : page});
+		if (!res.ok){
+			setError(res.error.message);
+			return;
+		}
+
+		const data = JSON.parse(res?.value);
+
+		setPosts([...posts, ...data]);
+		setCharging(false);
+		// observer.observe(sentinelRef);
+	  
+	  }
+	  run();
+	}, [change]);
 	
-	}
-	run();
-  }, []);
+		if (charging) {
+			<CharginPage/>
+		}
+	
+		if (error || !posts) {
+			return (<ErrorPage
+							error={error || 'Post query failed'}
+							message={"The profile you're looking for doesn't exist or has been removed."}
+							/>);
+		}
+	
+	
+
   return (
 	<div className="max-w-2xl mx-auto py-8 px-4">
 	  {/* Feed */}
 	  <div className="space-y-6">
-		<MansonPostGrid posts={posts} charging={charging}/>
+		<MansonPostGrid posts={posts}/>
 	  </div>
+	  <div ref={sentinelRef}>{posts.length > page * 10 ? "Loading Posts..." : ''}</div>
 	</div>
   );
 }
 
 export const MansonPostGridByUsername = (params : {username : string}) => {
-const router = useRouter();
   const client = Backend.getInstance();
-  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});
+  const [posts, setPosts] = useState<PostResponseDto[]>([]);
   const [charging, setCharging] = useState(true);
+  const [page, setPage] = useState(1);
+  const [change, setChange] = useState(false);
+  const [error, setError] = useState('');
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  
+	useEffect(() => {
+	  const target = sentinelRef.current;
+	  if (!target) return;
+  
+	  const observer = new IntersectionObserver(
+		(entries) => {
+		  entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+			  if (charging) return;
+			  if (posts.length < page * 10) return;
+			  setCharging(true);
+			  setPage(page + 1);
+			  setChange(!change);
+			  }
+		  });
+		},
+		{
+		  threshold: 0.1, // 10% visible
+		}
+	  );
+  
+	  observer.observe(target);
+  
+	  return () => {
+		observer.unobserve(target);
+		observer.disconnect();
+	  };
+	}, [posts]);
 
-  useEffect(() => {
-	const run = async() => {
-	  const res = await client.posts.get().byName(params.username);
-	  if (!res.ok) throw res.error;
-	  const data = JSON.parse(res?.value);
-	  console.log("test", data);
-	  setPosts(Array.isArray(data) ? {data: data} : data);
-	  setCharging(false);
+    useEffect(() => {
+	  const run = async() => {
+		const res = await client.posts.get().byName(params.username , {limit : 10, page : page});
+		if (!res.ok){
+			setError(res.error.message);
+			return;
+		}
+
+		const data = JSON.parse(res?.value);
+
+		setPosts([...posts, ...data]);
+		setCharging(false);
+		// observer.observe(sentinelRef);
+	  
+	  }
+	  run();
+	}, [change]);
 	
-	}
-	run();
-  }, []);
+		if (charging) {
+			<CharginPage/>
+		}
+	
+		if (error || !posts) {
+			return (<ErrorPage
+							error={error || 'Post query failed'}
+							message={"The profile you're looking for doesn't exist or has been removed."}
+							/>);
+		}
+	
+	
+
   return (
 	<div className="max-w-2xl mx-auto py-8 px-4">
 	  {/* Feed */}
 	  <div className="space-y-6">
-		<MansonPostGrid posts={posts} charging={charging}/>
+		<MansonPostGrid posts={posts}/>
 	  </div>
+	  <div ref={sentinelRef}>{posts.length > page * 10 ? "Loading Posts..." : ''}</div>
 	</div>
   );
 }
 
-
 export const MansonPostGridSaved = (params : {username? : string}) => {
-const router = useRouter();
-  const client = Backend.getInstance();
-  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});
+ const client = Backend.getInstance();
+  const [posts, setPosts] = useState<PostResponseDto[]>([]);
   const [charging, setCharging] = useState(true);
+  const [page, setPage] = useState(1);
+  const [change, setChange] = useState(false);
+  const [error, setError] = useState('');
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  
+	useEffect(() => {
+	  const target = sentinelRef.current;
+	  if (!target) return;
+  
+	  const observer = new IntersectionObserver(
+		(entries) => {
+		  entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+			  if (charging) return;
+			  if (posts.length < page * 10) return;
+			  setCharging(true);
+			  setPage(page + 1);
+			  setChange(!change);
+			  }
+		  });
+		},
+		{
+		  threshold: 0.1, // 10% visible
+		}
+	  );
+  
+	  observer.observe(target);
+  
+	  return () => {
+		observer.unobserve(target);
+		observer.disconnect();
+	  };
+	}, [posts]);
 
-  useEffect(() => {
-		const run = async() => {
-	  const res = params.username ?  await client.posts.saved().byName(params.username) : await client.posts.saved().get();
-	  if (!res.ok) throw res.error;
-	  const data = JSON.parse(res?.value);
-	  console.log("test", data);
-	  setPosts(Array.isArray(data) ? {data: data} : data);
-	  setCharging(false);
+    useEffect(() => {
+	  const run = async() => {
+		const res = params.username ?  await client.posts.saved().byName(params.username, {limit : 10, page : page}) : await client.posts.saved().get({limit : 10, page : page});
+		if (!res.ok){
+			setError(res.error.message);
+			return;
+		}
+
+		const data = JSON.parse(res?.value);
+
+		setPosts([...posts, ...data]);
+		setCharging(false);
+		// observer.observe(sentinelRef);
+	  
+	  }
+	  run();
+	}, [change]);
 	
-	}
-	run();
-  }, []);
+		if (charging) {
+			<CharginPage/>
+		}
+	
+		if (error || !posts) {
+			return (<ErrorPage
+							error={error || 'Post query failed'}
+							message={"The profile you're looking for doesn't exist or has been removed."}
+							/>);
+		}
+	
+	
+
   return (
 	<div className="max-w-2xl mx-auto py-8 px-4">
 	  {/* Feed */}
 	  <div className="space-y-6">
-		<MansonPostGrid posts={posts} charging={charging}/>
+		<MansonPostGrid posts={posts}/>
 	  </div>
+	  <div ref={sentinelRef}>{posts.length > page * 10 ? "Loading Posts..." : ''}</div>
 	</div>
   );
 }
 
 export const MansonPostGridLiked = (params : {username? : string}) => {
 const router = useRouter();
-  const client = Backend.getInstance();
-  const [posts, setPosts] = useState<PaginatedResponseDto<PostResponseDto>>({data : []});
+ const client = Backend.getInstance();
+  const [posts, setPosts] = useState<PostResponseDto[]>([]);
   const [charging, setCharging] = useState(true);
+  const [page, setPage] = useState(1);
+  const [change, setChange] = useState(false);
+  const [error, setError] = useState('');
+  const sentinelRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
-		const run = async() => {
-	  const res = params.username ?  await client.posts.liked().byName(params.username) : await client.posts.liked().get();
-	  if (!res.ok) throw res.error;
-	  const data = JSON.parse(res?.value);
-	  console.log("test", data);
-	  // If data is already a PaginatedResponseDto, use it directly; otherwise wrap it
-	  setPosts(Array.isArray(data) ? {data: data} : data);
-	  setCharging(false);
+	useEffect(() => {
+	  const target = sentinelRef.current;
+	  if (!target) return;
+  
+	  const observer = new IntersectionObserver(
+		(entries) => {
+		  entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+			  if (charging) return;
+			  if (posts.length < page * 10) return;
+			  setCharging(true);
+			  setPage(page + 1);
+			  setChange(!change);
+			  }
+		  });
+		},
+		{
+		  threshold: 0.1, // 10% visible
+		}
+	  );
+  
+	  observer.observe(target);
+  
+	  return () => {
+		observer.unobserve(target);
+		observer.disconnect();
+	  };
+	}, [posts]);
+
+    useEffect(() => {
+	  const run = async() => {
+		const res = params.username ?  await client.posts.liked().byName(params.username, {limit : 10, page : page}) : await client.posts.liked().get({limit : 10, page : page});
+		if (!res.ok){
+			setError(res.error.message);
+			return;
+		}
+
+		const data = JSON.parse(res?.value);
+		setPosts([...posts, ...data]);
+		setCharging(false);
+		// observer.observe(sentinelRef);
+	  
+	  }
+	  run();
+	}, [change]);
 	
-	}
-	run();
-  }, []);
+		if (charging) {
+			<CharginPage/>
+		}
+	
+		if (error || !posts) {
+			return (<ErrorPage
+							error={error || 'Post query failed'}
+							message={"The profile you're looking for doesn't exist or has been removed."}
+							/>);
+		}
+	
+	
+
   return (
 	<div className="max-w-2xl mx-auto py-8 px-4">
 	  {/* Feed */}
 	  <div className="space-y-6">
-		<MansonPostGrid posts={posts} charging={charging}/>
+		<MansonPostGrid posts={posts}/>
 	  </div>
+	  <div ref={sentinelRef}>{posts.length > page * 10 ? "Loading Posts..." : ''}</div>
 	</div>
   );
 }
