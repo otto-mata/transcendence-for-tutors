@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { MapPin, Calendar, Settings, Camera, MoreHorizontal, Loader2, UserPlus, UserCheck, Lock, Clock, Bell } from 'lucide-react';
 import { Backend } from '@/client/TransClient';
 import { getMediaUrl } from '@/client/utils';
@@ -22,6 +23,7 @@ interface ProfilePageClientProps {
 const tabs = ['Posts', 'Likes'];
 
 export default function ProfilePageClient({ username, isOwnProfile, initialUser }: ProfilePageClientProps) {
+	const router = useRouter();
 	const [user, setUser] = useState<UserProfileResponse | null>(initialUser || null);
 	const [isLoading, setIsLoading] = useState(!initialUser);
 	const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 		const fetchCurrentUser = async () => {
 			try {
 				if (!await isLogged()){
-						  setError('You must be logged in to view this page.');
+						  router.push('/auth/login');
 						  return;
 					  }
 				const client = Backend.getInstance();
@@ -62,7 +64,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			}
 		};
 		fetchCurrentUser();
-	}, []);
+	}, [router]);
 
 	// Fetch pending request count for own profile with private account
 	useEffect(() => {

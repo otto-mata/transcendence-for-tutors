@@ -15,24 +15,25 @@ import {
 	Sun
 } from 'lucide-react';
 import Link from 'next/link';
-import { redirect, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Backend } from '@/client/TransClient';
 import { UserProfileResponse } from '@/client/Users.dto';
 import { getMediaUrl } from '@/client/utils';
-import { isLogged } from '@/client/common.mock';
+import { isLogged, clearAuthToken } from '@/client/common.mock';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDark, setIsDark] = useState(false);
 	const [error, setError] = useState('');
 	const pathname = usePathname();
+	const router = useRouter();
 	const client = Backend.getInstance();
 	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : ""});
 
 	function LogoutFunction(){
-		localStorage.setItem('access_token', " ");
-		redirect("/auth/login");
+		clearAuthToken();
+		router.push("/auth/login");
 	}
 
 	useEffect(() => {
@@ -40,9 +41,9 @@ export default function MobileNav() {
 		(async () => {
 			try {
 				if (! await isLogged()){
-									setError('You must be logged in to view this page.');
-									return;	
-								}
+					router.push('/auth/login');
+					return;	
+				}
 				const result = await client.me.get();
 								if (!result.ok)
 									setError('Failed to fetch profile');
