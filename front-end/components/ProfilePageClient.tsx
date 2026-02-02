@@ -326,24 +326,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 								</div>
 							)}
 						</div>
-						{isOwnProfile && (
-							<>
-								<button 
-									onClick={() => avatarInputRef.current?.click()}
-									disabled={isUploadingAvatar}
-									className="absolute bottom-2 right-2 w-10 h-10 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors flex items-center justify-center disabled:opacity-50"
-								>
-									<Camera className="w-5 h-5" />
-								</button>
-								<input
-									ref={avatarInputRef}
-									type="file"
-									accept="image/*"
-									onChange={handleAvatarUpload}
-									className="hidden"
-								/>
-							</>
-						)}
 					</div>
 
 					{/* Action Buttons */}
@@ -359,9 +341,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 							</button>
 						) : (
 							<>
-								<button className="p-2.5 bg-white dark:bg-gray-800 rounded-full shadow-md hover:shadow-lg transition-shadow">
-									<MoreHorizontal className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-								</button>
 								<button 
 									onClick={handleFollowToggle}
 									disabled={isFollowLoading}
