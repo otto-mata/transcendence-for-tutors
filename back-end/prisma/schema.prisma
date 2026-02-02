@@ -227,7 +227,6 @@ model Media {
   @@index([postId])
   @@index([createdAt])  
 }
-
 model Chat {
     id        Int       @id @default(autoincrement())
 

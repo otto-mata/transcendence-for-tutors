@@ -6,6 +6,7 @@ import { Backend } from "@/client/TransClient";
 import { UserResponseDto } from "@/client/profile.dto";
 import { isLogged } from "@/client/common.mock";
 import { getMediaUrl } from "@/client/utils";
+import { useEffect, useState } from "react";
 
 interface ChatWindowProps {
   chat : ChatDto;

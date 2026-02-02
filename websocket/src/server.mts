@@ -2,7 +2,6 @@ import { WebSocketServer } from 'ws';
 import type WebSocket from 'ws';
 import { handler, sendUpdate } from './messages.handler.mjs';
 
-
 const server = new WebSocketServer({
   port: process.env.WS_PORT ? + process.env.WS_PORT : 8090,
 });
