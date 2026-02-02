@@ -123,9 +123,10 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			const client = Backend.getInstance();
 			const result = await client.users.$({ id: user.id }).relationship();
 			if (!result.ok) throw result.error;
-			const data = typeof result.value === 'string' 
-				? JSON.parse(result.value) as RelationshipStatusDto 
-				: result.value as RelationshipStatusDto;
+			const value = result.value as RelationshipStatusDto;
+			const data = typeof value === 'string' 
+				? JSON.parse(value) as RelationshipStatusDto 
+				: value;
 			setRelationship(data);
 		} catch (err) {
 			console.error('Failed to fetch relationship:', err);
