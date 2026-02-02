@@ -4,50 +4,67 @@ import { ChatList } from "./ChatList";
 import { ChatWindow } from "./ChatWindow";
 import { CharginPage } from "../CharginPage";
 import { ErrorPage } from "../ErrorPage";
+import { Backend } from "@/client/TransClient";
+import { ChatDto, ChatUserDto } from '@/client/message.dto';
 
-export interface User {
-  id: string;
-  name: string;
-  avatar: string;
-  status: "online" | "offline" | "away";
-  lastMessage?: string;
-  lastMessageTime?: string;
-  unreadCount?: number;
-}
-
-const MOCK_USERS: User[] = [
+const MOCK_USERS: ChatDto[] = [
   {
-    id: 1,
-    name: "Sarah Anderson",
-    avatar: "bg-purple-500",
-    status: "online",
-    lastMessage: "Hey! Are we still on for the game?",
-    lastMessageTime: "2m",
-    unreadCount: 2,
+    id : "1",
+    user : [{
+      id: "1",
+    username: "Sarah Anderson",
+    avatarUrl: "bg-purple-500",
+      }],
+      message : [{
+        id : "1",
+        message : "hi dude",
+        createdAt : new Date(),
+        senderID : "1",
+      }],
+  }
+  ,
+  {
+    id : "2",
+    user : [{
+      id: "2",
+    username: "Mike Horn",
+    avatarUrl: "bg-blue-500",
+      }],
+      message : [{
+        id : "2",
+        message : "hop on !",
+        createdAt : new Date(),
+        senderID : "2",
+      }],
+      unread : true,
   },
   {
-    id: 2,
-    name: "Mike Johnson",
-    avatar: "bg-blue-500",
-    status: "offline",
-    lastMessage: "Good game yesterday!",
-    lastMessageTime: "1h",
-  },
-  {
-    id: 3,
-    name: "Emily Davis",
-    avatar: "bg-pink-500",
-    status: "away",
-    lastMessage: "Can you check my PR?",
-    lastMessageTime: "3h",
-  },
+    id : "3",
+    user : [{
+      id: "3",
+    username: "Felis Andre",
+    avatarUrl: "bg-orange-500",
+      }],
+      message : [{
+        id : "3",
+        message : "Wsh mon khey",
+        createdAt : new Date(),
+        senderID : "3",
+      }],
+  }
 ];
 
 export function ChatLayout() {
-  const [selectedUser, setSelectedUser] = useState<User | null>(MOCK_USERS[0]);
+  const [selectedChat, setselectedChat] = useState<ChatDto | null>(MOCK_USERS[0]);
   const [loading, setLoading] = useState(true);
+  const [charging, setCharging] = useState(true);
+  const [page, setPage ] = useState(1);
   const [error, setError] = useState('');
+  const [chats, setChats] = useState<ChatDto[]>([]);
   const socketRef = useRef<WebSocket>(null);
+  const client = Backend.getInstance();
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const [change, setChange] = useState(false);
 
   useEffect(() => {
 
@@ -96,6 +113,54 @@ export function ChatLayout() {
       socketRef.current?.close();
 };
   }, [])
+
+  useEffect(() => {
+	  const target = sentinelRef.current;
+	  if (!target) return;
+  
+	  const observer = new IntersectionObserver(
+		(entries) => {
+		  entries.forEach((entry) => {
+			if (entry.isIntersecting) {
+			  if (charging) return;
+			  if (chats.length < page * 10) return;
+			  setCharging(true);
+			  setPage(page + 1);
+			  setChange(!change);
+			  }
+		  });
+		},
+		{
+		  threshold: 0.1, // 10% visible
+		}
+	  );
+  
+	  observer.observe(target);
+  
+	  return () => {
+		observer.unobserve(target);
+		observer.disconnect();
+	  };
+	}, [chats]);
+
+    useEffect(() => {
+	  const run = async() => {
+		const res = await client.chat.get({limit : 10, page : page});
+		if (!res.ok){
+			setError(res.error.message);
+			return;
+		}
+
+		const data = JSON.parse(res?.value);
+
+		setChats([...chats, ...data]);
+		setCharging(false);
+		// observer.observe(sentinelRef);
+	  
+	  }
+	  run();
+	}, [change]);
+  
   if(loading)
     return <CharginPage/>;
 
@@ -104,16 +169,16 @@ export function ChatLayout() {
 
   return (
     <div className="flex h-full">
-      <div className={`${selectedUser ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-gray-200 dark:border-gray-700`}>
+      <div className={`${selectedChat ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-gray-200 dark:border-gray-700`}>
         <ChatList
           users={MOCK_USERS}
-          selectedUserId={selectedUser?.id}
-          onSelectUser={setSelectedUser}
+          selectedUserId={selectedChat?.user[0].id}
+          onSelectedChat={setselectedChat}
         />
       </div>
-      <div className={`${!selectedUser ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gray-50 dark:bg-gray-900/50`}>
-        {selectedUser ? (
-          <ChatWindow user={selectedUser} onBack={() => setSelectedUser(null)} socketRef={socketRef.current || null} />
+      <div className={`${!selectedChat ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gray-50 dark:bg-gray-900/50`}>
+        {selectedChat ? (
+          <ChatWindow chat={selectedChat} onBack={() => setselectedChat(null)} socketRef={socketRef.current || null} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">
             Select a conversation to start chatting

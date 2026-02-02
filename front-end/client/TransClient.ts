@@ -861,6 +861,17 @@ const ClientFactory = (client: Axios) => {
 				},
 			},
 		},
+		chat : {
+			get: async (data : QueryParametersDto) => {
+				try {
+					const response = await client.get(`/chat`);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+
+		}
 	};
 };
 
