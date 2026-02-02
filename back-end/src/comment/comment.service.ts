@@ -22,6 +22,7 @@ export class CommentService {
 	): Promise<CommentResponseDto[]> {
 		const res = await this.commentRepository.findByPostId(postId, skip, take);
 		return Promise.all(res.map(async (comment) => {
+			const author = await this.prisma.user.findUnique({where : { id : comment.authorId}});
 			return {
 				id : comment.id,
 				postId : comment.postId,
@@ -31,6 +32,12 @@ export class CommentService {
 				liked: await this.prisma.like.findFirst({where : {userId : userId, commentId : comment.id}}) !== null,
 				createdAt : comment.createdAt,
 				updatedAt : comment.updatedAt,
+				...(author && { author : {
+					username : author.username,
+					id : author.id,
+					...(author.displayName &&  	 	{displayName : author.displayName,}),
+					...( author.avatarUrl && {avatarUrl : author.avatarUrl,})
+				}})
 			}
 		}
 		))

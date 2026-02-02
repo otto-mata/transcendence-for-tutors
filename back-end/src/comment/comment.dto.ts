@@ -36,6 +36,7 @@ export class CommentResponseDto {
 	authorId: string;
 	author?: {
 		id: string;
+		displayName? : string;
 		username: string;
 		avatarUrl?: string;
 	};
