@@ -81,22 +81,21 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 							className="break-inside-avoid bg-white dark:bg-gray-800 rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-shadow cursor-pointer group mt-1 p-4"
 						>
 							<Link href={`/post/${params.post.id}`}>
+							{postImage && (
 							<div 
-								className="relative fill rounded-xl overflow-hidden cursor-pointer group"
+								className="relative fill rounded-xl overflow-hidden cursor-pointer group mb-3"
 								onClick={() => {}}
 							>
-								{postImage ? (
-									<img 
-										src={postImage} 
-										alt="Post" 
-										className="w-full h-full object-cover"
-									/>
-								) : (
-									<div className="w-full h-full bg-linear-to-br from-purple-400 to-pink-400" />
-								)}
+								<img 
+									src={postImage} 
+									alt="" 
+									className="w-full h-full object-cover"
+									onError={(e) => { e.currentTarget.style.display = 'none'; }}
+								/>
 								<div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
 								</div>
 							</div>
+							)}
 								<div className="flex items-center gap-3 mb-3">
 									<button onClick={(e) => profileRef(e)} className="shrink-0">
 										{user.avatarUrl ? (

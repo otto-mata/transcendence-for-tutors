@@ -286,31 +286,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 					<div className="w-full h-full bg-linear-to-r from-blue-500 via-purple-500 to-pink-500" />
 				)}
 				<div className="absolute inset-0 bg-black opacity-10" />
-
-				{/* Edit Cover Button - Only show for own profile */}
-				{isOwnProfile && (
-					<>
-						<button 
-							onClick={() => coverInputRef.current?.click()}
-							disabled={isUploadingCover}
-							className="absolute top-4 right-4 px-4 py-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 rounded-full font-medium shadow-md hover:bg-white dark:hover:bg-gray-800 transition-all flex items-center gap-2 disabled:opacity-50"
-						>
-							{isUploadingCover ? (
-								<Loader2 className="w-4 h-4 animate-spin" />
-							) : (
-								<Camera className="w-4 h-4" />
-							)}
-							{isUploadingCover ? 'Uploading...' : 'Edit Cover'}
-						</button>
-						<input
-							ref={coverInputRef}
-							type="file"
-							accept="image/*"
-							onChange={handleCoverUpload}
-							className="hidden"
-						/>
-					</>
-				)}
 			</div>
 
 			{/* Profile Header */}
