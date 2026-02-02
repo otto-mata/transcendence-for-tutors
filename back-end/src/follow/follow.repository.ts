@@ -103,6 +103,22 @@ export class FollowRepository {
 	}
 
 	async follow(followerId: string, followingId: string): Promise<Follow> {
+		// Check if follow already exists
+		const existingFollow = await this.prisma.follow.findUnique({
+			where: {
+				followerId_followingId: {
+					followerId,
+					followingId,
+				},
+			},
+			include: { follower: true, following: true },
+		});
+
+		if (existingFollow) {
+			// Follow already exists, return it (idempotent)
+			return existingFollow;
+		}
+
 		// Check if target user is private
 		const targetUser = await this.prisma.user.findUnique({
 			where: { id: followingId },

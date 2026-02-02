@@ -81,75 +81,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 		fetchPendingCount();
 	}, [isOwnProfile, user?.isPrivate]);
 
-	useEffect(() => {
-		if (!initialUser) {
-			fetchUserProfile();
-		}
-	}, [username, initialUser]);
-
-	// Fetch relationship status for non-own profiles
-	useEffect(() => {
-		if (!isOwnProfile && user?.id) {
-			fetchRelationship();
-		}
-	}, [isOwnProfile, user?.id]);
-
-	const fetchRelationship = useCallback(async () => {
-		if (!user?.id) return;
-		try {
-			const client = Backend.getInstance();
-			const result = await client.users.$({ id: user.id }).relationship();
-			if (!result.ok) throw result.error;
-				const data = result.value as RelationshipStatusDto;
-				setRelationship(data);
-		} catch (err) {
-			console.error('Failed to fetch relationship:', err);
-		}
-	}, [user?.id]);
-
-	const handleFollowToggle = async () => {
-		if (!user?.id) return;
-		setIsFollowLoading(true);
-		try {
-			const client = Backend.getInstance();
-			if (relationship?.isFollowing) {
-				const result = await client.users.$({ id: user.id }).unfollow();
-				if (result.ok) {
-					setRelationship(prev => prev ? { ...prev, isFollowing: false } : null);
-					setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
-				}
-			} else if (relationship?.isPending) {
-				const result = await client.users.$({ id: user.id }).unfollow();
-				if (result.ok) {
-					setRelationship(prev => prev ? { ...prev, isPending: false } : null);
-				}
-			} else {
-				const result = await client.users.$({ id: user.id }).follow();
-				if (result.ok) {
-					if (user.isPrivate) {
-						setRelationship(prev => prev ? { ...prev, isPending: true, isFollowing: false } : null);
-					} else {
-						setRelationship(prev => prev ? { ...prev, isFollowing: true } : null);
-						setUser(prev => prev ? { ...prev, followerCount: prev.followerCount + 1 } : null);
-					}
-				}
-			}
-		} catch (err) {
-			console.error('Failed to toggle follow:', err);
-		} finally {
-			setIsFollowLoading(false);
-		}
-	};
-
-	const handleFollowerRemoved = () => {
-		setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
-	};
-
-	const handleRequestHandled = () => {
-		setPendingRequestCount(prev => Math.max(0, prev - 1));
-		fetchUserProfile();
-	};
-
+	// Define fetchUserProfile first before the useEffect that uses it
 	const fetchUserProfile = useCallback(async () => {
 		setIsLoading(true);
 		setError(null);
@@ -178,6 +110,82 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			setIsLoading(false);
 		}
 	}, [isOwnProfile, username]);
+
+	useEffect(() => {
+		if (!initialUser) {
+			fetchUserProfile();
+		}
+	}, [username, initialUser, fetchUserProfile]);
+
+	const fetchRelationship = useCallback(async () => {
+		if (!user?.id) return;
+		try {
+			const client = Backend.getInstance();
+			const result = await client.users.$({ id: user.id }).relationship();
+			if (!result.ok) throw result.error;
+			const data = typeof result.value === 'string' 
+				? JSON.parse(result.value) as RelationshipStatusDto 
+				: result.value as RelationshipStatusDto;
+			setRelationship(data);
+		} catch (err) {
+			console.error('Failed to fetch relationship:', err);
+		}
+	}, [user?.id]);
+
+	// Fetch relationship status for non-own profiles
+	useEffect(() => {
+		if (!isOwnProfile && user?.id) {
+			fetchRelationship();
+		}
+	}, [isOwnProfile, user?.id, fetchRelationship]);
+
+	const handleFollowToggle = async () => {
+		if (!user?.id) return;
+		setIsFollowLoading(true);
+		try {
+			const client = Backend.getInstance();
+			if (relationship?.isFollowing) {
+				const result = await client.users.$({ id: user.id }).unfollow();
+				if (result.ok) {
+					setRelationship(prev => prev ? { ...prev, isFollowing: false } : null);
+					setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
+				}
+			} else if (relationship?.isPending) {
+				const result = await client.users.$({ id: user.id }).unfollow();
+				if (result.ok) {
+					setRelationship(prev => prev ? { ...prev, isPending: false } : null);
+				}
+			} else {
+				const result = await client.users.$({ id: user.id }).follow();
+				if (result.ok) {
+					if (user.isPrivate) {
+						setRelationship(prev => prev ? { ...prev, isPending: true, isFollowing: false } : null);
+					} else {
+						setRelationship(prev => prev ? { ...prev, isFollowing: true } : null);
+						setUser(prev => prev ? { ...prev, followerCount: prev.followerCount + 1 } : null);
+					}
+				} else {
+					// If the follow failed, refresh the relationship status from the server
+					await fetchRelationship();
+				}
+			}
+		} catch (err) {
+			console.error('Failed to toggle follow:', err);
+			// Refresh relationship status on error
+			await fetchRelationship();
+		} finally {
+			setIsFollowLoading(false);
+		}
+	};
+
+	const handleFollowerRemoved = () => {
+		setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
+	};
+
+	const handleRequestHandled = () => {
+		setPendingRequestCount(prev => Math.max(0, prev - 1));
+		fetchUserProfile();
+	};
 
 	const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
