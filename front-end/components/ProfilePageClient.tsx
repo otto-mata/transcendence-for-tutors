@@ -72,9 +72,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 				const client = Backend.getInstance();
 				const result = await client.me.followRequests.count();
 				if (!result.ok) throw result.error;
-					const data = typeof result.value === 'string' 
-						? JSON.parse(result.value) 
-						: result.value;
+					const data = result.value;
 					setPendingRequestCount(data.count);
 			} catch (err : any) {
 				setError(err.message);
@@ -101,12 +99,9 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 		try {
 			const client = Backend.getInstance();
 			const result = await client.users.$({ id: user.id }).relationship();
-			if (result.ok) {
-				const data = typeof result.value === 'string' 
-					? JSON.parse(result.value) as RelationshipStatusDto 
-					: result.value as RelationshipStatusDto;
+			if (!result.ok) throw result.error;
+				const data = result.value as RelationshipStatusDto;
 				setRelationship(data);
-			}
 		} catch (err) {
 			console.error('Failed to fetch relationship:', err);
 		}
@@ -193,9 +188,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			const client = Backend.getInstance();
 			const result = await client.me.updateCover(file);
 			if (!result.ok) throw new Error(result.error?.message || 'Failed to upload cover');
-				const updatedUser = typeof result.value === 'string' 
-					? JSON.parse(result.value) as UserProfileResponse 
-					: result.value as UserProfileResponse;
+				const updatedUser = result.value as UserProfileResponse;
 				setUser(updatedUser);
 		} catch (err) {
 			console.error('Failed to upload cover:', err);
@@ -213,9 +206,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			const client = Backend.getInstance();
 			const result = await client.me.updateAvatar(file);
 			if (result.ok) {
-				const updatedUser = typeof result.value === 'string' 
-					? JSON.parse(result.value) as UserProfileResponse 
-					: result.value as UserProfileResponse;
+				const updatedUser = result.value as UserProfileResponse;
 				setUser(updatedUser);
 			}
 		} catch (err) {

@@ -66,9 +66,7 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 				if (!avatarResult.ok) {
 					throw new Error('Failed to update avatar');
 				}
-				updatedUser = typeof avatarResult.value === 'string' 
-					? JSON.parse(avatarResult.value) as UserProfileResponse 
-					: avatarResult.value as UserProfileResponse;
+				updatedUser = avatarResult.value as UserProfileResponse;
 			}
 
 			// Update cover if changed
@@ -77,9 +75,7 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 				if (!coverResult.ok) {
 					throw new Error('Failed to update cover image');
 				}
-				updatedUser = typeof coverResult.value === 'string' 
-					? JSON.parse(coverResult.value) as UserProfileResponse 
-					: coverResult.value as UserProfileResponse;
+				updatedUser = coverResult.value as UserProfileResponse;
 			}
 
 			// Update profile data
@@ -95,9 +91,7 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 				throw new Error('Failed to update profile');
 			}
 
-			updatedUser = typeof result.value === 'string' 
-				? JSON.parse(result.value) as UserProfileResponse 
-				: result.value as UserProfileResponse;
+			updatedUser = result.value as UserProfileResponse;
 			
 			onUpdate(updatedUser);
 			onClose();

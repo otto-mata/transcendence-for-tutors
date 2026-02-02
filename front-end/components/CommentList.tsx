@@ -12,6 +12,7 @@ export const OneComment = ({comment} : {comment : CommentResponseDto}) => {
 	const client = Backend.getInstance();
 	const [Liked, setLiked] = useState(comment.liked);
 
+	console.log("comment : ", comment);
   	async function LikeComment(comment : CommentResponseDto){
 
 		if (!Liked){
@@ -48,10 +49,10 @@ export const OneComment = ({comment} : {comment : CommentResponseDto}) => {
 					<div>
 						<Link href={`profile/${comment.author?.username} `}>
 							<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">
-								{comment.author?.username}
+								{comment.author?.username ? comment.author?.username : "charging"}
 							</h4>
 						</Link>
-						<p className="text-xs text-gray-500">{"tkt"}</p>
+						<p className="text-xs text-gray-500">{comment.author?.displayName ? comment.author?.displayName : "charging"}</p>
 					</div>
 				</div>
 				<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{comment.content}</p>

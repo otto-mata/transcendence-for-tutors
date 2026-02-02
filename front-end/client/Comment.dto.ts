@@ -5,6 +5,7 @@ export interface CommentResponseDto {
 	author?: {
 		id: string;
 		username: string;
+		displayName? : string;
 		avatarUrl?: string;
 	};
 	postId: string;

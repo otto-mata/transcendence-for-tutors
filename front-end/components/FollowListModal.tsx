@@ -54,12 +54,9 @@ function FollowItem({ user, isOwnProfile, type, onRemove, onAccept, onReject, is
 			try {
 				const client = Backend.getInstance();
 				const result = await client.users.$({ id: user.id }).relationship();
-				if (result.ok) {
-					const data = typeof result.value === 'string' 
-						? JSON.parse(result.value) 
-						: result.value;
+				if (!result.ok) throw result.error;
+					const data = result.value;
 					setIsFollowing(data.isFollowing);
-				}
 			} catch (err) {
 				console.error('Failed to check relationship:', err);
 			} finally {
