@@ -1,9 +1,18 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 
+
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<div>Verifying authentication…</div>}>
+      <ResetPasswordPageClient />
+    </Suspense>
+  );
+}
+
+function ResetPasswordPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [password, setPassword] = useState('');

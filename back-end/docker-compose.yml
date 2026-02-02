@@ -19,9 +19,8 @@ services:
       DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-db}"
       JWT_SECRET: ${JWT_SECRET:-thisisasecret}
     depends_on:
-      - postgres
-        #:
-        #condition: service_healthy
+      postgres:
+       condition : service_healthy
     restart: unless-stopped
     networks:
       - postgres-network
