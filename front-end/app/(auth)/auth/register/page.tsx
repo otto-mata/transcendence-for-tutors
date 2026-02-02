@@ -88,7 +88,17 @@ export default function RegisterPage() {
       if (data?.access_token) localStorage.setItem('access_token', data.access_token);
       router.push('/');
     } catch (err: any) {
-      setErrors({ general: err.message || String(err) });
+      // Extract error message from Axios error response or fallback to generic message
+      let errorMessage = 'Registration failed';
+      if (err?.response?.data) {
+        const data = typeof err.response.data === 'string' 
+          ? JSON.parse(err.response.data) 
+          : err.response.data;
+        errorMessage = data?.message || err?.message || String(err);
+      } else {
+        errorMessage = err?.message || String(err);
+      }
+      setErrors({ general: errorMessage });
     } finally {
       setLoading(false);
     }

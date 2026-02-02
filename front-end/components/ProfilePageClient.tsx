@@ -360,7 +360,10 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 										Follows you
 									</span>
 								)}
-								<button className="px-6 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full font-medium shadow-md hover:shadow-lg transition-shadow">
+								<button 
+									onClick={() => router.push(`/messages?userId=${user.id}`)}
+									className="px-6 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full font-medium shadow-md hover:shadow-lg transition-shadow"
+								>
 									Message
 								</button>
 							</>

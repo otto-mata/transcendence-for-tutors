@@ -1,6 +1,7 @@
 import { ArrowLeft, MoreVertical, Phone, Video, Send, Paperclip, Smile } from "lucide-react";
 import { User } from "./ChatLayout";
 import { useState } from "react";
+import { getMediaUrl } from "@/client/utils";
 
 interface ChatWindowProps {
   user: User;
@@ -62,7 +63,17 @@ export function ChatWindow({ user, onBack, showBackAlways }: ChatWindowProps) {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="relative">
-            <div className={`w-10 h-10 rounded-full ${user.avatar}`} />
+            {user.avatarUrl ? (
+              <img
+                src={getMediaUrl(user.avatarUrl)}
+                alt={user.displayName || user.username}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                {(user.displayName || user.username || "?").charAt(0).toUpperCase()}
+              </div>
+            )}
             <div
               className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${user.status === "online"
                   ? "bg-green-500"
@@ -73,7 +84,7 @@ export function ChatWindow({ user, onBack, showBackAlways }: ChatWindowProps) {
             />
           </div>
           <div>
-            <h3 className="font-bold">{user.name}</h3>
+            <h3 className="font-bold">{user.displayName || user.username || "Unknown"}</h3>
             <p className="text-xs text-gray-500">
               {user.status === "online" ? "Active now" : "Last seen recently"}
             </p>
