@@ -207,7 +207,6 @@ model Notification {
     updatedAt DateTime @updatedAt
 }
 
-<<<<<<< HEAD
 model Media {
   id        String   @id @default(cuid())
   userId    String
@@ -228,7 +227,6 @@ model Media {
   @@index([postId])
   @@index([createdAt])  
 }
-=======
 model Chat {
     id        Int       @id @default(autoincrement())
 
@@ -248,4 +246,3 @@ model Message {
     senderId  String
     sender    User       @relation(fields: [senderId], references: [id])
 }
->>>>>>> 50e4ff8 (feat: added chat table)

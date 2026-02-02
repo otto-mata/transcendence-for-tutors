@@ -5,8 +5,7 @@ import jwt from 'jsonwebtoken';
 
 const secret: string = process.env.JWT_SECRET || "";
 
-
-export const sendUpdate = (userId: number, status: string) => {
+export const sendUpdate = (userId: string, status: string) => {
   const set = watchers.get(userId);
   if (!set)
     return;
@@ -18,16 +17,16 @@ export const handler = (socket: WebSocket, data: WebSocket.RawData) => {
     let msg;
 
     try {
-      msg = messageSchema.parse(JSON.parse(data.toString()));
+      msg = JSON.parse(data.toString());
     } catch { return; }
 
     if (msg.type === 'auth') {
-      const { token } = msg;
+      const token  = msg.token;
       let payload;
       let userId;
       try {
         payload = jwtSchema.parse(jwt.verify(token, secret));
-        userId = payload.userId;
+        userId = payload.id;
       } catch {
         return socket.send(JSON.stringify({ type: 'auth_err', error: 'Invalid token' }));
       }
@@ -41,20 +40,21 @@ export const handler = (socket: WebSocket, data: WebSocket.RawData) => {
       socket.send(JSON.stringify({ type: 'auth_ok' }));
     }
     if (msg.type === 'watch') {
-      const { userId } = msg;
-      if (!watchers.has(userId))
-        watchers.set(userId, new Set());
-      watchers?.get(userId)?.add(socket);
-      const status = users.has(userId) ? 'online' : 'offline';
-      socket.send(JSON.stringify({ type: 'status', userId, status }));
+      const {id } = msg;
+      if (!watchers.has(id))
+        watchers.set(id, new Set());
+      watchers?.get(id)?.add(socket);
+      const status = users.has(id) ? 'online' : 'offline';
+      socket.send(JSON.stringify({ type: 'status', id, status }));
     }
     if (msg.type === 'message') {
-      const { userId, message } = msg;
+      const { id, message } = msg;
       if (!sockets.has(socket))
         return (socket.send(JSON.stringify({ type: 'mess_err', error: 'Not logged in !' })));
-      for (let i of users.get(userId) ?? []) {
-        i.send(JSON.stringify({ type: 'rec_message', from: userId, message: message }));
+      for (let i of users.get(id) ?? []) {
+        i.send(JSON.stringify({ type: 'rec_message', from: id, message: message }));
       }
+      socket.send(JSON.stringify({ type: 'rec_message', from: id, message: message }));
       socket.send(JSON.stringify({ type: 'mess_ok' }));
     }
     //show_connections(); 

@@ -1,11 +1,13 @@
+"use client"
 import { ArrowLeft, MoreVertical, Phone, Video, Send, Paperclip, Smile } from "lucide-react";
 import { User } from "./ChatLayout";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ChatWindowProps {
   user: User;
   onBack: () => void;
   showBackAlways?: boolean;
+  socketRef : WebSocket | null;
 }
 
 export interface Message {
@@ -42,13 +44,36 @@ const MOCK_MESSAGES: Message[] = [
   },
 ]
 
-export function ChatWindow({ user, onBack, showBackAlways }: ChatWindowProps) {
+export function ChatWindow({ user, onBack, showBackAlways, socketRef }: ChatWindowProps) {
   const [inputMessage, setInputMessage] = useState("");
   const [messages, setmessages ] = useState(MOCK_MESSAGES);
 
+  if (socketRef != null) {
+    socketRef.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const toad = {
+        id : (messages.length + 1).toString(),
+        content : data.message,
+        me : false,
+        createdAt : new Date()
+      }
+      if (data.type == "rec_message") setmessages([...messages, toad]);
+    }
+  }
 
   async function sendInputMessage(){
     console.log("inputMessage is : ", inputMessage);
+    socketRef?.send(JSON.stringify({
+      "type" : "message",
+      "message" : inputMessage
+    }));
+    const data = {
+      id : (messages.length + 1).toString(),
+      content : inputMessage,
+      me : true,
+      createdAt : new Date()
+    }
+    setmessages([...messages, data]);
     setInputMessage('');
 
   }

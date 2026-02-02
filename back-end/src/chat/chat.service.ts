@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CurrentUserType } from '@/decorators/current-user.decorator';
 import { ChatDelegate, MessageDelegate } from 'prisma/generated/models';
+import { Chat, Message } from '$prisma';
 
 @Injectable()
 export class ChatService {
@@ -9,7 +10,7 @@ export class ChatService {
 		private readonly prisma: PrismaService,
 	) { }
 
-	async createMessage(sender: CurrentUserType, sending: string, _message: string): Promise<void> {
+	async createMessage(sender: CurrentUserType, sending: string, _message: string) {
 		const recipient = await this.prisma.user.findUnique({
 			where: { username: sending },
 		});
@@ -36,7 +37,7 @@ export class ChatService {
 				},
 			}));
 
-		return this.prisma.message.create({
+		return await this.prisma.message.create({
 			data: {
 				message: _message,
 				chatId: chat.id,
@@ -45,7 +46,7 @@ export class ChatService {
 		});
 	}
 
-	async getMessages(sender: CurrentUserType, sending: string, x: number, y: number): Promise<MessageDelegate> {
+	async getMessages(sender: CurrentUserType, sending: string, x: number, y: number): Promise<Message[]> {
 		const recipient = await this.prisma.user.findUnique({
 			where: { username: sending },
 		});
@@ -75,7 +76,7 @@ export class ChatService {
 		return (messages);
 	}
 
-	async getUserChatList(sender: CurrentUserType, x: number, y: number) : Promise<ChatDelegate> {
+	async getUserChatList(sender: CurrentUserType, x: number, y: number) : Promise<Chat[]> {
 		const chats = await this.prisma.chat.findMany({
 			where: {
 				users: {

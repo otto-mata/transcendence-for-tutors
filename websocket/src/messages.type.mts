@@ -7,12 +7,12 @@ const authSchema = z.object({
 
 const watchSchema = z.object({
   type: z.literal('watch'),
-  userId: z.coerce.number()
+  id: z.string(),
 });
 
 const msgSchema = z.object({
   type: z.literal('message'),
-  userId: z.coerce.number(),
+  id: z.string(),
   message: z.string()
 });
 
@@ -23,7 +23,7 @@ export const messageSchema = z.discriminatedUnion('type', [
 ]);
 
 export const jwtSchema = z.object({
-  userId: z.coerce.number()
+  id: z.string(),
 });
 
 

@@ -1,11 +1,12 @@
 "use client";
-
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ChatList } from "./ChatList";
 import { ChatWindow } from "./ChatWindow";
+import { CharginPage } from "../CharginPage";
+import { ErrorPage } from "../ErrorPage";
 
 export interface User {
-  id: number;
+  id: string;
   name: string;
   avatar: string;
   status: "online" | "offline" | "away";
@@ -44,6 +45,62 @@ const MOCK_USERS: User[] = [
 
 export function ChatLayout() {
   const [selectedUser, setSelectedUser] = useState<User | null>(MOCK_USERS[0]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const socketRef = useRef<WebSocket>(null);
+
+  useEffect(() => {
+
+    console.log("this is loading: ", loading);
+    // querry chats and put it in user[]
+    if (loading == true ) return ;
+      socketRef.current?.send(JSON.stringify({
+            type : "watch",
+            id : "babeu"
+          }));
+          
+
+  }, [loading])
+
+  useEffect(() =>{
+    setLoading(true);
+    try {
+    socketRef.current = new WebSocket("http://localhost:8090");
+
+    socketRef.current.onopen = () => {
+      console.log("connected");
+      const tosend  = JSON.stringify({
+                type : "auth",
+                token : localStorage.getItem("access_token")
+      })
+      console.log("thisis to send :", tosend);
+      socketRef.current?.send(tosend);
+    }
+    
+    socketRef.current.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (loading == true){
+        if (data.type == "auth_err") throw new Error('no');
+          setLoading(false);
+        }
+      }
+          
+    socketRef.current.close = () => {
+      console.log("closed");
+    }
+  } catch (e : any) {
+    setError(e.message);
+  }
+
+    return () => {
+      socketRef.current?.close();
+};
+  }, [])
+  if(loading)
+    return <CharginPage/>;
+
+  if (error)
+    return <ErrorPage error="Socket connection refused" message="Can't access messages"/>
 
   return (
     <div className="flex h-full">
@@ -56,7 +113,7 @@ export function ChatLayout() {
       </div>
       <div className={`${!selectedUser ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gray-50 dark:bg-gray-900/50`}>
         {selectedUser ? (
-          <ChatWindow user={selectedUser} onBack={() => setSelectedUser(null)} />
+          <ChatWindow user={selectedUser} onBack={() => setSelectedUser(null)} socketRef={socketRef.current || null} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">
             Select a conversation to start chatting

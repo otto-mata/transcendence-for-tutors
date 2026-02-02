@@ -2,13 +2,16 @@ import { WebSocketServer } from 'ws';
 import type WebSocket from 'ws';
 import { handler, sendUpdate } from './messages.handler.mjs';
 
-const server = new WebSocketServer({
-  port: 8081
-});
 
-export const users = new Map<number, Set<WebSocket>>(); // int userid : Set of socket linked to this userId
-export const sockets = new Map<WebSocket, number>(); // socket : userid
-export const watchers = new Map<number, Set<WebSocket>>(); // int userId: set of socket that watchs this userId
+const server = new WebSocketServer({
+  port: process.env.WS_PORT ? + process.env.WS_PORT : 8090,
+});
+console.log("nan mais aled un moment");
+console.log( process.env.WS_PORT);
+
+export const users = new Map<string, Set<WebSocket>>(); // int userid : Set of socket linked to this userId
+export const sockets = new Map<WebSocket, string>(); // socket : userid
+export const watchers = new Map<string, Set<WebSocket>>(); // int userId: set of socket that watchs this userId
 
 const show_connections = () => {
   console.clear();

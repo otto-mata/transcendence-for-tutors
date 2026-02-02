@@ -1,3 +1,4 @@
+"use client"
 import { ChatLayout } from "@/components/Chat/ChatLayout";
 
 export default function MessagesPage() {
