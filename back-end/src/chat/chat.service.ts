@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { CurrentUserType } from '@/decorators/current-user.decorator';
 import { ChatDelegate, MessageDelegate } from 'prisma/generated/models';
@@ -16,6 +16,16 @@ export class ChatService {
 		});
 		if (!recipient) {
 			throw new NotFoundException('User not found');
+		}
+
+		if (recipient.isPrivate) {
+			try {
+				const follow = await this.prisma.follow.findFirstOrThrow({where : {
+					followerId : sender.id,
+					following : recipient,
+					status : "accepted"
+				}});
+			} catch (e) {throw new UnauthorizedException('You are not following this user')}
 		}
 		const existingChat = await this.prisma.chat.findFirst({
 			where: {
