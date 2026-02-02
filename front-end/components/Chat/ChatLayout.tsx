@@ -13,7 +13,6 @@ const MOCK_USERS: ChatDto[] = [
     user : [{
       id: "1",
     username: "Sarah Anderson",
-    avatarUrl: "bg-purple-500",
       }],
       message : [{
         id : "1",
@@ -28,7 +27,6 @@ const MOCK_USERS: ChatDto[] = [
     user : [{
       id: "2",
     username: "Mike Horn",
-    avatarUrl: "bg-blue-500",
       }],
       message : [{
         id : "2",
@@ -43,7 +41,6 @@ const MOCK_USERS: ChatDto[] = [
     user : [{
       id: "3",
     username: "Felis Andre",
-    avatarUrl: "bg-orange-500",
       }],
       message : [{
         id : "3",
@@ -54,8 +51,9 @@ const MOCK_USERS: ChatDto[] = [
   }
 ];
 
-export function ChatLayout() {
-  const [selectedChat, setselectedChat] = useState<ChatDto | null>(MOCK_USERS[0]);
+export function ChatLayout({ initialUserId }: ChatLayoutProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const [selectedChat, setSelectedChat] = useState<ChatDto | null>(MOCK_USERS[0]);
   const [loading, setLoading] = useState(true);
   const [charging, setCharging] = useState(true);
   const [page, setPage ] = useState(1);
@@ -65,6 +63,64 @@ export function ChatLayout() {
   const client = Backend.getInstance();
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [change, setChange] = useState(false);
+
+
+  // Fetch user from API if initialUserId is provided
+  useEffect(() => {
+    const fetchInitialUser = async () => {
+      if (!initialUserId) {
+        setSelectedChat(MOCK_USERS[0]);
+        return;
+      }
+
+      // Check if user already exists in the list
+      const existingUser = chats.find(u => u.id === initialUserId);
+      if (existingUser) {
+        setSelectedChat(existingUser);
+        return;
+      }
+
+      setIsLoading(true);
+      try {
+        const client = Backend.getInstance();
+        const result = await client.users.$({ id: initialUserId }).get();
+        if (result.ok && result.value) {
+          const userData = result.value;
+          const newUser: ChatDto = {
+            id: String(userData.id),
+            user : [{
+              id: userData.id,
+              username: userData.username,
+              avatarUrl: userData.avatarUrl || undefined,
+            }],
+            // status: "online",
+            message: [{
+              id : "1",
+              message : "yes yes verry much",
+              senderID : userData.id,
+              createdAt : new Date(),
+            }],
+            unread : true,
+          };
+          setChats(prev => {
+            // Add to list if not already there
+            if (!prev.find(u => u.id === newUser.id)) {
+              return [newUser, ...prev];
+            }
+            return prev;
+          });
+          setSelectedChat(newUser);
+        }
+      } catch (error) {
+        console.error("Failed to fetch user:", error);
+        setSelectedChat(MOCK_USERS[0]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchInitialUser();
+  }, [initialUserId]);
 
   useEffect(() => {
 
@@ -173,12 +229,12 @@ export function ChatLayout() {
         <ChatList
           users={MOCK_USERS}
           selectedUserId={selectedChat?.user[0].id}
-          onSelectedChat={setselectedChat}
+          onSelectedChat={setSelectedChat}
         />
       </div>
       <div className={`${!selectedChat ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gray-50 dark:bg-gray-900/50`}>
         {selectedChat ? (
-          <ChatWindow chat={selectedChat} onBack={() => setselectedChat(null)} socketRef={socketRef.current || null} />
+          <ChatWindow chat={selectedChat} onBack={() => setSelectedChat(null)} socketRef={socketRef.current || null} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">
             Select a conversation to start chatting

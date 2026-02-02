@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { X, Loader2, UserMinus, UserPlus, UserCheck, Check, XCircle } from 'lucide-react';
 import { Backend } from '@/client/TransClient';
 import { getMediaUrl } from '@/client/utils';
-import { FollowerDto, FollowingDto, FollowUserDto } from '@/client/follow.dto';
+import { FollowerDto, FollowingDto, FollowUserDto, RelationshipStatusDto } from '@/client/follow.dto';
 import Link from 'next/link';
 
 type ModalType = 'followers' | 'following' | 'requests';
@@ -55,8 +55,11 @@ function FollowItem({ user, isOwnProfile, type, onRemove, onAccept, onReject, is
 				const client = Backend.getInstance();
 				const result = await client.users.$({ id: user.id }).relationship();
 				if (!result.ok) throw result.error;
-					const data = result.value;
-					setIsFollowing(data.isFollowing);
+				const value = result.value as RelationshipStatusDto;
+				const data = typeof value === 'string' 
+					? JSON.parse(value) as RelationshipStatusDto
+					: value;
+				setIsFollowing(data.isFollowing);
 			} catch (err) {
 				console.error('Failed to check relationship:', err);
 			} finally {
@@ -258,9 +261,10 @@ export default function FollowListModal({
 			}
 
 			if (result.ok) {
-				const data = typeof result.value === 'string' 
-					? JSON.parse(result.value) 
-					: result.value;
+				const value = result.value as FollowerDto[] | FollowingDto[] | { data: (FollowerDto | FollowingDto)[] };
+				const data = typeof value === 'string' 
+					? JSON.parse(value) 
+					: value;
 				
 				
 				const newItems = Array.isArray(data) ? data : (data.data || []);

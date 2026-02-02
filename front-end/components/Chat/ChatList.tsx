@@ -1,6 +1,5 @@
-import { Search } from "lucide-react";
-import { User } from "./ChatLayout";
-import { ChatDto, ChatUserDto } from "@/client/message.dto";
+import { ChatDto } from "@/client/message.dto";
+import { getMediaUrl } from "@/client/utils";
 
 interface ChatListProps {
   users: ChatDto[];
@@ -32,7 +31,17 @@ export function ChatList({ users, selectedUserId, onSelectedChat, hideTitle }: C
               }`}
           >
             <div className="relative">
-              <div className={`w-12 h-12 rounded-full ${chat.user[0].avatarUrl}`} />
+              {chat.user[0].avatarUrl ? (
+                <img
+                  src={getMediaUrl(chat.user[0].avatarUrl)}
+                  alt={chat.user[0].username}
+                  className="w-12 h-12 rounded-full object-cover"
+                />
+              ) : (
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                  {( chat.user[0].username || "?").charAt(0).toUpperCase()}
+                </div>
+              )}
               <div
                 className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${"online" === "online"
                     ? "bg-green-500"

@@ -9,26 +9,29 @@ import { usePathname } from "next/navigation";
 
 const MOCK_USERS: User[] = [
 	{
-		id: 1,
-		name: "Sarah Anderson",
-		avatar: "bg-purple-500",
+		id: "1",
+		username: "sarah_anderson",
+		displayName: "Sarah Anderson",
+		avatarUrl: undefined,
 		status: "online",
 		lastMessage: "Hey! Are we still on for the game?",
 		lastMessageTime: "2m",
 		unreadCount: 2,
 	},
 	{
-		id: 2,
-		name: "Mike Johnson",
-		avatar: "bg-blue-500",
+		id: "2",
+		username: "mike_johnson",
+		displayName: "Mike Johnson",
+		avatarUrl: undefined,
 		status: "offline",
 		lastMessage: "Good game yesterday!",
 		lastMessageTime: "1h",
 	},
 	{
-		id: 3,
-		name: "Emily Davis",
-		avatar: "bg-pink-500",
+		id: "3",
+		username: "emily_davis",
+		displayName: "Emily Davis",
+		avatarUrl: undefined,
 		status: "away",
 		lastMessage: "Can you check my PR?",
 		lastMessageTime: "3h",
@@ -69,7 +72,7 @@ export default function ChatPopup() {
 				<div className="flex items-center gap-2">
 					<div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
 					<span className="font-bold">
-						{selectedUser ? selectedUser.name : "Messages"}
+						{selectedUser ? (selectedUser.displayName || selectedUser.username || "Unknown") : "Messages"}
 					</span>
 				</div>
 				<div className="flex items-center gap-1">

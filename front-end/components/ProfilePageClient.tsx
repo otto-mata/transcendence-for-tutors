@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { MapPin, Calendar, Settings, Camera, MoreHorizontal, Loader2, UserPlus, UserCheck, Lock, Clock, Bell } from 'lucide-react';
 import { Backend } from '@/client/TransClient';
 import { getMediaUrl } from '@/client/utils';
@@ -22,6 +23,7 @@ interface ProfilePageClientProps {
 const tabs = ['Posts', 'Likes'];
 
 export default function ProfilePageClient({ username, isOwnProfile, initialUser }: ProfilePageClientProps) {
+	const router = useRouter();
 	const [user, setUser] = useState<UserProfileResponse | null>(initialUser || null);
 	const [isLoading, setIsLoading] = useState(!initialUser);
 	const [error, setError] = useState<string | null>(null);
@@ -46,7 +48,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 		const fetchCurrentUser = async () => {
 			try {
 				if (!await isLogged()){
-						  setError('You must be logged in to view this page.');
+						  router.push('/auth/login');
 						  return;
 					  }
 				const client = Backend.getInstance();
@@ -62,7 +64,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			}
 		};
 		fetchCurrentUser();
-	}, []);
+	}, [router]);
 
 	// Fetch pending request count for own profile with private account
 	useEffect(() => {
@@ -81,75 +83,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 		fetchPendingCount();
 	}, [isOwnProfile, user?.isPrivate]);
 
-	useEffect(() => {
-		if (!initialUser) {
-			fetchUserProfile();
-		}
-	}, [username, initialUser]);
-
-	// Fetch relationship status for non-own profiles
-	useEffect(() => {
-		if (!isOwnProfile && user?.id) {
-			fetchRelationship();
-		}
-	}, [isOwnProfile, user?.id]);
-
-	const fetchRelationship = useCallback(async () => {
-		if (!user?.id) return;
-		try {
-			const client = Backend.getInstance();
-			const result = await client.users.$({ id: user.id }).relationship();
-			if (!result.ok) throw result.error;
-				const data = result.value as RelationshipStatusDto;
-				setRelationship(data);
-		} catch (err) {
-			console.error('Failed to fetch relationship:', err);
-		}
-	}, [user?.id]);
-
-	const handleFollowToggle = async () => {
-		if (!user?.id) return;
-		setIsFollowLoading(true);
-		try {
-			const client = Backend.getInstance();
-			if (relationship?.isFollowing) {
-				const result = await client.users.$({ id: user.id }).unfollow();
-				if (result.ok) {
-					setRelationship(prev => prev ? { ...prev, isFollowing: false } : null);
-					setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
-				}
-			} else if (relationship?.isPending) {
-				const result = await client.users.$({ id: user.id }).unfollow();
-				if (result.ok) {
-					setRelationship(prev => prev ? { ...prev, isPending: false } : null);
-				}
-			} else {
-				const result = await client.users.$({ id: user.id }).follow();
-				if (result.ok) {
-					if (user.isPrivate) {
-						setRelationship(prev => prev ? { ...prev, isPending: true, isFollowing: false } : null);
-					} else {
-						setRelationship(prev => prev ? { ...prev, isFollowing: true } : null);
-						setUser(prev => prev ? { ...prev, followerCount: prev.followerCount + 1 } : null);
-					}
-				}
-			}
-		} catch (err) {
-			console.error('Failed to toggle follow:', err);
-		} finally {
-			setIsFollowLoading(false);
-		}
-	};
-
-	const handleFollowerRemoved = () => {
-		setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
-	};
-
-	const handleRequestHandled = () => {
-		setPendingRequestCount(prev => Math.max(0, prev - 1));
-		fetchUserProfile();
-	};
-
+	// Define fetchUserProfile first before the useEffect that uses it
 	const fetchUserProfile = useCallback(async () => {
 		setIsLoading(true);
 		setError(null);
@@ -178,6 +112,83 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			setIsLoading(false);
 		}
 	}, [isOwnProfile, username]);
+
+	useEffect(() => {
+		if (!initialUser) {
+			fetchUserProfile();
+		}
+	}, [username, initialUser, fetchUserProfile]);
+
+	const fetchRelationship = useCallback(async () => {
+		if (!user?.id) return;
+		try {
+			const client = Backend.getInstance();
+			const result = await client.users.$({ id: user.id }).relationship();
+			if (!result.ok) throw result.error;
+			const value = result.value as RelationshipStatusDto;
+			const data = typeof value === 'string' 
+				? JSON.parse(value) as RelationshipStatusDto 
+				: value;
+			setRelationship(data);
+		} catch (err) {
+			console.error('Failed to fetch relationship:', err);
+		}
+	}, [user?.id]);
+
+	// Fetch relationship status for non-own profiles
+	useEffect(() => {
+		if (!isOwnProfile && user?.id) {
+			fetchRelationship();
+		}
+	}, [isOwnProfile, user?.id, fetchRelationship]);
+
+	const handleFollowToggle = async () => {
+		if (!user?.id) return;
+		setIsFollowLoading(true);
+		try {
+			const client = Backend.getInstance();
+			if (relationship?.isFollowing) {
+				const result = await client.users.$({ id: user.id }).unfollow();
+				if (result.ok) {
+					setRelationship(prev => prev ? { ...prev, isFollowing: false } : null);
+					setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
+				}
+			} else if (relationship?.isPending) {
+				const result = await client.users.$({ id: user.id }).unfollow();
+				if (result.ok) {
+					setRelationship(prev => prev ? { ...prev, isPending: false } : null);
+				}
+			} else {
+				const result = await client.users.$({ id: user.id }).follow();
+				if (result.ok) {
+					if (user.isPrivate) {
+						setRelationship(prev => prev ? { ...prev, isPending: true, isFollowing: false } : null);
+					} else {
+						setRelationship(prev => prev ? { ...prev, isFollowing: true } : null);
+						setUser(prev => prev ? { ...prev, followerCount: prev.followerCount + 1 } : null);
+					}
+				} else {
+					// If the follow failed, refresh the relationship status from the server
+					await fetchRelationship();
+				}
+			}
+		} catch (err) {
+			console.error('Failed to toggle follow:', err);
+			// Refresh relationship status on error
+			await fetchRelationship();
+		} finally {
+			setIsFollowLoading(false);
+		}
+	};
+
+	const handleFollowerRemoved = () => {
+		setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
+	};
+
+	const handleRequestHandled = () => {
+		setPendingRequestCount(prev => Math.max(0, prev - 1));
+		fetchUserProfile();
+	};
 
 	const handleCoverUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0];
@@ -277,31 +288,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 					<div className="w-full h-full bg-linear-to-r from-blue-500 via-purple-500 to-pink-500" />
 				)}
 				<div className="absolute inset-0 bg-black opacity-10" />
-
-				{/* Edit Cover Button - Only show for own profile */}
-				{isOwnProfile && (
-					<>
-						<button 
-							onClick={() => coverInputRef.current?.click()}
-							disabled={isUploadingCover}
-							className="absolute top-4 right-4 px-4 py-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm text-gray-700 dark:text-gray-300 rounded-full font-medium shadow-md hover:bg-white dark:hover:bg-gray-800 transition-all flex items-center gap-2 disabled:opacity-50"
-						>
-							{isUploadingCover ? (
-								<Loader2 className="w-4 h-4 animate-spin" />
-							) : (
-								<Camera className="w-4 h-4" />
-							)}
-							{isUploadingCover ? 'Uploading...' : 'Edit Cover'}
-						</button>
-						<input
-							ref={coverInputRef}
-							type="file"
-							accept="image/*"
-							onChange={handleCoverUpload}
-							className="hidden"
-						/>
-					</>
-				)}
 			</div>
 
 			{/* Profile Header */}
@@ -326,24 +312,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 								</div>
 							)}
 						</div>
-						{isOwnProfile && (
-							<>
-								<button 
-									onClick={() => avatarInputRef.current?.click()}
-									disabled={isUploadingAvatar}
-									className="absolute bottom-2 right-2 w-10 h-10 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors flex items-center justify-center disabled:opacity-50"
-								>
-									<Camera className="w-5 h-5" />
-								</button>
-								<input
-									ref={avatarInputRef}
-									type="file"
-									accept="image/*"
-									onChange={handleAvatarUpload}
-									className="hidden"
-								/>
-							</>
-						)}
 					</div>
 
 					{/* Action Buttons */}
@@ -359,9 +327,6 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 							</button>
 						) : (
 							<>
-								<button className="p-2.5 bg-white dark:bg-gray-800 rounded-full shadow-md hover:shadow-lg transition-shadow">
-									<MoreHorizontal className="w-5 h-5 text-gray-700 dark:text-gray-300" />
-								</button>
 								<button 
 									onClick={handleFollowToggle}
 									disabled={isFollowLoading}
@@ -395,7 +360,10 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 										Follows you
 									</span>
 								)}
-								<button className="px-6 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full font-medium shadow-md hover:shadow-lg transition-shadow">
+								<button 
+									onClick={() => router.push(`/messages?userId=${user.id}`)}
+									className="px-6 py-2.5 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full font-medium shadow-md hover:shadow-lg transition-shadow"
+								>
 									Message
 								</button>
 							</>

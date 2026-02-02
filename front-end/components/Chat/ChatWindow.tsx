@@ -5,6 +5,7 @@ import { ChatDto  } from "@/client/message.dto";
 import { Backend } from "@/client/TransClient";
 import { UserResponseDto } from "@/client/profile.dto";
 import { isLogged } from "@/client/common.mock";
+import { getMediaUrl } from "@/client/utils";
 
 interface ChatWindowProps {
   chat : ChatDto;
@@ -114,7 +115,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
 
     useEffect(() => {
 	  const run = async() => {
-		const res = await client.chat.get({limit : 10, page : page});
+		const res = await client.chat.byUsername({limit : 10, page : page}, chat.user[0].username);
 		if (!res.ok){
 			setError(res.error.message);
 			return;
@@ -170,7 +171,17 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="relative">
-            <div className={`w-10 h-10 rounded-full ${chat.user[0].avatarUrl}`} />
+            {chat.user[0].avatarUrl ? (
+              <img
+                src={getMediaUrl(chat.user[0].avatarUrl)}
+                alt={chat.user[0].username}
+                className="w-10 h-10 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
+                {(chat.user[0].username || "?").charAt(0).toUpperCase()}
+              </div>
+            )}
             <div
               className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${chat.user[0].username === "online"
                   ? "bg-green-500"

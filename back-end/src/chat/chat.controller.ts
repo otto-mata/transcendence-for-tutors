@@ -16,6 +16,7 @@ export class ChatController {
 		@Query() query: NumberQuery
 	): Promise<String> {
 		try {
+			return (JSON.stringify({yep : "ouiiiii"}))
 			return (JSON.stringify(await this.chatService.getUserChatList(user, query.skip, query.take)));
 		} catch (e) { }
 		return (JSON.stringify({error: "An error occured"}));

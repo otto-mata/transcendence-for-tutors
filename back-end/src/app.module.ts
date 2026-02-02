@@ -16,6 +16,7 @@ import { MediaModule } from './media/media.module';
 import { MailModule } from './mail/mail.module';
 import { GoogleOauthModule } from './auth/google/google.module';
 import { ChatModule } from './chat/chat.module';
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
 	imports: [
@@ -48,6 +49,9 @@ import { ChatModule } from './chat/chat.module';
 		MailModule,
 		GoogleOauthModule,
 		ChatModule,
+		PrometheusModule.register({
+			path: '/metrics', // The endpoint Prometheus will hit
+		}),
 	],
 	controllers: [AppController],
 	providers: [AppService],

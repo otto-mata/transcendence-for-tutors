@@ -1,5 +1,5 @@
 "use client"
-import { Image, Smile, Calendar, Cross } from "lucide-react";
+import { Image, Cross } from "lucide-react";
 import { isLogged } from '@client/common.mock';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -117,12 +117,6 @@ export const CreatePost = (params : {goto : boolean}) => {
 								onChange={handlePostChange}
 								className="hidden"
 							/>
-                </button>
-                <button className="hover:bg-blue-50 p-2 rounded-full transition-colors">
-                  <Smile className="w-5 h-5" />
-                </button>
-                <button  className="hover:bg-blue-50 p-2 rounded-full transition-colors">
-                  <Calendar className="w-5 h-5" />
                 </button>
               </div>
               <button onClick={() => PostIt(params.goto )  } className="px-6 py-2 bg-blue-500 text-white font-semibold rounded-full hover:bg-blue-600 transition-colors">

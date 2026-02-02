@@ -1,7 +1,7 @@
 export interface ChatUserDto{
 		id : string;
 		username : string;
-		avatarUrl : string;
+		avatarUrl? : string;
 	}
 
 export interface ChatDto{

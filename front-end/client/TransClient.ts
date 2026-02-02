@@ -83,16 +83,37 @@ class RequestError extends Error {
 }
 
 const ClientFactory = (client: Axios) => {
+	// Request interceptor - ajoute le token aux requêtes
 	client.interceptors.request.use(
   	(config) => {
     const token = localStorage.getItem('access_token');
-    if (token) {
+    if (token && token.trim() !== "") {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   	},
   	(error) => Promise.reject(error)
 );
+
+	// Response interceptor - gère les erreurs 401 (token expiré)
+	client.interceptors.response.use(
+		(response) => response,
+		(error) => {
+			// Si erreur 401 et pas sur une route d'auth, rediriger vers login
+			if (error.response?.status === 401) {
+				const requestUrl = error.config?.url || '';
+				// Ne pas rediriger si on est déjà sur une route d'authentification
+				if (!requestUrl.includes('/auth/')) {
+					localStorage.removeItem('access_token');
+					// Utiliser window.location pour forcer la redirection
+					if (typeof window !== 'undefined') {
+						window.location.href = '/auth/login';
+					}
+				}
+			}
+			return Promise.reject(error);
+		}
+	);
 	return {
 		auth: {
 			register: async (data: RegisterDto) => {
@@ -865,6 +886,14 @@ const ClientFactory = (client: Axios) => {
 			get: async (data : QueryParametersDto) => {
 				try {
 					const response = await client.get(`/chat`);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			byUsername: async (data : QueryParametersDto, username : string) => {
+				try {
+					const response = await client.get(`/chat/${username}`);
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);

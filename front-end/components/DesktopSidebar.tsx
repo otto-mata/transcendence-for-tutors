@@ -1,6 +1,6 @@
 "use client";
 
-import { isLogged } from '@/client/common.mock';
+import { isLogged, clearAuthToken } from '@/client/common.mock';
 import { UserResponseDto } from '@/client/profile.dto';
 import { Backend } from '@/client/TransClient';
 import { UserProfileResponse } from '@/client/Users.dto';
@@ -16,18 +16,19 @@ import {
 	PlusCircle
 } from 'lucide-react';
 import Link from 'next/link';
-import { redirect, usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 export default function DesktopSidebar() {
 	const pathname = usePathname();
+	const router = useRouter();
 	const client = Backend.getInstance();
 	const [error, setError] = useState('');
 	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : "charging"});
 
 	function LogoutFunction(){
-		localStorage.setItem('access_token', " ");
-		redirect("/auth/login");
+		clearAuthToken();
+		router.push("/auth/login");
 	}
 
 	useEffect(() => {
@@ -35,7 +36,7 @@ export default function DesktopSidebar() {
 		(async () => {
 			try {
 				if (! await isLogged()){
-					setError('You must be logged in to view this page.');
+					router.push('/auth/login');
 					return;	
 				}
 				const result = await client.me.get();
@@ -82,7 +83,7 @@ export default function DesktopSidebar() {
 			</nav>
 
 			{/* Create Post Button */}
-			<button onClick={() => {redirect("/post/create")}} className="w-full mb-4 py-3 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+			<button onClick={() => {router.push("/post/create")}} className="w-full mb-4 py-3 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
 				<PlusCircle className="w-5 h-5" />
 				Create Post
 			</button>
