@@ -5,6 +5,7 @@ export interface CommentResponseDto {
 	author?: {
 		id: string;
 		username: string;
+		displayName? : string;
 		avatarUrl?: string;
 	};
 	postId: string;
@@ -13,7 +14,7 @@ export interface CommentResponseDto {
 	replyCount: number;
 	createdAt: Date;
 	updatedAt: Date;
-	liked?: boolean;
+	liked: boolean;
 	// media?: CommentMediaDto[];
 	mentions?: string[];
 }

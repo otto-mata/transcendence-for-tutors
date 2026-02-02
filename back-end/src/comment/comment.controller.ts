@@ -26,6 +26,7 @@ export class CommentController {
 
 	@Get()
 	async getComments(
+		@CurrentUser() user: CurrentUserType,
 		@Param('postId') postId: string,
 		@Query('page') page?: string,
 		@Query('limit') limit?: string,
@@ -35,11 +36,11 @@ export class CommentController {
 			const pageNum = page ? parseInt(page) : 1;
 			const limitNum = limit ? parseInt(limit) : 20;
 			const skip = (pageNum - 1) * limitNum;
-			console.log("ceci est sense etre le id : ", postId);
 			const comments = await this.commentService.findByPostId(
 				postId,
 				skip,
 				limitNum,
+				user.id
 			);
 			return JSON.stringify(comments);
 		} catch (error) {

@@ -63,25 +63,19 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 			// Update avatar if changed
 			if (avatarFile) {
 				const avatarResult = await backend.me.updateAvatar(avatarFile);
-				console.log('Avatar update result:', avatarResult);
 				if (!avatarResult.ok) {
 					throw new Error('Failed to update avatar');
 				}
-				updatedUser = typeof avatarResult.value === 'string' 
-					? JSON.parse(avatarResult.value) as UserProfileResponse 
-					: avatarResult.value as UserProfileResponse;
+				updatedUser = avatarResult.value as UserProfileResponse;
 			}
 
 			// Update cover if changed
 			if (coverFile) {
 				const coverResult = await backend.me.updateCover(coverFile);
-				console.log('Cover update result:', coverResult);
 				if (!coverResult.ok) {
 					throw new Error('Failed to update cover image');
 				}
-				updatedUser = typeof coverResult.value === 'string' 
-					? JSON.parse(coverResult.value) as UserProfileResponse 
-					: coverResult.value as UserProfileResponse;
+				updatedUser = coverResult.value as UserProfileResponse;
 			}
 
 			// Update profile data
@@ -91,19 +85,14 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 				isPrivate: formData.isPrivate,
 			};
 
-			console.log('Sending profile update:', updateData);
 			const result = await backend.me.patch(updateData);
-			console.log('Profile update result:', result);
 			
 			if (!result.ok) {
 				throw new Error('Failed to update profile');
 			}
 
-			updatedUser = typeof result.value === 'string' 
-				? JSON.parse(result.value) as UserProfileResponse 
-				: result.value as UserProfileResponse;
+			updatedUser = result.value as UserProfileResponse;
 			
-			console.log('Final updated user:', updatedUser);
 			onUpdate(updatedUser);
 			onClose();
 		} catch (err) {

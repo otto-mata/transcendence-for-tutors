@@ -36,19 +36,16 @@ export class CommentResponseDto {
 	authorId: string;
 	author?: {
 		id: string;
+		displayName? : string;
 		username: string;
 		avatarUrl?: string;
 	};
 	postId: string;
-	parentCommentId?: string;
 	likeCount: number;
-	replyCount: number;
 	createdAt: Date;
 	updatedAt: Date;
 	liked?: boolean;
-	media?: CommentMediaDto[];
-	mentions?: string[];
-}
+	}
 
 export class PaginatedCommentsDto {
 	data: CommentResponseDto[];

@@ -1,5 +1,6 @@
 "use client";
 
+import { isLogged } from '@/client/common.mock';
 import { UserResponseDto } from '@/client/profile.dto';
 import { Backend } from '@/client/TransClient';
 import { UserProfileResponse } from '@/client/Users.dto';
@@ -21,6 +22,7 @@ import { useEffect, useState } from 'react';
 export default function DesktopSidebar() {
 	const pathname = usePathname();
 	const client = Backend.getInstance();
+	const [error, setError] = useState('');
 	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : "charging"});
 
 	function LogoutFunction(){
@@ -32,16 +34,20 @@ export default function DesktopSidebar() {
 		let mounted = true;
 		(async () => {
 			try {
+				if (! await isLogged()){
+					setError('You must be logged in to view this page.');
+					return;	
+				}
 				const result = await client.me.get();
 								if (!result.ok)
-									throw new Error('Failed to fetch profile');
+									setError('Failed to fetch profile');
 								const data = typeof result.value === 'string' 
 									? JSON.parse(result.value) as UserProfileResponse 
 									: result.value as UserProfileResponse;
 								setUser(data);
-			} catch (e) {
+			} catch (e : any) {
+				setError(e.message);
 				console.error('Failed to fetch profile', e);
-				console.log("error : ", e);
 				}
 			}
 	)();
@@ -54,6 +60,8 @@ export default function DesktopSidebar() {
 		if (href === '/') return pathname === '/';
 		return pathname.startsWith(href);
 	}
+	if (error)
+		return ;
 	return (
 		<aside className="sticky left-0 top-0 h-screen w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-600 p-6 flex flex-col">
 			{/* Logo */}

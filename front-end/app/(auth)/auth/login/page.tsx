@@ -16,7 +16,6 @@ export default function LoginPage() {
   useEffect(() => {
     const run = async() => {
       const logged = await isLogged();
-      console.log("tiue log : ", logged);
       if (logged){
         router.push('/');
       }

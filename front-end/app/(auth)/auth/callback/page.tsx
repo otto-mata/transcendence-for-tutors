@@ -1,8 +1,16 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
-export default function AuthCallback() {
+export default function AuthCallbackPage() {
+  return (
+    <Suspense fallback={<div>Verifying authentication…</div>}>
+      <AuthCallbackClient />
+    </Suspense>
+  );
+}
+
+function AuthCallbackClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
@@ -29,7 +37,7 @@ export default function AuthCallback() {
           throw new Error("No authentication token found");
         }
 
-        const api = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:4000";
+        const api = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
         
         const res = await fetch(`${api}/auth/me`, {
           method: "GET",

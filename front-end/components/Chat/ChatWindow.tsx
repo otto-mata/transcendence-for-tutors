@@ -8,8 +8,50 @@ interface ChatWindowProps {
   showBackAlways?: boolean;
 }
 
+export interface Message {
+  id : string,
+  content : string,
+  me : boolean,
+  createdAt : Date
+}
+
+const MOCK_MESSAGES: Message[] = [
+  {
+    id : "1",
+    content : "J'adore les pates",
+    me : false,
+    createdAt : new Date()
+  },
+  {
+    id : "2",
+    content : "Pitain mais la meme de mon cote",
+    me : true,
+    createdAt : new Date()
+  },
+  {
+    id : "3",
+    content : "La coincidence de fou malade !! :DDDDD",
+    me : false,
+    createdAt : new Date()
+  },
+  {
+    id : "4",
+    content : "La coincidence de fou malade !! :DDDDD, La coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDD",
+    me : false,
+    createdAt : new Date()
+  },
+]
+
 export function ChatWindow({ user, onBack, showBackAlways }: ChatWindowProps) {
-  const [message, setMessage] = useState("");
+  const [inputMessage, setInputMessage] = useState("");
+  const [messages, setmessages ] = useState(MOCK_MESSAGES);
+
+
+  async function sendInputMessage(){
+    console.log("inputMessage is : ", inputMessage);
+    setInputMessage('');
+
+  }
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-900">
@@ -37,61 +79,34 @@ export function ChatWindow({ user, onBack, showBackAlways }: ChatWindowProps) {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">
-            <Phone className="w-5 h-5" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">
-            <Video className="w-5 h-5" />
-          </button>
-          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-300">
-            <MoreVertical className="w-5 h-5" />
-          </button>
-        </div>
       </div>
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
+          {messages.map((message) => (
+            <div key={message.id} className={`flex justify-${message.me? "end" :  "start"}`}>
+          <div className={ message.me? "bg-blue-500 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%]" : "bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]"}>
+            <p>{message.content}</p>
+            <span className={`text-xs ${message.me ? "text-gray-300" : "text-gray-400"} mt-1 block`}>{`${message.createdAt.getHours()}:${message.createdAt.getMinutes()} `}</span>
+          </div>
+        </div>
+          ))}
         {/* Mock Messages */}
-        <div className="flex justify-start">
-          <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]">
-            <p>Hey! How are you doing?</p>
-            <span className="text-xs text-gray-400 mt-1 block">10:00 AM</span>
-          </div>
-        </div>
-        <div className="flex justify-end">
-          <div className="bg-blue-500 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%]">
-            <p>I'm doing great, thanks! Just working on the project.</p>
-            <span className="text-xs text-blue-100 mt-1 block">10:02 AM</span>
-          </div>
-        </div>
-        <div className="flex justify-start">
-          <div className="bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]">
-            <p>That sounds awesome! We should play a game later.</p>
-            <span className="text-xs text-gray-400 mt-1 block">10:05 AM</span>
-          </div>
-        </div>
       </div>
 
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
-          <button className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-500">
-            <Paperclip className="w-5 h-5" />
-          </button>
           <div className="flex-1 relative">
             <input
               type="text"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              value={inputMessage}
+              onChange={(e) => setInputMessage(e.target.value)}
               placeholder="Type a message..."
               className="w-full pl-4 pr-10 py-2 bg-gray-100 dark:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
-            <button className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full text-gray-500">
-              <Smile className="w-5 h-5" />
-            </button>
           </div>
-          <button className="p-2 bg-blue-500 hover:bg-blue-600 rounded-full text-white transition-colors">
+          <button onClick={sendInputMessage} className="p-2 bg-blue-500 hover:bg-blue-600 rounded-full text-white transition-colors">
             <Send className="w-5 h-5" />
           </button>
         </div>

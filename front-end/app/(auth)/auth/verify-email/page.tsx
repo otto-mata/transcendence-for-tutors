@@ -1,10 +1,18 @@
 "use client";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Backend } from "@/client/TransClient";
 import { Loader2, CheckCircle, XCircle, Mail } from "lucide-react";
 
 export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<div>Verifying authentication…</div>}>
+      <VerifyEmailPageClient />
+    </Suspense>
+  );
+}
+
+function VerifyEmailPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<"loading" | "success" | "error">("loading");
