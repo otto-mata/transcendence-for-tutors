@@ -78,7 +78,7 @@ export default function DesktopSidebar() {
 			<nav className="flex-1 space-y-2">
 				<SidebarLink href="/" icon={<Home />} label="Home" active={isActive('/')} />
 				<SidebarLink href="/explore" icon={<Compass />} label="Explore" active={isActive('/explore')} />
-				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" badge={3} active={isActive('/messages')} />
+				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" active={isActive('/messages')} />
 				<SidebarLink href="/profile" icon={<User />} label="Profile" active={isActive('/profile')} />
 				<SidebarLink href="/post/saved" icon={<Bookmark />} label="Bookmarks" active={isActive('/post/saved')} />
 				<SidebarLink href="/post/liked" icon={<Heart />} label="Likes" active={isActive('/post/liked')} />
