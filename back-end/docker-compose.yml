@@ -45,15 +45,6 @@ services:
     networks:
       - postgres-network
 
-  ws_online:
-    container_name: ws_online
-    build: ../websocket/
-    ports:
-      - 8081:8081
-    environment:
-      JWT_SECRET: ${JWT_SECRET:-thisisasecret}
-    restart: unless-stopped
-
   prometheus:
     image: prom/prometheus
     extra_hosts:

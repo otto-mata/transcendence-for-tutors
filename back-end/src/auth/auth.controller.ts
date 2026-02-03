@@ -19,7 +19,7 @@ import { env } from 'prisma/config';
 
 @Controller('auth')
 export class AuthController {
-	constructor(private readonly authService: AuthService) {}
+	constructor(private readonly authService: AuthService) { }
 
 	@Get('me')
 	@UseGuards(AuthGuard)
@@ -69,7 +69,7 @@ export class AuthController {
 							'User with this username or email already exists',
 					});
 				}
-				else 
+				else
 					console.log(e);
 			}
 			return JSON.stringify({ error: 'Registration failed', message: (e as any)?.message ?? 'Unknown error' });
@@ -89,7 +89,7 @@ export class AuthController {
 			res.status(HttpStatus.OK);
 			return JSON.stringify(result);
 		} catch (e) {
-			return JSON.stringify({ error: e});
+			return JSON.stringify({ error: e.message });
 		}
 	}
 

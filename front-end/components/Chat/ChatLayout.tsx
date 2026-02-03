@@ -65,6 +65,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const [change, setChange] = useState(false);
 
 
+  // Fetch user from API if initialUserId is provided
   useEffect(() => {
     const fetchInitialUser = async () => {
       if (!initialUserId) { return; }
@@ -198,16 +199,6 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
 	  run();
 	}, [change]);
   
-  if(loading)
-    return <CharginPage/>;
-
-  if (error)
-    return <ErrorPage error="Socket connection refused" message="Can't access messages"/>
-
-    return () => {
-      socketRef.current?.close();
-};
-  }, [])
   if(loading)
     return <CharginPage/>;
 
