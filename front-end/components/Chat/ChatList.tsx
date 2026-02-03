@@ -4,13 +4,12 @@ import { getMediaUrl } from "@/client/utils";
 
 interface ChatListProps {
   users: ChatDto[];
-  currentUser : UserResponseDto;
   selectedUserId?: string;
   onSelectedChat: (user: ChatDto) => void;
   hideTitle?: boolean;
 }
 
-export function ChatList({ users, currentUser,  selectedUserId, onSelectedChat, hideTitle }: ChatListProps) {
+export function ChatList({ users,  selectedUserId, onSelectedChat, hideTitle }: ChatListProps) {
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800">
       {/* <div className="p-4 border-b border-gray-200 dark:border-gray-700">

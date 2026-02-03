@@ -53,7 +53,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
   const [messages, setMessages ] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [charging, setCharging] = useState(true);
-  const [skip, setSkip ] = useState(1);
+  const [skip, setSkip ] = useState(0);
   const [error, setError] = useState('');
   const [chatUser, setChatUser ] = useState<ChatUserDto | null>();
   const client = Backend.getInstance();
