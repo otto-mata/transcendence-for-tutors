@@ -52,15 +52,14 @@ export class ChatController {
 	async getLastMessages(
 		@CurrentUser() user: CurrentUserType,
 		@Param('username') username: string,
-		@Query('page') page?: string,
+		@Query('skip') skip?: string,
 		@Query('limit') limit?: string,
 		@Res({ passthrough: true }) res?: Response,
 	): Promise<String> {
 		try {
-			const pageNum = page ? parseInt(page) : 1;
+			const toSkip = skip ? parseInt(skip) : 0;
 			const limitNum = limit ? parseInt(limit) : 10;
-			const skip = (pageNum - 1) * limitNum;
-			const chat = await this.chatService.getMessages(user, username, skip, limitNum);
+			const chat = await this.chatService.getMessages(user, username, toSkip, limitNum);
 			return (JSON.stringify(chat));
 		} catch (e) {
 			return (JSON.stringify({error: "cannot AccessChat", message : "no such chat"}));

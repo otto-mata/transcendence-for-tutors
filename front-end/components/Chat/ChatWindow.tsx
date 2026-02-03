@@ -53,7 +53,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
   const [messages, setMessages ] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [charging, setCharging] = useState(true);
-  const [page, setPage ] = useState(1);
+  const [skip, setSkip ] = useState(1);
   const [error, setError] = useState('');
   const [chatUser, setChatUser ] = useState<ChatUserDto | null>();
   const client = Backend.getInstance();
@@ -66,9 +66,9 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
 
   function loadOlderMessages() {
     if (charging) return;
-    if (messages.length < page * 10) return;
+    if (messages.length < skip) return;
     setCharging(true);
-    setPage(page + 1);
+    setSkip(skip + 10);
     setChange(!change);
   };
 
@@ -119,7 +119,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
                 }
       if (!chat  )return;
     setChatUser(chat.users[0]);
-		const res = await client.chat.byUsername({limit : 10, page : page}, chat.users[0].username);
+		const res = await client.chat.byUsername({limit : 10, page : skip}, chat.users[0].username);
 		if (!res.ok){
 			setError(res.error.message);
 			return;
@@ -141,7 +141,6 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
   if (socketRef != null) {
     socketRef.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      console.log("pourtatn : ", data, " : moi : ", currentUser);
       const toad = {
         id : (messages.length + 1).toString(),
         message : data.message,
@@ -149,6 +148,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
         createdAt : new Date()
       }
       if (data.type == "rec_message") setMessages([...messages, toad]);
+      setSkip(skip + 1);
       setDoScroll(true);
     }
   }
@@ -164,7 +164,6 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
     };
     socketRef?.send(JSON.stringify(toSend));
     const data = {
-      id : (( + messages[messages.length -1]?.id || 0) + 1).toString,
       message : inputMessage,
       senderId : currentUser.id,
       createdAt : new Date()

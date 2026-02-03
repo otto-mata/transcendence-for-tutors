@@ -893,7 +893,7 @@ const ClientFactory = (client: Axios) => {
 			},
 			byUsername: async (data : QueryParametersDto, username : string) => {
 				try {
-					const response = await client.get(`/chat/${username}?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
+					const response = await client.get(`/chat/${username}?limit=${data.limit ? data.limit : ''}&skip=${data.page ? data.page : ''}`);
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);
