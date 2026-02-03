@@ -11,52 +11,25 @@ import {
 	Bookmark,
 	Heart,
 	LogOut,
-	Shield,
-	FileText
+	Moon,
+	Sun
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { Backend } from '@/client/TransClient';
-import { UserProfileResponse } from '@/client/Users.dto';
+import { redirect, usePathname } from 'next/navigation';
+import { useUser } from '@/client/UserContext';
 import { getMediaUrl } from '@/client/utils';
-import { isLogged, clearAuthToken } from '@/client/common.mock';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
-	const [error, setError] = useState('');
+	const [isDark, setIsDark] = useState(false);
 	const pathname = usePathname();
-	const router = useRouter();
-	const client = Backend.getInstance();
-	const [user, setUser] = useState<UserProfileResponse | null>(null);
+	const { user, isLoading } = useUser();
 
 	function LogoutFunction(){
-		clearAuthToken();
-		router.push("/auth/login");
+		localStorage.setItem('access_token', " ");
+		redirect("/auth/login");
 	}
 
-	useEffect(() => {
-		let mounted = true;
-		(async () => {
-			try {
-				if (! await isLogged()){
-					router.push('/auth/login');
-					return;	
-				}
-				const result = await client.me.get();
-								if (!result.ok)
-									setError('Failed to fetch profile');
-								const data = typeof result.value === 'string' 
-									? JSON.parse(result.value) as UserProfileResponse 
-									: result.value as UserProfileResponse;
-								setUser(data);
-			} catch (e : any) {
-				setError(e.message);
-			}
-		})();
-
-		return () => { mounted = false; };
-	}, []);
 	function isActive(href: string) {
 		if (!pathname) return false;
 		if (href === '/') return pathname === '/';
@@ -66,8 +39,6 @@ export default function MobileNav() {
 	const toggleMenu = () => setIsOpen(!isOpen);
 	const closeMenu = () => setIsOpen(false);
 
-	if (error)
-		return ;
 	return (
 		<>
 			{/* Burger Menu Button - Fixed to top */}
@@ -109,22 +80,22 @@ export default function MobileNav() {
 												<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
 											)}
 						<div className="flex-1">
-							<h3 className="text-white font-bold text-lg">{user?.displayName || user?.username || 'Loading...'}</h3>
-							<p className="text-white/80 text-sm">@{user?.username || '...'}</p>
+							<h3 className="text-white font-bold text-lg">{user?.displayName || user?.username || 'User'}</h3>
+							<p className="text-white/80 text-sm">@{user?.username || 'loading'}</p>
 						</div>
 					</div>
 
 					<div className="flex gap-4 text-white text-sm">
 						<Link href="/profile" onClick={closeMenu}>
-							<span className="font-bold">{user?.postCount ?? 0}</span>
+							<span className="font-bold">1,234</span>
 							<span className="ml-1 opacity-80">Posts</span>
 						</Link>
-						<Link href="/profile" onClick={closeMenu}>
-							<span className="font-bold">{user?.followerCount ?? 0}</span>
+						<Link href="/followers" onClick={closeMenu}>
+							<span className="font-bold">45. 2K</span>
 							<span className="ml-1 opacity-80">Followers</span>
 						</Link>
-						<Link href="/profile" onClick={closeMenu}>
-							<span className="font-bold">{user?.followingCount ?? 0}</span>
+						<Link href="/following" onClick={closeMenu}>
+							<span className="font-bold">892</span>
 							<span className="ml-1 opacity-80">Following</span>
 						</Link>
 					</div>
@@ -169,11 +140,21 @@ export default function MobileNav() {
 					{/* Divider */}
 					<div className="my-4 border-t border-gray-200 dark:border-gray-700 " />
 
-					{/* Legal Links */}
 					<div className="space-y-1 px-3">
-						<p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Legal</p>
-						<NavLink href="/legal/privacy" icon={<Shield className="w-5 h-5" />} label="Privacy Policy" onClick={closeMenu} active={isActive('/legal/privacy')} />
-						<NavLink href="/legal/terms" icon={<FileText className="w-5 h-5" />} label="Terms of Service" onClick={closeMenu} active={isActive('/legal/terms')} />
+						{/* Dark Mode Toggle */}
+						<button
+							onClick={() => setIsDark(!isDark)}
+							className="w-full flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
+						>
+							{isDark ? (
+								<Sun className="w-5 h-5" />
+							) : (
+								<Moon className="w-5 h-5" />
+							)}
+							<span className="font-medium">
+								{isDark ? 'Light Mode' : 'Dark Mode'}
+							</span>
+						</button>
 					</div>
 				</nav>
 

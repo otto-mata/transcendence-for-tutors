@@ -1,9 +1,6 @@
 "use client";
 
-import { isLogged, clearAuthToken } from '@/client/common.mock';
-import { UserResponseDto } from '@/client/profile.dto';
-import { Backend } from '@/client/TransClient';
-import { UserProfileResponse } from '@/client/Users.dto';
+import { useUser } from '@/client/UserContext';
 import { getMediaUrl } from '@/client/utils';
 import {
 	Home,
@@ -13,58 +10,25 @@ import {
 	Bookmark,
 	Heart,
 	LogOut,
-	PlusCircle,
-	Shield,
-	FileText
+	PlusCircle
 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { redirect, usePathname } from 'next/navigation';
 
 export default function DesktopSidebar() {
 	const pathname = usePathname();
-	const router = useRouter();
-	const client = Backend.getInstance();
-	const [error, setError] = useState('');
-	const [user, setUser] = useState<{username : string, displayName? : string, avatarUrl? : string}>({username : "charging"});
+	const { user, isLoading } = useUser();
 
 	function LogoutFunction(){
-		clearAuthToken();
-		router.push("/auth/login");
+		localStorage.setItem('access_token', " ");
+		redirect("/auth/login");
 	}
-
-	useEffect(() => {
-		let mounted = true;
-		(async () => {
-			try {
-				if (! await isLogged()){
-					router.push('/auth/login');
-					return;	
-				}
-				const result = await client.me.get();
-								if (!result.ok)
-									setError('Failed to fetch profile');
-								const data = typeof result.value === 'string' 
-									? JSON.parse(result.value) as UserProfileResponse 
-									: result.value as UserProfileResponse;
-								setUser(data);
-			} catch (e : any) {
-				setError(e.message);
-				console.error('Failed to fetch profile', e);
-				}
-			}
-	)();
-
-		return () => { mounted = false; };
-	}, []);
 
 	function isActive(href: string) {
 		if (!pathname) return false;
 		if (href === '/') return pathname === '/';
 		return pathname.startsWith(href);
 	}
-	if (error)
-		return ;
 	return (
 		<aside className="sticky left-0 top-0 h-screen w-72 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-600 p-6 flex flex-col">
 			{/* Logo */}
@@ -78,21 +42,14 @@ export default function DesktopSidebar() {
 			<nav className="flex-1 space-y-2">
 				<SidebarLink href="/" icon={<Home />} label="Home" active={isActive('/')} />
 				<SidebarLink href="/explore" icon={<Compass />} label="Explore" active={isActive('/explore')} />
-				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" active={isActive('/messages')} />
+				<SidebarLink href="/messages" icon={<MessageCircle />} label="Messages" badge={3} active={isActive('/messages')} />
 				<SidebarLink href="/profile" icon={<User />} label="Profile" active={isActive('/profile')} />
 				<SidebarLink href="/post/saved" icon={<Bookmark />} label="Bookmarks" active={isActive('/post/saved')} />
 				<SidebarLink href="/post/liked" icon={<Heart />} label="Likes" active={isActive('/post/liked')} />
-				
-				{/* Legal Links */}
-				<div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-					<p className="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Legal</p>
-					<SidebarLink href="/legal/privacy" icon={<Shield className="w-5 h-5" />} label="Privacy Policy" active={isActive('/legal/privacy')} />
-					<SidebarLink href="/legal/terms" icon={<FileText className="w-5 h-5" />} label="Terms of Service" active={isActive('/legal/terms')} />
-				</div>
 			</nav>
 
 			{/* Create Post Button */}
-			<button onClick={() => {router.push("/post/create")}} className="w-full mb-4 py-3 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
+			<button onClick={() => {redirect("/post/create")}} className="w-full mb-4 py-3 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2">
 				<PlusCircle className="w-5 h-5" />
 				Create Post
 			</button>
@@ -100,7 +57,7 @@ export default function DesktopSidebar() {
 			{/* Profile */}
 			<div className="pt-4 border-t border-gray-200 dark:border-gray-700">
 				<Link href="/profile" className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl transition-colors">
-					{user.avatarUrl ? (
+					{user?.avatarUrl ? (
 						<img 
 							src={getMediaUrl(user.avatarUrl)} 
 							alt={user.displayName || user.username}
@@ -110,8 +67,8 @@ export default function DesktopSidebar() {
 						<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
 					)}
 					<div className="flex-1 min-w-0">
-						<p className="font-semibold text-sm text-gray-900 dark:text-gray-50 truncate">{user.displayName? user.displayName : 'charging' }</p>
-						<p className="text-xs text-gray-500 truncate">@{user.username}</p>
+						<p className="font-semibold text-sm text-gray-900 dark:text-gray-50 truncate">{user?.displayName || (isLoading ? 'charging' : user?.username || 'User')}</p>
+						<p className="text-xs text-gray-500 truncate">@{user?.username || 'charging'}</p>
 					</div>
 					<LogOut onClick={LogoutFunction} className="w-4 h-4 text-gray-400 dark:text-gray-600" />
 				</Link>

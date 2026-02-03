@@ -1,4 +1,5 @@
 import ResponsiveNav from "@/components/ResponsiveNav";
+import { UserProvider } from "@/client/UserContext";
 
 export default function AppLayout({
   children,
@@ -6,9 +7,11 @@ export default function AppLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <div className="flex w-full">
-      <ResponsiveNav />
-      {children}
-    </div>
+    <UserProvider>
+      <div className="flex w-full">
+        <ResponsiveNav />
+        {children}
+      </div>
+    </UserProvider>
   );
 }

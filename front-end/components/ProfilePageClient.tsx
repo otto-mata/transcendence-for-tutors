@@ -7,6 +7,7 @@ import { Backend } from '@/client/TransClient';
 import { getMediaUrl } from '@/client/utils';
 import { UserProfileResponse } from '@/client/Users.dto';
 import { RelationshipStatusDto } from '@/client/follow.dto';
+import { useUser } from '@/client/UserContext';
 import EditProfileModal from './EditProfileModal';
 import FollowListModal from './FollowListModal';
 import { MansonPostGridByUsername, MansonPostGridLiked } from './PostList';
@@ -24,6 +25,7 @@ const tabs = ['Posts', 'Likes'];
 
 export default function ProfilePageClient({ username, isOwnProfile, initialUser }: ProfilePageClientProps) {
 	const router = useRouter();
+	const { refreshUser, updateUser: updateGlobalUser } = useUser();
 	const [user, setUser] = useState<UserProfileResponse | null>(initialUser || null);
 	const [isLoading, setIsLoading] = useState(!initialUser);
 	const [error, setError] = useState<string | null>(null);
@@ -201,6 +203,11 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			if (!result.ok) throw new Error(result.error?.message || 'Failed to upload cover');
 				const updatedUser = result.value as UserProfileResponse;
 				setUser(updatedUser);
+				// Refresh global user context to update sidebar
+				if (isOwnProfile) {
+					updateGlobalUser(updatedUser);
+				}
+				setRefreshKey(prev => prev + 1);
 		} catch (err) {
 			console.error('Failed to upload cover:', err);
 		} finally {
@@ -219,6 +226,11 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 			if (result.ok) {
 				const updatedUser = result.value as UserProfileResponse;
 				setUser(updatedUser);
+				// Refresh global user context to update sidebar
+				if (isOwnProfile) {
+					updateGlobalUser(updatedUser);
+				}
+				setRefreshKey(prev => prev + 1);
 			}
 		} catch (err) {
 			console.error('Failed to upload avatar:', err);
@@ -239,11 +251,15 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 					? JSON.parse(result.value) as UserProfileResponse 
 					: result.value as UserProfileResponse;
 				setUser(freshData);
+				// Refresh global user context to update sidebar
+				if (isOwnProfile) {
+					updateGlobalUser(freshData);
+				}
 			}
 		} catch (err) {
 			console.error('Failed to re-fetch profile after update:', err);
 		}
-	}, []);
+	}, [isOwnProfile, updateGlobalUser]);
 
 	const formatDate = (date: Date) => {
 		return new Date(date).toLocaleDateString('en-US', {
