@@ -1,7 +1,7 @@
 "use client"
 import { PaginatedResponseDto  } from '@client/common.dto';
 import { PostResponseDto } from '@/client/Post.dto';
-import { Bookmark } from 'lucide-react';
+import { Bookmark, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 import { Backend } from '@/client/TransClient';
 import { useRouter } from 'next/navigation';
@@ -10,6 +10,7 @@ import { UserResponseDto } from '@/client/profile.dto';
 import { getMediaUrl } from '@/client/utils';
 import { CharginPage } from './CharginPage';
 import { ErrorPage } from './ErrorPage';
+import { useUser } from '@/client/UserContext';
 
 function buttonApearance(alreadyDone?: boolean){
 	if (alreadyDone) return ("w-1/3 flex justify-center bg-blue-600 hover:bg-gray-900 transition-colors");
@@ -18,14 +19,17 @@ function buttonApearance(alreadyDone?: boolean){
 
 
 
-export const OnePost = (params : {post : PostResponseDto, charging : boolean}) => {
+export const OnePost = (params : {post : PostResponseDto, charging : boolean, onDelete?: (postId: string) => void}) => {
 	const router = useRouter();
 	const client = Backend.getInstance();
-	const [user, setUser] = useState<{username : string, displayName : string, avatarUrl? : string}>({username : "charging...", displayName : "charging..."});
+	const { user: currentUser } = useUser();
+	const [postAuthor, setPostAuthor] = useState<{username : string, displayName : string, avatarUrl? : string}>({username : "charging...", displayName : "charging..."});
 	const [Liked, setLiked] = useState(params.post.liked);
 	const [Bookmarked, setBookmarked] = useState(params.post.bookmarked);
+	const [isDeleting, setIsDeleting] = useState(false);
 	const createdAt = new Date(params.post.createdAt).toDateString();
 	const postImage = getMediaUrl(params.post.mediaUrl) || null;
+	const isOwner = currentUser?.id === params.post.authorId;
 	
 	async function LikePost(post : PostResponseDto){
 	if (!Liked){
@@ -57,10 +61,33 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 	setBookmarked(false);
   }
 
+  async function deletePost(e: React.MouseEvent<HTMLButtonElement>) {
+	e.preventDefault();
+	e.stopPropagation();
+	
+	if (!confirm('Êtes-vous sûr de vouloir supprimer ce post ?')) return;
+	
+	setIsDeleting(true);
+	try {
+		const res = await client.posts.$(params.post.id).delete();
+		if (res.ok) {
+			if (params.onDelete) {
+				params.onDelete(params.post.id);
+			} else {
+				router.refresh();
+			}
+		}
+	} catch (error) {
+		console.error('Erreur lors de la suppression:', error);
+	} finally {
+		setIsDeleting(false);
+	}
+  }
+
   function profileRef(e : React.MouseEvent<HTMLElement>){
 	e.preventDefault();
   	e.stopPropagation();
-	router.push('/profile/' + user.username);
+	router.push('/profile/' + postAuthor.username);
   }
   	useEffect(() => {
 		const run = async () => {
@@ -69,7 +96,7 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 			const res = await client.users.$({id :  params.post.authorId}).get();
 			if (!res.value) throw res.error;
 			const data = JSON.parse(res?.value);
-			setUser(data);
+			setPostAuthor(data);
 			setBookmarked(await params.post.bookmarked);
 			setLiked(await params.post.liked);
 		}
@@ -98,24 +125,34 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 							)}
 								<div className="flex items-center gap-3 mb-3">
 									<button onClick={(e) => profileRef(e)} className="shrink-0">
-										{user.avatarUrl ? (
+										{postAuthor.avatarUrl ? (
 											<img 
-												src={getMediaUrl(user.avatarUrl)} 
-												alt={user.displayName || user.username}
+												src={getMediaUrl(postAuthor.avatarUrl)} 
+												alt={postAuthor.displayName || postAuthor.username}
 												className="w-10 h-10 rounded-full object-cover"
 											/>
 										) : (
 											<div className="w-10 h-10 rounded-full bg-linear-to-br from-purple-400 to-pink-400" />
 										)}
 									</button>
-									<div>
+									<div className="flex-1">
 										<button onClick={(e) => profileRef(e)}>
 											<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">
-												{user.displayName}
+												{postAuthor.displayName}
 											</h4>
 										</button>
 										<p className="text-xs text-gray-500">{createdAt}</p>
 									</div>
+									{isOwner && (
+										<button 
+											onClick={deletePost}
+											disabled={isDeleting}
+											className="text-gray-400 hover:text-red-500 transition-colors p-1 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
+											title="Supprimer le post"
+										>
+											<Trash2 className={`w-4 h-4 ${isDeleting ? 'animate-pulse' : ''}`} />
+										</button>
+									)}
 								</div>
 							</Link>
 								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{params.post.content}</p>
@@ -139,24 +176,45 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean}) =
 }
 
 
-export const PostList = (params: {posts : PostResponseDto[]}) => {
+export const PostList = (params: {posts : PostResponseDto[], onPostDelete?: (postId: string) => void}) => {
+	const [localPosts, setLocalPosts] = useState(params.posts);
 
-	if (params.posts)
+	useEffect(() => {
+		setLocalPosts(params.posts);
+	}, [params.posts]);
+
+	const handleDelete = (postId: string) => {
+		setLocalPosts(prev => prev.filter(p => p.id !== postId));
+		if (params.onPostDelete) params.onPostDelete(postId);
+	};
+
+	if (localPosts)
 	return (<div className="flex flex-col bg">
-		{params.posts.map(post => <OnePost key={post.id} post={post} charging={false}/>)}
+		{localPosts.map(post => <OnePost key={post.id} post={post} charging={false} onDelete={handleDelete}/>)}
 		</div >
 	);
 };
 
-export const MansonPostGrid = (params: {posts : PostResponseDto[]}) => {
-  	if (params.posts)
+export const MansonPostGrid = (params: {posts : PostResponseDto[], onPostDelete?: (postId: string) => void}) => {
+	const [localPosts, setLocalPosts] = useState(params.posts);
+
+	useEffect(() => {
+		setLocalPosts(params.posts);
+	}, [params.posts]);
+
+	const handleDelete = (postId: string) => {
+		setLocalPosts(prev => prev.filter(p => p.id !== postId));
+		if (params.onPostDelete) params.onPostDelete(postId);
+	};
+
+  	if (localPosts)
 	return (
 	<div className='w-full p-4'>
 			<div className="sticky top-0 z-10 bg-white dark:bg-gray-900">
 				{/* Masonry Grid */}
 				<div className="columns-1 sm:columns-2 md:columns-3 gap-4 space-y-4">
-					{params.posts.map((post, index) => (
-						<OnePost key={index} post={post} charging={false}/>
+					{localPosts.map((post, index) => (
+						<OnePost key={index} post={post} charging={false} onDelete={handleDelete}/>
 					))}
 				</div>
 			</div>

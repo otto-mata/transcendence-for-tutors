@@ -80,7 +80,10 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	  useEffect(()=> {
 		const run = async() => {
 			const res = await client.posts.$(id).comments.get();
-			if (!res.ok) throw res.error;
+			if (!res.ok) {
+				console.error('Failed to load comments:', res.error);
+				return;
+			}
 			const data = JSON.parse(res?.value);
 			setComments({data : data});
 		}
@@ -118,9 +121,13 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	}
 	
 
+	const handlePostDelete = () => {
+		router.push('/');
+	};
+
 	return (
 	<div className="max-w-2xl mx-auto p-4">
-		<OnePost post={post} charging={charging}/>
+		<OnePost post={post} charging={charging} onDelete={handlePostDelete}/>
 		{/* Comment something */}
 		<div className="px-4">
 		<div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 mt-4 mb-1">

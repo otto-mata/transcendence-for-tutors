@@ -571,9 +571,8 @@ const ClientFactory = (client: Axios) => {
 					},
 					delete: async () => {
 						try {
-							const response = await client.post(
+							const response = await client.delete(
 								`/posts/${id}`,
-								{},
 							);
 							return Result.ok(response.data);
 						} catch (error) {
