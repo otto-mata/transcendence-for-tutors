@@ -84,6 +84,10 @@ lerna-debug.log*
 .env.local
 back-end/.env
 
+# secrets files
+/back-end/secrets/*
+
+
 # temp directory
 .temp
 .tmp

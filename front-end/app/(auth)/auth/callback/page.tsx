@@ -37,7 +37,7 @@ function AuthCallbackClient() {
           throw new Error("No authentication token found");
         }
 
-        const api = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000";
+        const api = process.env.NEXT_PUBLIC_API_URL ?? "https://localhost:3000";
         
         const res = await fetch(`${api}/auth/me`, {
           method: "GET",

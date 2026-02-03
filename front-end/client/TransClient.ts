@@ -135,7 +135,6 @@ const ClientFactory = (client: Axios) => {
 							'Content-Type':'application/json'
 						}}
 					);
-					console.log("this is login :", response);
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);
@@ -226,7 +225,7 @@ const ClientFactory = (client: Axios) => {
 				},
 				getRedirectUrl: () => {
 					const baseUrl =
-						process.env.API_URL || 'http://localhost:3000';
+						process.env.API_URL || 'https://localhost:3000';
 					return `${baseUrl}/auth/google/redirect`;
 				},
 			},
@@ -234,7 +233,7 @@ const ClientFactory = (client: Axios) => {
 			fortyTwo: {
 				getLoginUrl: () => {
 					const baseUrl =
-						process.env.API_URL || 'http://localhost:3000';
+						process.env.API_URL || 'https://localhost:3000';
 					return `${baseUrl}/auth/42/login`;
 				},
 				verify: async (data: FortyTwoVerifyTokenDto) => {
@@ -882,6 +881,37 @@ const ClientFactory = (client: Axios) => {
 				},
 			},
 		},
+		chat : {
+			get: async (data : QueryParametersDto) => {
+				try {
+					const response = await client.get(`/chat?limit=${data.limit ? data.limit : ''}&page=${data.page ? data.page : ''}`);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			byUsername: async (data : QueryParametersDto, username : string) => {
+				try {
+					const response = await client.get(`/chat/${username}?limit=${data.limit ? data.limit : ''}&skip=${data.page ? data.page : ''}`);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+			post: async (username : string, content : string) => {
+				try {
+					const response = await client.post(`/chat/${username}`, JSON.stringify({message : content}), {
+							headers : {
+							'Content-Type':'application/json'
+						}}
+					);
+					return Result.ok(response.data);
+				} catch (error) {
+					return Result.error(error as RequestError);
+				}
+			},
+
+		}
 	};
 };
 
@@ -893,7 +923,7 @@ export class Backend {
 
 	// test le back tqt
 	private constructor() {
-		this._cl = ClientFactory(new Axios({ baseURL: 'http://localhost:3000', validateStatus : (status) => {
+		this._cl = ClientFactory(new Axios({ baseURL: 'https://localhost:3000', validateStatus : (status) => {
 			return status >= 200 && status < 300;
 		}})); //process.env.API_URL
 	}

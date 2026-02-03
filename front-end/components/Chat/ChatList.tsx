@@ -1,15 +1,15 @@
-import { Search } from "lucide-react";
-import { User } from "./ChatLayout";
+import { ChatDto } from "@/client/message.dto";
+import { UserResponseDto } from "@/client/profile.dto";
 import { getMediaUrl } from "@/client/utils";
 
 interface ChatListProps {
-  users: User[];
+  users: ChatDto[];
   selectedUserId?: string;
-  onSelectUser: (user: User) => void;
+  onSelectedChat: (user: ChatDto) => void;
   hideTitle?: boolean;
 }
 
-export function ChatList({ users, selectedUserId, onSelectUser, hideTitle }: ChatListProps) {
+export function ChatList({ users,  selectedUserId, onSelectedChat, hideTitle }: ChatListProps) {
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800">
       {/* <div className="p-4 border-b border-gray-200 dark:border-gray-700">
@@ -24,29 +24,29 @@ export function ChatList({ users, selectedUserId, onSelectUser, hideTitle }: Cha
         </div>
       </div> */}
       <div className="flex-1 overflow-y-auto">
-        {users.map((user) => (
+        {users.map((chat) => (
           <button
-            key={user.id}
-            onClick={() => onSelectUser(user)}
-            className={`w-full p-4 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${selectedUserId === user.id ? "bg-blue-50 dark:bg-gray-700/50" : ""
+            key={chat.id}
+            onClick={() => onSelectedChat(chat)}
+            className={`w-full p-4 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${selectedUserId === chat.users[0].id ? "bg-blue-50 dark:bg-gray-700/50" : ""
               }`}
           >
             <div className="relative">
-              {user.avatarUrl ? (
+              {chat.users[0].avatarUrl ? (
                 <img
-                  src={getMediaUrl(user.avatarUrl)}
-                  alt={user.displayName || user.username}
+                  src={getMediaUrl(chat.users[0].avatarUrl)}
+                  alt={chat.users[0].username}
                   className="w-12 h-12 rounded-full object-cover"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                  {(user.displayName || user.username || "?").charAt(0).toUpperCase()}
+                  {( chat.users[0].username || "?").charAt(0).toUpperCase()}
                 </div>
               )}
               <div
-                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${user.status === "online"
+                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${"online" === "online"
                     ? "bg-green-500"
-                    : user.status === "away"
+                    :  "away" === "away"
                       ? "bg-yellow-500"
                       : "bg-gray-500"
                   }`}
@@ -54,16 +54,11 @@ export function ChatList({ users, selectedUserId, onSelectUser, hideTitle }: Cha
             </div>
             <div className="flex-1 text-left min-w-0">
               <div className="flex justify-between items-baseline mb-1">
-                <span className="font-semibold truncate">{user.displayName || user.username || "Unknown"}</span>
-                <span className="text-xs text-gray-500">{user.lastMessageTime}</span>
+                <span className="font-semibold truncate">{chat.users[0].username}</span>
+                <span className="text-xs text-gray-500">{`${new Date(chat.messages[0].createdAt).getHours()}:${new Date(chat.messages[0].createdAt).getMinutes()} `} </span>
               </div>
-              <p className="text-sm text-gray-500 truncate">{user.lastMessage}</p>
+              <p className="text-sm text-gray-500 truncate">{chat.messages[0].message}</p>
             </div>
-            {user.unreadCount && (
-              <div className="w-5 h-5 bg-blue-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                {user.unreadCount}
-              </div>
-            )}
           </button>
         ))}
       </div>

@@ -1,55 +1,175 @@
+"use client"
 import { ArrowLeft, MoreVertical, Phone, Video, Send, Paperclip, Smile } from "lucide-react";
-import { User } from "./ChatLayout";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { ChatDto, ChatUserDto  } from "@/client/message.dto";
+import { Backend } from "@/client/TransClient";
+import { UserResponseDto } from "@/client/profile.dto";
+import { isLogged } from "@/client/common.mock";
 import { getMediaUrl } from "@/client/utils";
 
 interface ChatWindowProps {
-  user: User;
+  chat : ChatDto;
   onBack: () => void;
   showBackAlways?: boolean;
+  socketRef : WebSocket | null;
 }
 
 export interface Message {
   id : string,
-  content : string,
-  me : boolean,
-  createdAt : Date
+  message : string,
+  createdAt : Date,
+  senderId : string  
 }
 
 const MOCK_MESSAGES: Message[] = [
   {
     id : "1",
-    content : "J'adore les pates",
-    me : false,
+    message : "J'adore les pates",
+    senderId : "2",
     createdAt : new Date()
   },
   {
     id : "2",
-    content : "Pitain mais la meme de mon cote",
-    me : true,
+    message : "Pitain mais la meme de mon cote",
+    senderId : "1",
     createdAt : new Date()
   },
   {
     id : "3",
-    content : "La coincidence de fou malade !! :DDDDD",
-    me : false,
+    message : "La coincidence de fou malade !! :DDDDD",
+    senderId : "2",
     createdAt : new Date()
   },
   {
     id : "4",
-    content : "La coincidence de fou malade !! :DDDDD, La coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDD",
-    me : false,
+    message : "La coincidence de fou malade !! :DDDDD, La coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDD",
+    senderId : "1",
     createdAt : new Date()
   },
 ]
 
-export function ChatWindow({ user, onBack, showBackAlways }: ChatWindowProps) {
+export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWindowProps) {
   const [inputMessage, setInputMessage] = useState("");
-  const [messages, setmessages ] = useState(MOCK_MESSAGES);
+  const [messages, setMessages ] = useState<Message[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [charging, setCharging] = useState(true);
+  const [skip, setSkip ] = useState(0);
+  const [error, setError] = useState('');
+  const [chatUser, setChatUser ] = useState<ChatUserDto | null>();
+  const client = Backend.getInstance();
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const [change, setChange] = useState(false);
+  const [doScroll, setDoScroll] = useState(true);
+  const [currentUser, setCurrentUser] = useState<UserResponseDto>();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  function loadOlderMessages() {
+    if (charging) return;
+    if (messages.length < skip) return;
+    setCharging(true);
+    setSkip(skip + 10);
+    setChange(!change);
+  };
+
+    useEffect(() => {
+      if (!doScroll || !messages[0]) return;
+      messagesEndRef.current?.scrollIntoView();
+      setDoScroll(false);
+}, [messages]);
+
+  const handleScroll = async () => {
+    if (!containerRef.current) return;
+    if (containerRef.current.scrollTop === 0) {
+      const oldScrollHeight = containerRef.current.scrollHeight;
+      loadOlderMessages(); // fetch older messages
+      const newScrollHeight = containerRef.current.scrollHeight;
+      // Maintain scroll position after prepending doesn't wok because of async shenanegans
+      containerRef.current.scrollTop = newScrollHeight - oldScrollHeight;
+    }
+  };
+
+    useEffect(() => {
+        const fetchCurrentUser = async () => {
+          try {
+            if (!await isLogged()){
+                  setError('You must be logged in to view this page.');
+                  return;
+                }
+            const client = Backend.getInstance();
+            const result = await client.me.get();
+            if (result.ok) {
+              const data = typeof result.value === 'string' 
+                ? JSON.parse(result.value) 
+                : result.value;
+              setCurrentUser(data);
+            }
+          } catch (err) {
+            console.error('Failed to fetch current user:', err);
+          }
+        };
+        fetchCurrentUser();
+      }, []);
+
+      useEffect(() => {
+	  const run = async() => {
+      if (!await isLogged()){
+                  setError('You must be logged in to view this page.');
+                  return;
+                }
+      if (!chat  )return;
+    setChatUser(chat.users[0]);
+		const res = await client.chat.byUsername({limit : 10, page : skip}, chat.users[0].username);
+		if (!res.ok){
+			setError(res.error.message);
+			return;
+		}
+
+		const data = JSON.parse(res?.value);
+    if (data.error){
+			return;
+		}
+		setMessages(prev => [...data, ...messages]);
+    setCharging(false);
+		// observer.observe(sentinelRef);
+	  
+	  }
+	  run();
+	}, [change]);
+  
+
+  if (socketRef != null) {
+    socketRef.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const toad = {
+        id : (messages.length + 1).toString(),
+        message : data.message,
+        senderId : data.from,
+        createdAt : new Date()
+      }
+      if (data.type == "rec_message") setMessages([...messages, toad]);
+      setSkip(skip + 1);
+      setDoScroll(true);
+    }
+  }
 
   async function sendInputMessage(){
-    console.log("inputMessage is : ", inputMessage);
+    if (!chatUser)
+        return;
+    if (!currentUser) return;
+    const toSend = {
+      type : "message",
+      id : chat.users[0].id ,
+      message : inputMessage
+    };
+    socketRef?.send(JSON.stringify(toSend));
+    const data = {
+      message : inputMessage,
+      senderId : currentUser.id,
+      createdAt : new Date()
+    }
+    // setMessages([...messages, data]);
+    client.chat.post(chatUser?.username, inputMessage);
     setInputMessage('');
 
   }
@@ -63,47 +183,50 @@ export function ChatWindow({ user, onBack, showBackAlways }: ChatWindowProps) {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="relative">
-            {user.avatarUrl ? (
+            {chatUser?.avatarUrl ? (
               <img
-                src={getMediaUrl(user.avatarUrl)}
-                alt={user.displayName || user.username}
+                src={getMediaUrl(chatUser?.avatarUrl)}
+                alt={chatUser?.username}
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                {(user.displayName || user.username || "?").charAt(0).toUpperCase()}
+                {(chatUser?.username || "?").charAt(0).toUpperCase()}
               </div>
             )}
             <div
-              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${user.status === "online"
+              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${chatUser?.username === "online"
                   ? "bg-green-500"
-                  : user.status === "away"
+                  : chatUser?.username === "away"
                     ? "bg-yellow-500"
                     : "bg-gray-500"
                 }`}
             />
           </div>
           <div>
-            <h3 className="font-bold">{user.displayName || user.username || "Unknown"}</h3>
+            <h3 className="font-bold">{chatUser?.username}</h3>
             <p className="text-xs text-gray-500">
-              {user.status === "online" ? "Active now" : "Last seen recently"}
+              {chatUser?.username === "online" ? "Active now" : "Last seen recently"}
             </p>
           </div>
         </div>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
+      <div ref={containerRef}
+           onScroll={handleScroll}
+           className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
           {messages.map((message) => (
-            <div key={message.id} className={`flex justify-${message.me? "end" :  "start"}`}>
-          <div className={ message.me? "bg-blue-500 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%]" : "bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]"}>
-            <p>{message.content}</p>
-            <span className={`text-xs ${message.me ? "text-gray-300" : "text-gray-400"} mt-1 block`}>{`${message.createdAt.getHours()}:${message.createdAt.getMinutes()} `}</span>
+            <div key={message.id} className={`flex justify-${message.senderId == currentUser?.id ? "end" :  "start"}`}>
+          <div className={ message.senderId == currentUser?.id  ? "bg-blue-500 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%]" : "bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]"}>
+            <p>{message.message}</p>
+            <span className={`text-xs ${message.senderId == currentUser?.id ? "text-gray-300" : "text-gray-400"} mt-1 block`}>{`${new Date(message.createdAt).getHours()}:${new Date(message.createdAt).getMinutes()} `}</span>
           </div>
         </div>
           ))}
-        {/* Mock Messages */}
+        <div ref={messagesEndRef}></div>
       </div>
+      
 
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">

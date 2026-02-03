@@ -1,5 +1,4 @@
 import ResponsiveNav from "@/components/ResponsiveNav";
-import ChatPopup from "@/components/Chat/ChatPopup";
 
 export default function AppLayout({
   children,
@@ -10,7 +9,6 @@ export default function AppLayout({
     <div className="flex w-full">
       <ResponsiveNav />
       {children}
-      <ChatPopup />
     </div>
   );
 }

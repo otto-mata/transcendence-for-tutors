@@ -5,56 +5,56 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider     = "prisma-client"
-  output       = "./generated"
-  moduleFormat = "cjs"
+    provider     = "prisma-client"
+    output       = "./generated"
+    moduleFormat = "cjs"
 }
 
 datasource db {
-  provider = "postgresql"
+    provider = "postgresql"
 }
 
 model User {
-  id           String  @id @default(cuid())
-  username     String  @unique
-  displayName  String?
-  email        String  @unique
-  passwordHash String
+    id           String  @id @default(cuid())
+    username     String  @unique
+    displayName  String?
+    email        String  @unique
+    passwordHash String
 
-  // Profile information
-  bio           String?
-  avatarUrl     String?
-  coverImageUrl String?
-  website       String?
+    // Profile information
+    bio           String?
+    avatarUrl     String?
+    coverImageUrl String?
+    website       String?
 
-  // Social stats
-  followerCount  Int @default(0)
-  followingCount Int @default(0)
-  postCount      Int @default(0)
+    // Social stats
+    followerCount  Int @default(0)
+    followingCount Int @default(0)
+    postCount      Int @default(0)
 
-  // Account status
-  isVerified  Boolean @default(false)
-  isPrivate   Boolean @default(false)
-  isActive    Boolean @default(true)
+    // Account status
+    isVerified Boolean @default(false)
+    isPrivate  Boolean @default(false)
+    isActive   Boolean @default(true)
 
-  // Metadata
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @default(now()) @updatedAt
-  lastSeenAt DateTime?
+    // Metadata
+    createdAt  DateTime  @default(now())
+    updatedAt  DateTime  @default(now()) @updatedAt
+    lastSeenAt DateTime?
 
-  // Authentication tokens
-  emailVerificationToken String?
-  passwordResetToken     String?
-  passwordResetExpires   DateTime?
-  lastVerificationEmailSentAt DateTime?
+    // Authentication tokens
+    emailVerificationToken      String?
+    passwordResetToken          String?
+    passwordResetExpires        DateTime?
+    lastVerificationEmailSentAt DateTime?
 
-  // OAuth Provider information
-  oauthProvider String?  // 'google', 'fortytwo', etc.
-  oauthId       String?  // OAuth provider's user ID
+    // OAuth Provider information
+    oauthProvider String? // 'google', 'fortytwo', etc.
+    oauthId       String? // OAuth provider's user ID
 
-  // Preferences
-  theme              String  @default("auto")
-  language           String  @default("en")
+    // Preferences
+    theme    String @default("auto")
+    language String @default("en")
 
   // Relations
   posts     Post[]     @relation("UserPosts")
@@ -63,13 +63,16 @@ model User {
   bookmarks Bookmark[] @relation("UserBookmarks")
   media     Media[]    @relation("UserMedia")
 
-  // Following relationships
-  followers Follow[] @relation("UserFollowers")
-  following Follow[] @relation("UserFollowing")
+    // Following relationships
+    followers Follow[] @relation("UserFollowers")
+    following Follow[] @relation("UserFollowing")
 
-  @@index([username])
-  @@index([email])
-  @@index([createdAt])
+    chats     Chat[] 
+    messages  Message[]
+
+    @@index([username])
+    @@index([email])
+    @@index([createdAt])
 }
 
 model Post {
@@ -80,21 +83,21 @@ model Post {
   content  String @db.Text
   mediaUrl String?
 
-  // Stats
-  likeCount    Int @default(0)
-  commentCount Int @default(0)
+    // Stats
+    likeCount    Int @default(0)
+    commentCount Int @default(0)
 
-  // Visibility
-  visibility String @default("public") // 'public' | 'followers' | 'friends' | 'private'
+    // Visibility
+    visibility String @default("public") // 'public' | 'followers' | 'friends' | 'private'
 
-  // Metadata
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now()) @updatedAt
+    // Metadata
+    createdAt DateTime @default(now())
+    updatedAt DateTime @default(now()) @updatedAt
 
-  // Reply/Thread support
-  isReply      Boolean @default(false)
-  parentPostId String?
-  replyCount   Int     @default(0)
+    // Reply/Thread support
+    isReply      Boolean @default(false)
+    parentPostId String?
+    replyCount   Int     @default(0)
 
   // Relations
   author    User       @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
@@ -103,79 +106,78 @@ model Post {
   bookmarks Bookmark[] @relation("PostBookmarks")
   media     Media[]    @relation("PostMedia")
 
-  // Reply/Thread relationships
-  parentPost Post?  @relation("Replies", fields: [parentPostId], references: [id], onDelete: Cascade)
-  replies    Post[] @relation("Replies")
+    // Reply/Thread relationships
+    parentPost Post?  @relation("Replies", fields: [parentPostId], references: [id], onDelete: Cascade)
+    replies    Post[] @relation("Replies")
 
-  @@index([authorId])
-  @@index([createdAt])
-  @@index([parentPostId])
-  @@index([visibility])
+    @@index([authorId])
+    @@index([createdAt])
+    @@index([parentPostId])
+    @@index([visibility])
 }
 
 model Comment {
-  id       String @id @default(cuid())
-  content  String @db.Text
-  authorId String
-  postId   String
+    id       String @id @default(cuid())
+    content  String @db.Text
+    authorId String
+    postId   String
 
-  // Stats
-  likeCount Int @default(0)
+    // Stats
+    likeCount Int @default(0)
 
-  // Metadata
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+    // Metadata
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
+    // Reply support (nested comments)
+    parentCommentId String?
+    replyCount      Int     @default(0)
 
-  // Reply support (nested comments)
-  parentCommentId String?
-  replyCount      Int     @default(0)
+    // Relations
+    author User   @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade)
+    post   Post   @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
+    likes  Like[] @relation("CommentLikes")
 
-  // Relations
-  author User   @relation("UserComments", fields: [authorId], references: [id], onDelete: Cascade)
-  post   Post   @relation("PostComments", fields: [postId], references: [id], onDelete: Cascade)
-  likes  Like[] @relation("CommentLikes")
+    // Nested comment support
+    parentComment Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+    replies       Comment[] @relation("CommentReplies")
 
-  // Nested comment support
-  parentComment Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
-  replies       Comment[] @relation("CommentReplies")
-
-  @@index([authorId])
-  @@index([postId])
-  @@index([parentCommentId])
-  @@index([createdAt])
+    @@index([authorId])
+    @@index([postId])
+    @@index([parentCommentId])
+    @@index([createdAt])
 }
 
 model Like {
-  id        String   @id @default(cuid())
-  userId    String
-  postId    String?
-  commentId String?
-  createdAt DateTime @default(now())
+    id        String   @id @default(cuid())
+    userId    String
+    postId    String?
+    commentId String?
+    createdAt DateTime @default(now())
 
-  user    User     @relation("UserLikes", fields: [userId], references: [id], onDelete: Cascade)
-  post    Post?    @relation("PostLikes", fields: [postId], references: [id], onDelete: Cascade)
-  comment Comment? @relation("CommentLikes", fields: [commentId], references: [id], onDelete: Cascade)
+    user    User     @relation("UserLikes", fields: [userId], references: [id], onDelete: Cascade)
+    post    Post?    @relation("PostLikes", fields: [postId], references: [id], onDelete: Cascade)
+    comment Comment? @relation("CommentLikes", fields: [commentId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, postId])
-  @@unique([userId, commentId])
-  @@index([userId])
-  @@index([postId])
-  @@index([commentId])
+    @@unique([userId, postId])
+    @@unique([userId, commentId])
+    @@index([userId])
+    @@index([postId])
+    @@index([commentId])
 }
 
 model Bookmark {
-  id        String   @id @default(cuid())
-  userId    String
-  postId    String
-  createdAt DateTime @default(now())
+    id        String   @id @default(cuid())
+    userId    String
+    postId    String
+    createdAt DateTime @default(now())
 
-  user User @relation("UserBookmarks", fields: [userId], references: [id], onDelete: Cascade)
-  post Post @relation("PostBookmarks", fields: [postId], references: [id], onDelete: Cascade)
+    user User @relation("UserBookmarks", fields: [userId], references: [id], onDelete: Cascade)
+    post Post @relation("PostBookmarks", fields: [postId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, postId])
-  @@index([userId])
-  @@index([postId])
+    @@unique([userId, postId])
+    @@index([userId])
+    @@index([postId])
 }
 
 model Follow {
@@ -185,8 +187,8 @@ model Follow {
   status      String   @default("accepted") // "pending" for private accounts, "accepted" when approved
   createdAt   DateTime @default(now())
 
-  follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
-  following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
+    follower  User @relation("UserFollowing", fields: [followerId], references: [id], onDelete: Cascade)
+    following User @relation("UserFollowers", fields: [followingId], references: [id], onDelete: Cascade)
 
   @@unique([followerId, followingId])
   @@index([followerId])
@@ -194,16 +196,15 @@ model Follow {
   @@index([status])
 }
 
-
 model Notification {
-  id        Int      @id @default(autoincrement())
-  title     String?
-  message   String
-  type      String?
-  meta      Json?
-  read      Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+    id        Int      @id @default(autoincrement())
+    title     String?
+    message   String
+    type      String?
+    meta      Json?
+    read      Boolean  @default(false)
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 }
 
 model Media {
@@ -225,4 +226,23 @@ model Media {
   @@index([userId])
   @@index([postId])
   @@index([createdAt])  
+}
+model Chat {
+    id        Int       @id @default(autoincrement())
+
+    users     User[]
+    messages  Message[] 
+}
+
+model Message {
+    id        Int        @id @default(autoincrement())
+
+    message   String
+    createdAt DateTime @default(now())
+
+    chatId    Int
+    chat      Chat       @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+    senderId  String
+    sender    User       @relation(fields: [senderId], references: [id])
 }
