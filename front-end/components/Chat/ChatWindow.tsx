@@ -51,21 +51,41 @@ const MOCK_MESSAGES: Message[] = [
 export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWindowProps) {
   const [inputMessage, setInputMessage] = useState("");
   const [messages, setMessages ] = useState<Message[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [charging, setCharging] = useState(true);
-    const [page, setPage ] = useState(1);
-    const [error, setError] = useState('');
-    const [chatUser, setChatUser ] = useState<ChatUserDto | null>();
-    const client = Backend.getInstance();
-    const sentinelRef = useRef<HTMLDivElement>(null)
-    const [change, setChange] = useState(false);
-    const [currentUser, setCurrentUser] = useState<UserResponseDto>();
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
+  const [charging, setCharging] = useState(true);
+  const [page, setPage ] = useState(1);
+  const [error, setError] = useState('');
+  const [chatUser, setChatUser ] = useState<ChatUserDto | null>();
+  const client = Backend.getInstance();
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const [change, setChange] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserResponseDto>();
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-    function scrollDown(){
+  function loadOlderMessages() {
+    if (charging) return;
+    if (messages.length < page * 10) return;
+    setCharging(true);
+    setPage(page + 1);
+    setChange(!change);
+  };
+
+  function scrollDown(){
       console.log("not working");
       messagesEndRef.current?.scrollIntoView({behavior: "auto"});
     }
+
+  const handleScroll = async () => {
+    if (!containerRef.current) return;
+    if (containerRef.current.scrollTop === 0) {
+      const oldScrollHeight = containerRef.current.scrollHeight;
+      await loadOlderMessages(); // fetch older messages
+      const newScrollHeight = containerRef.current.scrollHeight;
+      // Maintain scroll position after prepending
+      containerRef.current.scrollTop = newScrollHeight - oldScrollHeight;
+    }
+  };
 
     useEffect(() => {
         const fetchCurrentUser = async () => {
@@ -89,37 +109,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
         fetchCurrentUser();
       }, []);
 
-
-    useEffect(() => {
-	  const target = sentinelRef.current;
-	  if (!target) return;
-  
-	  const observer = new IntersectionObserver(
-		(entries) => {
-		  entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          if (charging) return;
-          if (messages.length < page * 10) return;
-          setCharging(true);
-          setPage(page + 1);
-          setChange(!change);
-			  }
-		  });
-		},
-		{
-		  threshold: 0.1, // 10% visible
-		}
-	  );
-  
-	  observer.observe(target);
-  
-	  return () => {
-		observer.unobserve(target);
-		observer.disconnect();
-	  };
-	}, [messages]);
-
-    useEffect(() => {
+      useEffect(() => {
 	  const run = async() => {
       if (!chat  )return;
     setChatUser(chat.users[0]);
@@ -134,8 +124,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
 			return;
 		}
 		setMessages([...data, ...messages]);
-    scrollDown();
-		setCharging(false);
+    setCharging(false);
 		// observer.observe(sentinelRef);
 	  
 	  }
@@ -167,7 +156,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
     };
     socketRef?.send(JSON.stringify(toSend));
     const data = {
-      id : (messages.length + 1).toString(),
+      id : (( + messages[messages.length -1]?.id || 0) + 1).toString,
       message : inputMessage,
       senderId : currentUser.id,
       createdAt : new Date()
@@ -218,8 +207,9 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
       </div>
 
       {/* Messages Area */}
-      <div ref={sentinelRef}>{messages.length > page * 10 ? "Loading messages..." : ''}</div>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
+      <div ref={containerRef}
+           onScroll={handleScroll}
+           className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
           {messages.map((message) => (
             <div key={message.id} className={`flex justify-${message.senderId == currentUser?.id ? "end" :  "start"}`}>
           <div className={ message.senderId == currentUser?.id  ? "bg-blue-500 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%]" : "bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]"}>

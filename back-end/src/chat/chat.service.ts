@@ -86,7 +86,9 @@ export class ChatService {
 			skip: x,
 			take: y,
 			include: {
-				users: true ,
+				users: {where : {
+					id : {not : sender.id }
+				}},
 				messages: {
 					take: 1,
 					orderBy: { createdAt: 'desc' },
