@@ -135,7 +135,6 @@ const ClientFactory = (client: Axios) => {
 							'Content-Type':'application/json'
 						}}
 					);
-					console.log("this is login :", response);
 					return Result.ok(response.data);
 				} catch (error) {
 					return Result.error(error as RequestError);

@@ -26,7 +26,6 @@ export class ChatController {
 			return (JSON.stringify(chats));
 		} 
 		catch (e) {
-			console.log(e);
 			if (res) res.status(HttpStatus.NOT_FOUND);
 			return (JSON.stringify({error: "An error occured"}));
 		}

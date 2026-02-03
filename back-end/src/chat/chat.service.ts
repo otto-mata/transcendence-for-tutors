@@ -17,7 +17,6 @@ export class ChatService {
 		if (!recipient) {
 			throw new NotFoundException('User not found');
 		}
-		console.log(recipient);
 		const existingChat = await this.prisma.chat.findFirst({
 			where: {
 				AND: [

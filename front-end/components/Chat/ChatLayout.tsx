@@ -81,7 +81,6 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
       try {
         const client = Backend.getInstance();
         const result = await client.users.$({ id: initialUserId }).get();
-        console.log("result ?? : ", result, result.ok, result.value);
         if (result.ok && result.value) {
           const userData = JSON.parse(result.value);
           const newUser: ChatDto = {
@@ -111,8 +110,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
     };
 
     fetchInitialUser();
-    console.log("this is chats", chats);
-  }, [initialUserId]);
+    }, [initialUserId]);
 
   useEffect(() => {
 
@@ -136,7 +134,6 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
                 type : "auth",
                 token : localStorage.getItem("access_token")
       })
-      console.log("thisis to send :", tosend);
       socketRef.current?.send(tosend);
     }
     
@@ -194,9 +191,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
 			return;
 		}
 		const data = JSON.parse(res?.value);
-    console.log("this is data :",  data);
-
-		setChats([...chats, ...data]);
+    setChats([...chats, ...data]);
 		setCharging(false);
 		// observer.observe(sentinelRef);
 	  

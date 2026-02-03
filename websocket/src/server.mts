@@ -6,8 +6,6 @@ import { handler, sendUpdate } from './messages.handler.mjs';
 const server = new WebSocketServer({
   port: process.env.WS_PORT ? + process.env.WS_PORT : 8090,
 });
-console.log("nan mais aled un moment");
-console.log( process.env.WS_PORT);
 
 export const users = new Map<string, Set<WebSocket>>(); // int userid : Set of socket linked to this userId
 export const sockets = new Map<WebSocket, string>(); // socket : userid
