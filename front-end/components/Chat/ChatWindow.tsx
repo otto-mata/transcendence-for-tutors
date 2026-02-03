@@ -59,6 +59,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
   const client = Backend.getInstance();
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [change, setChange] = useState(false);
+  const [doScroll, setDoScroll] = useState(true);
   const [currentUser, setCurrentUser] = useState<UserResponseDto>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -71,18 +72,19 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
     setChange(!change);
   };
 
-  function scrollDown(){
-      console.log("not working");
-      messagesEndRef.current?.scrollIntoView({behavior: "auto"});
-    }
+    useEffect(() => {
+      if (!doScroll || !messages[0]) return;
+      messagesEndRef.current?.scrollIntoView();
+      setDoScroll(false);
+}, [messages]);
 
   const handleScroll = async () => {
     if (!containerRef.current) return;
     if (containerRef.current.scrollTop === 0) {
       const oldScrollHeight = containerRef.current.scrollHeight;
-      await loadOlderMessages(); // fetch older messages
+      loadOlderMessages(); // fetch older messages
       const newScrollHeight = containerRef.current.scrollHeight;
-      // Maintain scroll position after prepending
+      // Maintain scroll position after prepending doesn't wok because of async shenanegans
       containerRef.current.scrollTop = newScrollHeight - oldScrollHeight;
     }
   };
@@ -111,6 +113,10 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
 
       useEffect(() => {
 	  const run = async() => {
+      if (!await isLogged()){
+                  setError('You must be logged in to view this page.');
+                  return;
+                }
       if (!chat  )return;
     setChatUser(chat.users[0]);
 		const res = await client.chat.byUsername({limit : 10, page : page}, chat.users[0].username);
@@ -123,7 +129,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
     if (data.error){
 			return;
 		}
-		setMessages([...data, ...messages]);
+		setMessages(prev => [...data, ...messages]);
     setCharging(false);
 		// observer.observe(sentinelRef);
 	  
@@ -135,6 +141,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
   if (socketRef != null) {
     socketRef.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      console.log("pourtatn : ", data, " : moi : ", currentUser);
       const toad = {
         id : (messages.length + 1).toString(),
         message : data.message,
@@ -142,6 +149,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
         createdAt : new Date()
       }
       if (data.type == "rec_message") setMessages([...messages, toad]);
+      setDoScroll(true);
     }
   }
 
@@ -163,7 +171,6 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
     }
     // setMessages([...messages, data]);
     client.chat.post(chatUser?.username, inputMessage);
-    scrollDown();
     setInputMessage('');
 
   }
@@ -218,8 +225,9 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
           </div>
         </div>
           ))}
+        <div ref={messagesEndRef}></div>
       </div>
-      <div ref={messagesEndRef}></div>
+      
 
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">

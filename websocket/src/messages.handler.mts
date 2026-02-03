@@ -49,11 +49,10 @@ export const handler = (socket: WebSocket, data: WebSocket.RawData) => {
     }
     if (msg.type === 'message') {
       const { id, message } = msg;
-      console.log("this is message :", msg, id, ": and this data :", data.toString());
       if (!sockets.has(socket))
         return (socket.send(JSON.stringify({ type: 'mess_err', error: 'Not logged in !' })));
       for (let i of users.get(id) ?? []) {
-        i.send(JSON.stringify({ type: 'rec_message', from: id, message: message }));
+        i.send(JSON.stringify({ type: 'rec_message', from: sockets.get(socket), message: message }));
       }
       socket.send(JSON.stringify({ type: 'rec_message', from: sockets.get(socket), message: message }));
       socket.send(JSON.stringify({ type: 'mess_ok' }));
