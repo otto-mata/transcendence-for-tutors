@@ -184,7 +184,12 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 	};
 
 	const handleFollowerRemoved = () => {
-		setUser(prev => prev ? { ...prev, followerCount: Math.max(0, prev.followerCount - 1) } : null);
+		// Refresh local profile data
+		fetchUserProfile();
+		// Refresh global user context for sidebar/nav
+		if (isOwnProfile) {
+			refreshUser();
+		}
 	};
 
 	const handleRequestHandled = () => {

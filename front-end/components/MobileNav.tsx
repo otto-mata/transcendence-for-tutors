@@ -18,12 +18,14 @@ import Link from 'next/link';
 import { redirect, usePathname } from 'next/navigation';
 import { useUser } from '@/client/UserContext';
 import { getMediaUrl } from '@/client/utils';
+import FollowListModal from './FollowListModal';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
 	const [isDark, setIsDark] = useState(false);
+	const [showFollowModal, setShowFollowModal] = useState<'followers' | 'following' | null>(null);
 	const pathname = usePathname();
-	const { user, isLoading } = useUser();
+	const { user, isLoading, refreshUser } = useUser();
 
 	function LogoutFunction(){
 		localStorage.setItem('access_token', " ");
@@ -38,6 +40,16 @@ export default function MobileNav() {
 
 	const toggleMenu = () => setIsOpen(!isOpen);
 	const closeMenu = () => setIsOpen(false);
+
+	const formatCount = (count: number | undefined | null) => {
+		if (count == null) return '0';
+		if (count >= 1000000) {
+			return (count / 1000000).toFixed(1) + 'M';
+		} else if (count >= 1000) {
+			return (count / 1000).toFixed(1) + 'K';
+		}
+		return count.toString();
+	};
 
 	return (
 		<>
@@ -87,17 +99,17 @@ export default function MobileNav() {
 
 					<div className="flex gap-4 text-white text-sm">
 						<Link href="/profile" onClick={closeMenu}>
-							<span className="font-bold">1,234</span>
+							<span className="font-bold">{formatCount(user?.postCount)}</span>
 							<span className="ml-1 opacity-80">Posts</span>
 						</Link>
-						<Link href="/followers" onClick={closeMenu}>
-							<span className="font-bold">45. 2K</span>
+						<button onClick={() => setShowFollowModal('followers')} className="hover:underline">
+							<span className="font-bold">{formatCount(user?.followerCount)}</span>
 							<span className="ml-1 opacity-80">Followers</span>
-						</Link>
-						<Link href="/following" onClick={closeMenu}>
-							<span className="font-bold">892</span>
+						</button>
+						<button onClick={() => setShowFollowModal('following')} className="hover:underline">
+							<span className="font-bold">{formatCount(user?.followingCount)}</span>
 							<span className="ml-1 opacity-80">Following</span>
-						</Link>
+						</button>
 					</div>
 				</div>
 
@@ -116,7 +128,6 @@ export default function MobileNav() {
 							href="/messages"
 							icon={<MessageCircle className="w-5 h-5" />}
 							label="Messages"
-							badge={3}
 							onClick={closeMenu}
 							active={isActive('/messages')}
 						/>
@@ -166,6 +177,20 @@ export default function MobileNav() {
 					</button>
 				</div>
 			</div>
+
+			{/* Follow List Modal */}
+			{showFollowModal && user && (
+				<FollowListModal
+					isOpen={!!showFollowModal}
+					onClose={() => setShowFollowModal(null)}
+					username={user.username}
+					userId={user.id}
+					type={showFollowModal}
+					isOwnProfile={true}
+					currentUserId={user.id}
+					onFollowerRemoved={refreshUser}
+				/>
+			)}
 		</>
 	);
 }

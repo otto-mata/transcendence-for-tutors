@@ -28,13 +28,14 @@ interface FollowItemProps {
 	onRemove?: (userId: string) => void;
 	onAccept?: (userId: string) => void;
 	onReject?: (userId: string) => void;
+	onFollowChange?: () => void;
 	isRemoving?: boolean;
 	isAccepting?: boolean;
 	isRejecting?: boolean;
 	currentUserId?: string;
 }
 
-function FollowItem({ user, isOwnProfile, type, onRemove, onAccept, onReject, isRemoving, isAccepting, isRejecting, currentUserId }: FollowItemProps) {
+function FollowItem({ user, isOwnProfile, type, onRemove, onAccept, onReject, onFollowChange, isRemoving, isAccepting, isRejecting, currentUserId }: FollowItemProps) {
 	const [isFollowing, setIsFollowing] = useState(false);
 	const [isLoadingFollow, setIsLoadingFollow] = useState(false);
 	const [relationshipChecked, setRelationshipChecked] = useState(false);
@@ -77,11 +78,13 @@ function FollowItem({ user, isOwnProfile, type, onRemove, onAccept, onReject, is
 				const result = await client.users.$({ id: user.id }).unfollow();
 				if (result.ok) {
 					setIsFollowing(false);
+					onFollowChange?.();
 				}
 			} else {
 				const result = await client.users.$({ id: user.id }).follow();
 				if (result.ok) {
 					setIsFollowing(true);
+					onFollowChange?.();
 				}
 			}
 		} catch (err) {
@@ -425,6 +428,7 @@ export default function FollowListModal({
 										onRemove={handleRemoveFollower}
 										onAccept={handleAcceptRequest}
 										onReject={handleRejectRequest}
+										onFollowChange={onFollowerRemoved}
 										isRemoving={removingId === user.id}
 										isAccepting={acceptingId === user.id}
 										isRejecting={rejectingId === user.id}
