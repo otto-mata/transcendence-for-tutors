@@ -3,7 +3,7 @@ import { messageSchema, jwtSchema } from './messages.type.mjs';
 import type WebSocket from 'ws';
 import jwt from 'jsonwebtoken';
 
-const secret: string = process.env.JWT_SECRET || "";
+const secret: string = process.env.JWT_SECRET || "4X1fdYDG8LGBURWxT042Jqr9XZqKP4F4JqbVE+moI5Ly3iU/wCUQbS8ei3KRcG0XQtrO0gngbrCitl35R9ERrw==";
 
 export const sendUpdate = (userId: string, status: string) => {
   const set = watchers.get(userId);
@@ -49,12 +49,13 @@ export const handler = (socket: WebSocket, data: WebSocket.RawData) => {
     }
     if (msg.type === 'message') {
       const { id, message } = msg;
+      console.log("this is message :", msg, id, ": and this data :", data.toString());
       if (!sockets.has(socket))
         return (socket.send(JSON.stringify({ type: 'mess_err', error: 'Not logged in !' })));
       for (let i of users.get(id) ?? []) {
         i.send(JSON.stringify({ type: 'rec_message', from: id, message: message }));
       }
-      socket.send(JSON.stringify({ type: 'rec_message', from: id, message: message }));
+      socket.send(JSON.stringify({ type: 'rec_message', from: sockets.get(socket), message: message }));
       socket.send(JSON.stringify({ type: 'mess_ok' }));
     }
     //show_connections(); 

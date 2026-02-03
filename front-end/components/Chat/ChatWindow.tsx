@@ -1,7 +1,7 @@
 "use client"
 import { ArrowLeft, MoreVertical, Phone, Video, Send, Paperclip, Smile } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ChatDto  } from "@/client/message.dto";
+import { ChatDto, ChatUserDto  } from "@/client/message.dto";
 import { Backend } from "@/client/TransClient";
 import { UserResponseDto } from "@/client/profile.dto";
 import { isLogged } from "@/client/common.mock";
@@ -50,16 +50,22 @@ const MOCK_MESSAGES: Message[] = [
 
 export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWindowProps) {
   const [inputMessage, setInputMessage] = useState("");
-  const [messages, setMessages ] = useState<Message[]>(MOCK_MESSAGES);
+  const [messages, setMessages ] = useState<Message[]>([]);
     const [loading, setLoading] = useState(true);
     const [charging, setCharging] = useState(true);
     const [page, setPage ] = useState(1);
     const [error, setError] = useState('');
+    const [chatUser, setChatUser ] = useState<ChatUserDto | null>();
     const client = Backend.getInstance();
     const sentinelRef = useRef<HTMLDivElement>(null)
     const [change, setChange] = useState(false);
     const [currentUser, setCurrentUser] = useState<UserResponseDto>();
+    const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    function scrollDown(){
+      console.log("not working");
+      messagesEndRef.current?.scrollIntoView({behavior: "auto"});
+    }
 
     useEffect(() => {
         const fetchCurrentUser = async () => {
@@ -74,7 +80,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
               const data = typeof result.value === 'string' 
                 ? JSON.parse(result.value) 
                 : result.value;
-              setCurrentUser(data.id);
+              setCurrentUser(data);
             }
           } catch (err) {
             console.error('Failed to fetch current user:', err);
@@ -91,12 +97,12 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
 	  const observer = new IntersectionObserver(
 		(entries) => {
 		  entries.forEach((entry) => {
-			if (entry.isIntersecting) {
-			  if (charging) return;
-			  if (messages.length < page * 10) return;
-			  setCharging(true);
-			  setPage(page + 1);
-			  setChange(!change);
+        if (entry.isIntersecting) {
+          if (charging) return;
+          if (messages.length < page * 10) return;
+          setCharging(true);
+          setPage(page + 1);
+          setChange(!change);
 			  }
 		  });
 		},
@@ -115,15 +121,20 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
 
     useEffect(() => {
 	  const run = async() => {
-		const res = await client.chat.byUsername({limit : 10, page : page}, chat.user[0].username);
+      if (!chat  )return;
+    setChatUser(chat.users[0]);
+		const res = await client.chat.byUsername({limit : 10, page : page}, chat.users[0].username);
 		if (!res.ok){
 			setError(res.error.message);
 			return;
 		}
 
 		const data = JSON.parse(res?.value);
-
-		setMessages([...messages, ...data]);
+    if (data.error){
+			return;
+		}
+		setMessages([...data, ...messages]);
+    scrollDown();
 		setCharging(false);
 		// observer.observe(sentinelRef);
 	  
@@ -146,18 +157,24 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
   }
 
   async function sendInputMessage(){
+    if (!chatUser)
+        return;
     if (!currentUser) return;
-    socketRef?.send(JSON.stringify({
-      "type" : "message",
-      "message" : inputMessage
-    }));
+    const toSend = {
+      type : "message",
+      id : chat.users[0].id ,
+      message : inputMessage
+    };
+    socketRef?.send(JSON.stringify(toSend));
     const data = {
       id : (messages.length + 1).toString(),
       message : inputMessage,
       senderId : currentUser.id,
       createdAt : new Date()
     }
-    setMessages([...messages, data]);
+    // setMessages([...messages, data]);
+    client.chat.post(chatUser?.username, inputMessage);
+    scrollDown();
     setInputMessage('');
 
   }
@@ -171,47 +188,48 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="relative">
-            {chat.user[0].avatarUrl ? (
+            {chatUser?.avatarUrl ? (
               <img
-                src={getMediaUrl(chat.user[0].avatarUrl)}
-                alt={chat.user[0].username}
+                src={getMediaUrl(chatUser?.avatarUrl)}
+                alt={chatUser?.username}
                 className="w-10 h-10 rounded-full object-cover"
               />
             ) : (
               <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                {(chat.user[0].username || "?").charAt(0).toUpperCase()}
+                {(chatUser?.username || "?").charAt(0).toUpperCase()}
               </div>
             )}
             <div
-              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${chat.user[0].username === "online"
+              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${chatUser?.username === "online"
                   ? "bg-green-500"
-                  : chat.user[0].username === "away"
+                  : chatUser?.username === "away"
                     ? "bg-yellow-500"
                     : "bg-gray-500"
                 }`}
             />
           </div>
           <div>
-            <h3 className="font-bold">{chat.user[0].username}</h3>
+            <h3 className="font-bold">{chatUser?.username}</h3>
             <p className="text-xs text-gray-500">
-              {chat.user[0].username === "online" ? "Active now" : "Last seen recently"}
+              {chatUser?.username === "online" ? "Active now" : "Last seen recently"}
             </p>
           </div>
         </div>
       </div>
 
       {/* Messages Area */}
+      <div ref={sentinelRef}>{messages.length > page * 10 ? "Loading messages..." : ''}</div>
       <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 dark:bg-gray-900">
           {messages.map((message) => (
             <div key={message.id} className={`flex justify-${message.senderId == currentUser?.id ? "end" :  "start"}`}>
           <div className={ message.senderId == currentUser?.id  ? "bg-blue-500 text-white p-3 rounded-2xl rounded-tr-none shadow-sm max-w-[80%]" : "bg-white dark:bg-gray-800 p-3 rounded-2xl rounded-tl-none shadow-sm max-w-[80%]"}>
             <p>{message.message}</p>
-            <span className={`text-xs ${message.senderId == currentUser?.id ? "text-gray-300" : "text-gray-400"} mt-1 block`}>{`${message.createdAt.getHours()}:${message.createdAt.getMinutes()} `}</span>
+            <span className={`text-xs ${message.senderId == currentUser?.id ? "text-gray-300" : "text-gray-400"} mt-1 block`}>{`${new Date(message.createdAt).getHours()}:${new Date(message.createdAt).getMinutes()} `}</span>
           </div>
         </div>
           ))}
-        {/* Mock Messages */}
       </div>
+      <div ref={messagesEndRef}></div>
 
       {/* Input Area */}
       <div className="p-4 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">

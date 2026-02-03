@@ -27,19 +27,19 @@ export function ChatList({ users, selectedUserId, onSelectedChat, hideTitle }: C
           <button
             key={chat.id}
             onClick={() => onSelectedChat(chat)}
-            className={`w-full p-4 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${selectedUserId === chat.user[0].id ? "bg-blue-50 dark:bg-gray-700/50" : ""
+            className={`w-full p-4 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${selectedUserId === chat.users[0].id ? "bg-blue-50 dark:bg-gray-700/50" : ""
               }`}
           >
             <div className="relative">
-              {chat.user[0].avatarUrl ? (
+              {chat.users[0].avatarUrl ? (
                 <img
-                  src={getMediaUrl(chat.user[0].avatarUrl)}
-                  alt={chat.user[0].username}
+                  src={getMediaUrl(chat.users[0].avatarUrl)}
+                  alt={chat.users[0].username}
                   className="w-12 h-12 rounded-full object-cover"
                 />
               ) : (
                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-semibold">
-                  {( chat.user[0].username || "?").charAt(0).toUpperCase()}
+                  {( chat.users[0].username || "?").charAt(0).toUpperCase()}
                 </div>
               )}
               <div
@@ -53,10 +53,10 @@ export function ChatList({ users, selectedUserId, onSelectedChat, hideTitle }: C
             </div>
             <div className="flex-1 text-left min-w-0">
               <div className="flex justify-between items-baseline mb-1">
-                <span className="font-semibold truncate">{chat.user[0].username}</span>
-                <span className="text-xs text-gray-500">{chat.message[0].createdAt.toDateString()}</span>
+                <span className="font-semibold truncate">{chat.users[0].username}</span>
+                <span className="text-xs text-gray-500">{`${new Date(chat.messages[0].createdAt).getHours()}:${new Date(chat.messages[0].createdAt).getMinutes()} `} </span>
               </div>
-              <p className="text-sm text-gray-500 truncate">{chat.message[0].message}</p>
+              <p className="text-sm text-gray-500 truncate">{chat.messages[0].message}</p>
             </div>
           </button>
         ))}

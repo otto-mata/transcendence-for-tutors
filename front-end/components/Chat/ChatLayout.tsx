@@ -10,11 +10,11 @@ import { ChatDto, ChatUserDto } from '@/client/message.dto';
 const MOCK_USERS: ChatDto[] = [
   {
     id : "1",
-    user : [{
+    users : [{
       id: "1",
     username: "Sarah Anderson",
       }],
-      message : [{
+      messages : [{
         id : "1",
         message : "hi dude",
         createdAt : new Date(),
@@ -24,11 +24,11 @@ const MOCK_USERS: ChatDto[] = [
   ,
   {
     id : "2",
-    user : [{
+    users : [{
       id: "2",
     username: "Mike Horn",
       }],
-      message : [{
+      messages : [{
         id : "2",
         message : "hop on !",
         createdAt : new Date(),
@@ -38,11 +38,11 @@ const MOCK_USERS: ChatDto[] = [
   },
   {
     id : "3",
-    user : [{
+    users : [{
       id: "3",
     username: "Felis Andre",
       }],
-      message : [{
+      messages : [{
         id : "3",
         message : "Wsh mon khey",
         createdAt : new Date(),
@@ -51,9 +51,9 @@ const MOCK_USERS: ChatDto[] = [
   }
 ];
 
-export function ChatLayout({ initialUserId }: ChatLayoutProps) {
+export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedChat, setSelectedChat] = useState<ChatDto | null>(MOCK_USERS[0]);
+  const [selectedChat, setSelectedChat] = useState<ChatDto | null>(null);
   const [loading, setLoading] = useState(true);
   const [charging, setCharging] = useState(true);
   const [page, setPage ] = useState(1);
@@ -68,10 +68,7 @@ export function ChatLayout({ initialUserId }: ChatLayoutProps) {
   // Fetch user from API if initialUserId is provided
   useEffect(() => {
     const fetchInitialUser = async () => {
-      if (!initialUserId) {
-        setSelectedChat(MOCK_USERS[0]);
-        return;
-      }
+      if (!initialUserId) { return; }
 
       // Check if user already exists in the list
       const existingUser = chats.find(u => u.id === initialUserId);
@@ -84,17 +81,18 @@ export function ChatLayout({ initialUserId }: ChatLayoutProps) {
       try {
         const client = Backend.getInstance();
         const result = await client.users.$({ id: initialUserId }).get();
+        console.log("result ?? : ", result, result.ok, result.value);
         if (result.ok && result.value) {
-          const userData = result.value;
+          const userData = JSON.parse(result.value);
           const newUser: ChatDto = {
             id: String(userData.id),
-            user : [{
+            users : [{
               id: userData.id,
               username: userData.username,
               avatarUrl: userData.avatarUrl || undefined,
             }],
             // status: "online",
-            message: [{
+            messages : [{
               id : "1",
               message : "yes yes verry much",
               senderID : userData.id,
@@ -102,29 +100,22 @@ export function ChatLayout({ initialUserId }: ChatLayoutProps) {
             }],
             unread : true,
           };
-          setChats(prev => {
-            // Add to list if not already there
-            if (!prev.find(u => u.id === newUser.id)) {
-              return [newUser, ...prev];
-            }
-            return prev;
-          });
+          setChats([newUser, ...chats]);
           setSelectedChat(newUser);
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
-        setSelectedChat(MOCK_USERS[0]);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchInitialUser();
+    console.log("this is chats", chats);
   }, [initialUserId]);
 
   useEffect(() => {
 
-    console.log("this is loading: ", loading);
     // querry chats and put it in user[]
     if (loading == true ) return ;
       socketRef.current?.send(JSON.stringify({
@@ -137,7 +128,6 @@ export function ChatLayout({ initialUserId }: ChatLayoutProps) {
 
   useEffect(() =>{
     setLoading(true);
-    try {
     socketRef.current = new WebSocket("http://localhost:8090");
 
     socketRef.current.onopen = () => {
@@ -152,8 +142,8 @@ export function ChatLayout({ initialUserId }: ChatLayoutProps) {
     
     socketRef.current.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      if (loading == true){
-        if (data.type == "auth_err") throw new Error('no');
+       if (loading == true){
+        if (data.type == "auth_err") setError('no');
           setLoading(false);
         }
       }
@@ -161,10 +151,7 @@ export function ChatLayout({ initialUserId }: ChatLayoutProps) {
     socketRef.current.close = () => {
       console.log("closed");
     }
-  } catch (e : any) {
-    setError(e.message);
-  }
-
+  
     return () => {
       socketRef.current?.close();
 };
@@ -206,8 +193,8 @@ export function ChatLayout({ initialUserId }: ChatLayoutProps) {
 			setError(res.error.message);
 			return;
 		}
-
 		const data = JSON.parse(res?.value);
+    console.log("this is data :",  data);
 
 		setChats([...chats, ...data]);
 		setCharging(false);
@@ -227,8 +214,8 @@ export function ChatLayout({ initialUserId }: ChatLayoutProps) {
     <div className="flex h-full">
       <div className={`${selectedChat ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-gray-200 dark:border-gray-700`}>
         <ChatList
-          users={MOCK_USERS}
-          selectedUserId={selectedChat?.user[0].id}
+          users={chats}
+          selectedUserId={selectedChat?.users[0].id}
           onSelectedChat={setSelectedChat}
         />
       </div>

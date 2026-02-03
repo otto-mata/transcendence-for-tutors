@@ -1,8 +1,9 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, HttpStatus, Param, Post, Query, Res, UseGuards } from '@nestjs/common';
 import { CurrentUser, type CurrentUserType } from '@/decorators/current-user.decorator';
 import { AuthGuard } from '@/guards/auth.guard';
 import { FormatMessage, NumberQuery } from './chat.dto';
 import { ChatService } from './chat.service';
+import type { Response } from 'express';
 
 @Controller('chat')
 @UseGuards(AuthGuard)
@@ -13,13 +14,22 @@ export class ChatController {
 	@Get()
 	async getMessages(
 		@CurrentUser() user: CurrentUserType,
-		@Query() query: NumberQuery
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
 	): Promise<String> {
 		try {
-			return (JSON.stringify({yep : "ouiiiii"}))
-			return (JSON.stringify(await this.chatService.getUserChatList(user, query.skip, query.take)));
-		} catch (e) { }
-		return (JSON.stringify({error: "An error occured"}));
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 10;
+			const skip = (pageNum - 1) * limitNum;
+			const chats = await this.chatService.getUserChatList(user, skip, limitNum)
+			return (JSON.stringify(chats));
+		} 
+		catch (e) {
+			console.log(e);
+			if (res) res.status(HttpStatus.NOT_FOUND);
+			return (JSON.stringify({error: "An error occured"}));
+		}
 	}
 	//Will save a new message to the chat between current user and the param user
 	@Post('/:username')
@@ -27,23 +37,33 @@ export class ChatController {
 		@CurrentUser() user: CurrentUserType,
 		@Param('username') username: string,
 		@Body() content: FormatMessage,
+		@Res({ passthrough: true }) res?: Response,
 	): Promise<String> {
 		try {
 			await this.chatService.createMessage(user, username, content.message);
 			return (JSON.stringify({ message: `Ok !` }));
-		} catch (e) {}
-		return (JSON.stringify({ error: "An error occured" }));
+		} catch (e) {
+			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
+			return (JSON.stringify({error: "An error occured"}));
+		}
 	}
 	//Will get x last messages
 	@Get('/:username')
 	async getLastMessages(
 		@CurrentUser() user: CurrentUserType,
 		@Param('username') username: string,
-		@Query() query: NumberQuery
+		@Query('page') page?: string,
+		@Query('limit') limit?: string,
+		@Res({ passthrough: true }) res?: Response,
 	): Promise<String> {
 		try {
-			return (JSON.stringify(await this.chatService.getMessages(user, username, query.skip, query.take)));
-		} catch (e) { }
-		return (JSON.stringify({error: "An error occured"}));
+			const pageNum = page ? parseInt(page) : 1;
+			const limitNum = limit ? parseInt(limit) : 10;
+			const skip = (pageNum - 1) * limitNum;
+			const chat = await this.chatService.getMessages(user, username, skip, limitNum);
+			return (JSON.stringify(chat));
+		} catch (e) {
+			return (JSON.stringify({error: "cannot AccessChat", message : "no such chat"}));
+		}
 	}
 }

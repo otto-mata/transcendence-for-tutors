@@ -6,8 +6,8 @@ export interface ChatUserDto{
 
 export interface ChatDto{
 	id : string,
-	user : ChatUserDto[],
-	message : [
+	users : ChatUserDto[],
+	messages : [
 		{
 			id : string;
 			message : string;

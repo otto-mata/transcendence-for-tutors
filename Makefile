@@ -1,5 +1,5 @@
 
-all: backend-up frontend-up
+all: backend-up frontend-up chat-up
 
 frontend-up:
 	@echo Running 'frontend-up'...
@@ -13,12 +13,21 @@ backend-up:
 	@echo Running 'backend-up'...
 	docker compose -f back-end/docker-compose.yml up --build -d
 
+chat-up:
+	@echo Running 'chat-up'...
+	docker compose -f websocket/docker-compose.yml up --build -d
+
+chat-down:
+	@echo Running 'chat-down'...
+	docker compose -f websocket/docker-compose.yml down
+
+
 
 backend-down:
 	@echo Running 'backend-down'...
 	docker compose -f back-end/docker-compose.yml down
 
-clean: backend-down frontend-down
+clean: backend-down frontend-down chat-down
 	@echo Running 'clean'...
 	if [ $(shell docker ps -q | wc -l) -ne 0 ]; then \
 		docker stop $(shell docker ps -q); \

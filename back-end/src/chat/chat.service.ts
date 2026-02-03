@@ -73,7 +73,7 @@ export class ChatService {
 				sender: { select: { id: true, username: true, avatarUrl: true } },
 			},
 		});
-		return (messages);
+		return (messages.reverse());
 	}
 
 	async getUserChatList(sender: CurrentUserType, x: number, y: number) : Promise<Chat[]> {
@@ -86,13 +86,7 @@ export class ChatService {
 			skip: x,
 			take: y,
 			include: {
-				users: {
-					select: {
-						id: true,
-						username: true,
-						avatarUrl: true,
-					},
-				},
+				users: true ,
 				messages: {
 					take: 1,
 					orderBy: { createdAt: 'desc' },

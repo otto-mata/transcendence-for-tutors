@@ -37,19 +37,19 @@ export default function RegisterPage() {
   }
 
   function handleFortyTwoLogin() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://localhost:3000';
     window.location.href = `${apiUrl}/auth/42/login`;
   }
 
   function handleGoogleRedirect() {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? 'https://localhost:3000';
     window.location.href = `${apiUrl}/auth/google/login`;
   }
 
   async function handleGoogleLogin(credentialResponse: CredentialResponse) {
     setLoading(true);
     try {
-      const api = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000';
+      const api = process.env.NEXT_PUBLIC_API_URL ?? 'https://localhost:3000';
       const res = await fetch(`${api}/auth/google`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

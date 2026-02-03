@@ -9,7 +9,7 @@ export function getMediaUrl(path: string | null | undefined): string | undefined
 		return path;
 	}
 	
-	const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+	const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:3000';
 	
 	const baseUrl = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
 	
