@@ -10,7 +10,9 @@ import {
 	Bookmark,
 	Heart,
 	LogOut,
-	PlusCircle
+	PlusCircle,
+	FileText,
+	Shield
 } from 'lucide-react';
 import Link from 'next/link';
 import { redirect, usePathname } from 'next/navigation';
@@ -46,6 +48,12 @@ export default function DesktopSidebar() {
 				<SidebarLink href="/profile" icon={<User />} label="Profile" active={isActive('/profile')} />
 				<SidebarLink href="/post/saved" icon={<Bookmark />} label="Bookmarks" active={isActive('/post/saved')} />
 				<SidebarLink href="/post/liked" icon={<Heart />} label="Likes" active={isActive('/post/liked')} />
+				
+				{/* Divider */}
+				<div className="my-4 border-t border-gray-200 dark:border-gray-700" />
+				
+				<SidebarLink href="/legal/terms" icon={<FileText />} label="Terms of Service" active={isActive('/legal/terms')} />
+				<SidebarLink href="/legal/privacy" icon={<Shield />} label="Privacy Policy" active={isActive('/legal/privacy')} />
 			</nav>
 
 			{/* Create Post Button */}

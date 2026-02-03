@@ -37,7 +37,7 @@ export default function PrivacyPolicyPage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Introduction</h2>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
               Welcome to ft_transcendence ("we," "our," or "us"). We are committed to protecting your privacy 
-              and ensuring you have a positive experience on our social dating platform. This Privacy Policy 
+              and ensuring you have a positive experience on our social platform. This Privacy Policy 
               explains how we collect, use, disclose, and safeguard your information when you use our service.
             </p>
           </section>
@@ -54,9 +54,9 @@ export default function PrivacyPolicyPage() {
                 <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Personal Information</h3>
                 <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
                   <li>Account information: username, email address, password (encrypted)</li>
-                  <li>Profile information: display name, profile picture, bio, age, gender</li>
+                  <li>Profile information: display name, profile picture, bio</li>
                   <li>Location data (if you choose to share it)</li>
-                  <li>Dating preferences and interests</li>
+                  <li>Your preferences and interests</li>
                 </ul>
               </div>
 
@@ -90,11 +90,11 @@ export default function PrivacyPolicyPage() {
             </div>
             <ul className="list-disc list-inside text-gray-600 dark:text-gray-300 space-y-2">
               <li>To create and manage your account</li>
-              <li>To facilitate connections and matches with other users</li>
-              <li>To display your profile to potential matches</li>
+              <li>To facilitate connections with other users</li>
+              <li>To display your profile to other users</li>
               <li>To enable communication between users</li>
               <li>To personalize your experience and show relevant content</li>
-              <li>To send you notifications about matches, messages, and activity</li>
+              <li>To send you notifications about messages and activity</li>
               <li>To improve our services and develop new features</li>
               <li>To detect and prevent fraud, abuse, and security issues</li>
               <li>To comply with legal obligations</li>

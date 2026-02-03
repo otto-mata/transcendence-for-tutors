@@ -11,8 +11,8 @@ import {
 	Bookmark,
 	Heart,
 	LogOut,
-	Moon,
-	Sun
+	FileText,
+	Shield
 } from 'lucide-react';
 import Link from 'next/link';
 import { redirect, usePathname } from 'next/navigation';
@@ -22,7 +22,6 @@ import FollowListModal from './FollowListModal';
 
 export default function MobileNav() {
 	const [isOpen, setIsOpen] = useState(false);
-	const [isDark, setIsDark] = useState(false);
 	const [showFollowModal, setShowFollowModal] = useState<'followers' | 'following' | null>(null);
 	const pathname = usePathname();
 	const { user, isLoading, refreshUser } = useUser();
@@ -152,20 +151,8 @@ export default function MobileNav() {
 					<div className="my-4 border-t border-gray-200 dark:border-gray-700 " />
 
 					<div className="space-y-1 px-3">
-						{/* Dark Mode Toggle */}
-						<button
-							onClick={() => setIsDark(!isDark)}
-							className="w-full flex items-center gap-4 px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-xl transition-colors"
-						>
-							{isDark ? (
-								<Sun className="w-5 h-5" />
-							) : (
-								<Moon className="w-5 h-5" />
-							)}
-							<span className="font-medium">
-								{isDark ? 'Light Mode' : 'Dark Mode'}
-							</span>
-						</button>
+						<NavLink href="/legal/terms" icon={<FileText className="w-5 h-5" />} label="Terms of Service" onClick={closeMenu} active={isActive('/legal/terms')} />
+						<NavLink href="/legal/privacy" icon={<Shield className="w-5 h-5" />} label="Privacy Policy" onClick={closeMenu} active={isActive('/legal/privacy')} />
 					</div>
 				</nav>
 

@@ -116,10 +116,12 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
 
     // querry chats and put it in user[]
     if (loading == true ) return ;
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
       socketRef.current?.send(JSON.stringify({
             type : "watch",
             id : "babeu"
           }));
+    }
           
 
   }, [loading])
