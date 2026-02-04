@@ -1,6 +1,42 @@
+all: ssl-check
+	@echo "🚀 Démarrage de l'application avec reverse proxy..."
+	docker compose up --build -d
+	@echo ""
+	@echo "✅ Application démarrée!"
+	@echo "   → Frontend: https://localhost:8443"
+	@echo "   → API:      https://localhost:8443/api"
+	@echo "   → WebSocket: wss://localhost:8443/ws"
 
-all: backend-up frontend-up chat-up
+ssl-check:
+	@if [ ! -f nginx/ssl/private-key.pem ] || [ ! -f nginx/ssl/public-certificate.pem ]; then \
+		echo "🔐 Génération des certificats SSL..."; \
+		chmod +x generate-ssl.sh && ./generate-ssl.sh; \
+	else \
+		echo "✅ Certificats SSL trouvés"; \
+	fi
 
+ssl-generate:
+	@chmod +x generate-ssl.sh && ./generate-ssl.sh
+
+down:
+	@echo "🛑 Arrêt de l'application..."
+	docker compose down
+
+logs:
+	docker compose logs -f
+
+logs-nginx:
+	docker compose logs -f nginx
+
+logs-api:
+	docker compose logs -f core-api
+
+logs-front:
+	docker compose logs -f transcendence-front
+
+logs-ws:
+	docker compose logs -f socket-chat
+	
 frontend-up:
 	@echo Running 'frontend-up'...
 	docker compose -f front-end/docker-compose.yml up --build -d

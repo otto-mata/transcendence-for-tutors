@@ -87,6 +87,9 @@ back-end/.env
 # secrets files
 /back-end/secrets/*
 
+# SSL certificates (nginx reverse proxy)
+/nginx/ssl/*
+
 
 # temp directory
 .temp

@@ -15,7 +15,7 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-db}
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      ALLOWED_ORIGINS: '${ALLOWED_ORIGINS:-https://localhost:3000}'
+      ALLOWED_ORIGINS: '${ALLOWED_ORIGINS:-https://localhost:8443}'
       DATABASE_URL: "postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:${POSTGRES_PORT:-5432}/${POSTGRES_DB:-db}"
       JWT_SECRET: ${JWT_SECRET:-thisisasecret}
     depends_on:
