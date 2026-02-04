@@ -42,6 +42,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
       }
 
       setIsLoading(true);
+      setCharging(true);
       try {
         const client = Backend.getInstance();
         const result = await client.users.$({ id: initialUserId }).get();
@@ -81,11 +82,13 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
         console.error("Failed to fetch user:", error);
       } finally {
         setIsLoading(false);
+        setCharging(false);
       }
     };
 
 useEffect(() => {
   if (!lastMessage || !currentUser) return;
+  var found = false;
 
   if (!chats[0]){
     console.log("AAAAAAAAAAAAAAAAH")
@@ -101,6 +104,7 @@ useEffect(() => {
         chat.id === selectedChat.id &&
         lastMessage.senderId === currentUser.id
       ) {
+        found = true;
         return {
           ...chat,
           messages: [lastMessage, ...chat.messages.slice(1)],
@@ -109,6 +113,7 @@ useEffect(() => {
 
       // message reçu
       if (chat.users[0].id === lastMessage.senderId) {
+        found = true;
         return {
           ...chat,
           messages: [lastMessage, ...chat.messages.slice(1)],
@@ -124,7 +129,7 @@ useEffect(() => {
 
 
   useEffect(()=>{
-  if (socketRef.current?.readyState !== WebSocket.OPEN) return;
+    if (socketRef.current?.readyState !== WebSocket.OPEN) return;
     // query chats and put it in user[]
     
     chats.forEach(chat => {
@@ -159,7 +164,6 @@ useEffect(() => {
 
     socketRef.current.onopen = () => {
       if (socketRef.current?.readyState !== WebSocket.OPEN) return;
-      console.log("connected");
       socketRef.current?.send(JSON.stringify({
                 type : "auth",
                 token : localStorage.getItem("access_token")
@@ -178,7 +182,6 @@ useEffect(() => {
         setSocketReady(true);
       }
       if (data.type === "status") {
-          console.log("bah alors ???? : ", data);
           const statusUserId = data.userId || data.id;
             setChats(prev =>
               prev.map(chat =>
@@ -209,8 +212,6 @@ useEffect(() => {
 }
 
         if (data.type == "rec_message"){
-          if (!event.data) return;
-          const data = JSON.parse(event.data);
           const toad = {
             id : "2",
             message : data.message,
