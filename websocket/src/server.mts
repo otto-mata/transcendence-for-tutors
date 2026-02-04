@@ -1,15 +1,11 @@
 import { WebSocketServer } from 'ws';
 import type WebSocket from 'ws';
 import { handler, sendUpdate } from './messages.handler.mjs';
-import https from 'https';
-import fs from 'fs';
 
-const server_https = https.createServer({
-	key: fs.readFileSync('/ssl/private-key.pem'),
-	cert: fs.readFileSync('/ssl/public-certificate.pem')
+// Plus besoin de HTTPS ici - le reverse proxy Nginx gère le SSL
+const server = new WebSocketServer({ 
+	port: process.env.WS_PORT ? +process.env.WS_PORT : 8090 
 });
-
-const server = new WebSocketServer({ server: server_https });
 
 export const users = new Map<string, Set<WebSocket>>(); // int userid : Set of socket linked to this userId
 export const sockets = new Map<WebSocket, string>(); // socket : userid
@@ -52,6 +48,4 @@ server.on('connection', (socket) => {
 	});
 });
 
-//show_connections();
-const port = process.env.WS_PORT ? + process.env.WS_PORT : 8090;
-server_https.listen(port);
+console.log(`🔌 WebSocket server running on port ${process.env.WS_PORT ?? 8090} (HTTP internal)`);

@@ -1,16 +1,11 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from '@/app.module';
 import { ValidationPipe } from '@nestjs/common';
-import * as fs from 'fs';
 
 async function bootstrap() {
-	const httpsOptions = {
-	  key: fs.readFileSync('./secrets/private-key.pem'),
- 	 cert: fs.readFileSync('./secrets/public-certificate.pem'),
-	};
-	const app = await NestFactory.create(AppModule, {
-		httpsOptions
-	});
+	// Plus besoin de HTTPS ici - le reverse proxy Nginx gère le SSL
+	const app = await NestFactory.create(AppModule);
+	
 	app.useGlobalPipes(
 		new ValidationPipe({
 			whitelist: true,
@@ -18,10 +13,14 @@ async function bootstrap() {
 		}),
 	);
 	app.enableShutdownHooks();
+	
+	// CORS configuré pour accepter les requêtes du proxy
 	app.enableCors({
-		origin: process.env.FRONTEND_URL || 'http://localhost:8080',
+		origin: process.env.ALLOWED_ORIGINS || 'https://localhost',
 		credentials: true,
 	});
+	
 	await app.listen(process.env.PORT ?? 3000);
+	console.log(`🚀 Backend running on port ${process.env.PORT ?? 3000} (HTTP internal)`);
 }
 bootstrap();
