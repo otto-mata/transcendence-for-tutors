@@ -20,16 +20,16 @@ scrape_configs:
     static_configs:
       - targets:
           - localhost:9090
-  # 
-  # Added lines
-  #
-  - job_name: simple-blog-app
-    metrics_path: /api/metrics
-    static_configs:
-      - targets:
-          - host.docker.internal:8080
+
+  #- job_name: simple-blog-app
+  #  metrics_path: /api/metrics
+  #  static_configs:
+  #    - targets:
+  #        - localhost:8080
   - job_name: 'nestjs-monitoring'
     metrics_path: '/metrics'
+    scheme: https
     static_configs:
-      # Use the container name/service name and the internal port
-      - targets: ['nestjs-api:3000']
+      - targets: ['core-api:3000']
+    tls_config:
+      insecure_skip_verify: true

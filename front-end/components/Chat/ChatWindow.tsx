@@ -194,6 +194,12 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef, lastMessag
               type="text"
               value={inputMessage}
               onChange={(e) => setInputMessage(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  sendInputMessage();
+                }
+              }}
               placeholder="Type a message..."
               className="w-full pl-4 pr-10 py-2 bg-gray-100 dark:bg-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500"
             />

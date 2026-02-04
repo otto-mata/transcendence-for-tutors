@@ -130,7 +130,9 @@ useEffect(() => {
 
   useEffect(() =>{
     setLoading(true);
-    socketRef.current = new WebSocket("http://localhost:8090");
+    // Utilise la variable d'environnement ou fallback vers le proxy local
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'wss://localhost:8443/ws';
+    socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onopen = () => {
       if (socketRef.current?.readyState !== WebSocket.OPEN) return;

@@ -224,16 +224,14 @@ const ClientFactory = (client: Axios) => {
 					}
 				},
 				getRedirectUrl: () => {
-					const baseUrl =
-						process.env.API_URL || 'https://localhost:3000';
+					const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8443/api';
 					return `${baseUrl}/auth/google/redirect`;
 				},
 			},
 			// 42 oauth
 			fortyTwo: {
 				getLoginUrl: () => {
-					const baseUrl =
-						process.env.API_URL || 'https://localhost:3000';
+					const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8443/api';
 					return `${baseUrl}/auth/42/login`;
 				},
 				verify: async (data: FortyTwoVerifyTokenDto) => {
@@ -920,11 +918,13 @@ export class Backend {
 	private static _instance: Backend | null = null;
 	private _cl: ClientType;
 
-	// test le back tqt
+	// Utilise la variable d'environnement ou fallback vers le proxy local
 	private constructor() {
-		this._cl = ClientFactory(new Axios({ baseURL: 'https://localhost:3000', validateStatus : (status) => {
-			return status >= 200 && status < 300;
-		}})); //process.env.API_URL
+		const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:8443/api';
+		this._cl = ClientFactory(new Axios({ 
+			baseURL: apiUrl, 
+			validateStatus: (status) => status >= 200 && status < 300
+		}));
 	}
 
 	public static getInstance(): ClientType {

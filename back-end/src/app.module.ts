@@ -52,6 +52,7 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 		PrometheusModule.register({
 			path: '/metrics', // The endpoint Prometheus will hit
 		}),
+		ChatModule,
 	],
 	controllers: [AppController],
 	providers: [AppService],
