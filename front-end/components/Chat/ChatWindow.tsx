@@ -163,20 +163,9 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef, lastMessag
                 {(chatUser?.username || "?").charAt(0).toUpperCase()}
               </div>
             )}
-            <div
-              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${chatUser?.username === "online"
-                  ? "bg-green-500"
-                  : chatUser?.username === "away"
-                    ? "bg-yellow-500"
-                    : "bg-gray-500"
-                }`}
-            />
           </div>
           <div>
             <h3 className="font-bold">{chatUser?.username}</h3>
-            <p className="text-xs text-gray-500">
-              {chatUser?.username === "online" ? "Active now" : "Last seen recently"}
-            </p>
           </div>
         </div>
       </div>

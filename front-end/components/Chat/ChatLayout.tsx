@@ -18,6 +18,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const [error, setError] = useState('');
   const [chats, setChats] = useState<ChatDto[]>([]);
   const socketRef = useRef<WebSocket>(null);
+  const watchedUsersRef = useRef<Set<string>>(new Set());
   const client = Backend.getInstance();
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [change, setChange] = useState(false);
@@ -111,13 +112,16 @@ useEffect(() => {
 
   useEffect(()=>{
   if (socketRef.current?.readyState !== WebSocket.OPEN) return;
-    // querry chats and put it in user[]
+    // query chats and put it in user[]
     
-    chats.map(chat => {
+    chats.forEach(chat => {
       if (!chat) return;
+      const userId = chat.users[0].id;
+      if (watchedUsersRef.current.has(userId)) return;
+      watchedUsersRef.current.add(userId);
       socketRef.current?.send(JSON.stringify({
             type : "watch",
-            id : chat.users[0].id
+            id : userId
           }));
     })
   }, [charging])
@@ -145,14 +149,14 @@ useEffect(() => {
       }
       if (data.type === "status") {
           console.log("bah alors ???? : ", data);
+          const statusUserId = data.userId || data.id;
             setChats(prev =>
               prev.map(chat =>
-                chat.users[0].id === data.id
+                chat.users[0].id === statusUserId
                   ? {
                       ...chat,
                       users: [{
                         ...chat.users[0],
-                        id : data.userId,
                         isOnline: data.status === "online",
                       }]
                     }
