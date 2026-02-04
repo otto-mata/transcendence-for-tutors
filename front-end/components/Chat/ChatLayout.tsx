@@ -26,15 +26,17 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const [currentUser, setCurrentUser] = useState<UserResponseDto >();
 
   // Fetch user from API if initialUserId is provided
-  const fetchInitialUser = async () => {
+  const fetchInitialUser = async (currentChats: ChatDto[]) => {
       if (!initialUserId) { return; }
 
-      // Check if user already exists in the list
-      const existingUser = chats.find(u => u.id === initialUserId);
+      // Check if user already exists in the list (check by user id, not chat id)
+      const existingChat = currentChats.find(chat => 
+        chat.users.some(u => u.id === initialUserId)
+      );
       console.log("not here");
-      if (existingUser) {
-        console.log("not here");
-        setSelectedChat(existingUser);
+      if (existingChat) {
+        console.log("found existing chat for initial user");
+        setSelectedChat(existingChat);
         return;
       }
 
@@ -61,7 +63,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
             unread : true,
           };
           console.log("ca vas donc la ? ");
-          setChats([newUser, ...chats]);
+          setChats([newUser, ...currentChats]);
           setSelectedChat(newUser);
         }
       } catch (error) {
@@ -77,7 +79,7 @@ useEffect(() => {
   if (!chats[0]){
     console.log("AAAAAAAAAAAAAAAAH")
     initialUserId = lastMessage.senderId;
-     fetchInitialUser();
+     fetchInitialUser(chats);
   }
 
   setChats(prevChats =>
@@ -103,7 +105,7 @@ useEffect(() => {
       }
       if (lastMessage.senderId === currentUser.id) return chat;
       initialUserId = lastMessage.senderId;
-      fetchInitialUser();
+      fetchInitialUser(prevChats);
       return chat;
     })
   );
@@ -237,15 +239,16 @@ useEffect(() => {
 		const res = await client.chat.get({limit : 10, page : page});
 		if (!res.ok){
 			setError(res.error.message);
-			return;
+			return [];
 		}
 		const data = JSON.parse(res?.value);
-    setChats([...chats, ...data]);
+    const newChats = [...chats, ...data];
+    setChats(newChats);
 		setCharging(false);
 		// observer.observe(sentinelRef);
-	  
+	  return newChats;
 	  }
-    fetchCurrentUser().then(run).then(fetchInitialUser);
+    fetchCurrentUser().then(run).then((fetchedChats) => fetchInitialUser(fetchedChats || []));
 	}, [change]);
   
   if(loading)
