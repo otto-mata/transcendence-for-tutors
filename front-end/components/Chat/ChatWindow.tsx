@@ -109,7 +109,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef, lastMessag
   useEffect(() => {
     if (!lastMessage) return;
       setSkip(prev => prev + 1);
-      if (lastMessage.senderId != currentUser?.id && lastMessage.senderId != chatUser?.id) return;
+      if (lastMessage.senderId != currentUser?.id && lastMessage.senderId != chat.users[0].id) return;
       const toad = {
             id : (messages.length + idToad).toString(),
             message : lastMessage.message,
@@ -118,7 +118,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef, lastMessag
           }
           
       idToad += 1;
-      setMessages([...messages, toad]);
+      setMessages(prevMessages => [...prevMessages, toad]);
       setDoScroll(true);
   }, [lastMessage])
 

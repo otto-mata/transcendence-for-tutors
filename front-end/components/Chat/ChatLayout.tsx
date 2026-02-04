@@ -26,14 +26,12 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const [currentUser, setCurrentUser] = useState<UserResponseDto >();
 
   // Fetch user from API if initialUserId is provided
-  const fetchInitialUser = async () => {
-      if (!initialUserId) { return; }
+  async function fetchUser(userId :string | null) {
+      if (!userId || charging) { return; }
 
       // Check if user already exists in the list
-      const existingUser = chats.find(u => u.id === initialUserId);
-      console.log("not here");
+      const existingUser = chats.find(u => u.id === userId);
       if (existingUser) {
-        console.log("not here");
         setSelectedChat(existingUser);
         return;
       }
@@ -42,7 +40,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
       setCharging(true);
       try {
         const client = Backend.getInstance();
-        const result = await client.users.$({ id: initialUserId }).get();
+        const result = await client.users.$({ id: userId }).get();
         if (result.ok && result.value) {
           const userData = JSON.parse(result.value);
           const newUser: ChatDto = {
@@ -61,8 +59,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
             }],
             unread : true,
           };
-          console.log("ca vas donc la ? ");
-          setChats([newUser, ...chats]);
+         setChats(prevChats => [newUser, ...prevChats]);
           setSelectedChat(newUser);
         }
       } catch (error) {
@@ -75,10 +72,12 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
 
 useEffect(() => {
   if (!lastMessage || !currentUser) return;
+  var found = false;
 
-  if (!chats[0]){
-    initialUserId = lastMessage.senderId;
-     fetchInitialUser();
+  const chat = chats.find(chat => chat.users[0].id === lastMessage.senderId);
+
+  if (!chat && lastMessage.senderId != currentUser.id){
+    fetchUser(lastMessage.senderId);
   }
 
   setChats(prevChats =>
@@ -89,6 +88,7 @@ useEffect(() => {
         chat.id === selectedChat.id &&
         lastMessage.senderId === currentUser.id
       ) {
+        found = true;
         return {
           ...chat,
           messages: [lastMessage, ...chat.messages.slice(1)],
@@ -97,14 +97,12 @@ useEffect(() => {
 
       // message reçu
       if (chat.users[0].id === lastMessage.senderId) {
+        found = true;
         return {
           ...chat,
           messages: [lastMessage, ...chat.messages.slice(1)],
         };
       }
-      if (lastMessage.senderId === currentUser.id) return chat;
-      initialUserId = lastMessage.senderId;
-      fetchInitialUser();
       return chat;
     })
   );
@@ -112,7 +110,8 @@ useEffect(() => {
 
 
   useEffect(()=>{
-  if (socketRef.current?.readyState !== WebSocket.OPEN) return;
+      fetchUser(initialUserId || null)
+    if (socketRef.current?.readyState !== WebSocket.OPEN) return;
     // query chats and put it in user[]
     
     chats.forEach(chat => {
@@ -133,7 +132,6 @@ useEffect(() => {
 
     socketRef.current.onopen = () => {
       if (socketRef.current?.readyState !== WebSocket.OPEN) return;
-      console.log("connected");
       socketRef.current?.send(JSON.stringify({
                 type : "auth",
                 token : localStorage.getItem("access_token")
@@ -149,7 +147,6 @@ useEffect(() => {
         setLoading(false);
       }
       if (data.type === "status") {
-          console.log("bah alors ???? : ", data);
           const statusUserId = data.userId || data.id;
             setChats(prev =>
               prev.map(chat =>
@@ -239,12 +236,12 @@ useEffect(() => {
 			return;
 		}
 		const data = JSON.parse(res?.value);
-    setChats([...chats, ...data]);
+    setChats(prevChats => [...prevChats, ...data]);
 		setCharging(false);
 		// observer.observe(sentinelRef);
 	  
 	  }
-    fetchCurrentUser().then(run).then(fetchInitialUser);
+    fetchCurrentUser().then(run);
 	}, [change]);
   
   if(loading)
