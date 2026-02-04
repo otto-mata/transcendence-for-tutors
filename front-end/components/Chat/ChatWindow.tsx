@@ -7,7 +7,7 @@ import { UserResponseDto } from "@/client/profile.dto";
 import { isLogged } from "@/client/common.mock";
 import { getMediaUrl } from "@/client/utils";
 
-export function ChatWindow({ chat, onBack, showBackAlways, socketRef, setLastMessage }: ChatWindowProps) {
+export function ChatWindow({ chat, onBack, showBackAlways, socketRef, lastMessage }: ChatWindowProps) {
   const [inputMessage, setInputMessage] = useState("");
   const [messages, setMessages ] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -106,25 +106,22 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef, setLastMes
 	}, [change]);
   
 
-  if (socketRef != null) {
-    socketRef.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type == "rec_message"){
-        setSkip(prev => prev + 1);
+  useEffect(() => {
+    if (!lastMessage) return;
+      setSkip(prev => prev + 1);
+      if (lastMessage.senderId != currentUser?.id && lastMessage.senderId != chatUser?.id) return;
       const toad = {
-        id : (messages.length + idToad).toString(),
-        message : data.message,
-        senderId : data.from,
-        createdAt : new Date()
-      }
-      setLastMessage(toad);
-      if (toad.senderId != currentUser?.id && toad.senderId != chatUser?.id) return;
+            id : (messages.length + idToad).toString(),
+            message : lastMessage.message,
+            senderId : lastMessage.senderId,
+            createdAt : new Date()
+          }
+          
       idToad += 1;
       setMessages([...messages, toad]);
       setDoScroll(true);
-    }
-    }
-  }
+  }, [lastMessage])
+
 
   async function sendInputMessage(){
     if (!chatUser || !currentUser || !inputMessage)
@@ -166,20 +163,9 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef, setLastMes
                 {(chatUser?.username || "?").charAt(0).toUpperCase()}
               </div>
             )}
-            <div
-              className={`absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full border-2 border-white dark:border-gray-800 ${chatUser?.username === "online"
-                  ? "bg-green-500"
-                  : chatUser?.username === "away"
-                    ? "bg-yellow-500"
-                    : "bg-gray-500"
-                }`}
-            />
           </div>
           <div>
             <h3 className="font-bold">{chatUser?.username}</h3>
-            <p className="text-xs text-gray-500">
-              {chatUser?.username === "online" ? "Active now" : "Last seen recently"}
-            </p>
           </div>
         </div>
       </div>

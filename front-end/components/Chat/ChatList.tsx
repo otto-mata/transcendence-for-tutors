@@ -4,28 +4,20 @@ import { getMediaUrl } from "@/client/utils";
 import { useEffect } from "react";
 
 interface ChatListProps {
-  users: ChatDto[];
+  chats: ChatDto[];
   selectedUserId?: string;
   onSelectedChat: (user: ChatDto) => void;
   hideTitle?: boolean;
 }
 
-export function ChatList({ users,  selectedUserId, onSelectedChat, hideTitle }: ChatListProps) {
+export function ChatList({ chats,  selectedUserId, onSelectedChat, hideTitle }: ChatListProps) {
+  useEffect(() => {
+    console.log("thoses are chats : ", chats);
+}, [chats]);
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800">
-      {/* <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-        {!hideTitle && <h2 className="text-xl font-bold mb-4">Messages</h2>}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-          <input
-            type="text"
-            placeholder="Search messages..."
-            className="w-full pl-10 pr-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div> */}
       <div className="flex-1 overflow-y-auto">
-        {users.map((chat) => (
+        {chats.map((chat) => (
           <button
             key={chat.id}
             onClick={() => onSelectedChat(chat)}
@@ -45,12 +37,13 @@ export function ChatList({ users,  selectedUserId, onSelectedChat, hideTitle }: 
                 </div>
               )}
               <div
-                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${"online" === "online"
+                className={`absolute bottom-0 right-0 w-3 h-3 rounded-full border-2 border-white dark:border-gray-800 ${
+                  chat.users[0].isOnline === true
                     ? "bg-green-500"
-                    :  "away" === "away"
-                      ? "bg-yellow-500"
-                      : "bg-gray-500"
-                  }`}
+                    : chat.users[0].isOnline === false
+                    ? "bg-gray-500"
+                    : "bg-yellow-400"
+                }`}
               />
             </div>
             <div className="flex-1 text-left min-w-0">

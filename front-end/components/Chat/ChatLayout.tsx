@@ -18,6 +18,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const [error, setError] = useState('');
   const [chats, setChats] = useState<ChatDto[]>([]);
   const socketRef = useRef<WebSocket>(null);
+  const watchedUsersRef = useRef<Set<string>>(new Set());
   const client = Backend.getInstance();
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [change, setChange] = useState(false);
@@ -109,20 +110,21 @@ useEffect(() => {
 }, [lastMessage]);
 
 
-  
-  useEffect(() => {
-
-    // querry chats and put it in user[]
-    if (loading == true ) return ;
-    if (socketRef.current?.readyState === WebSocket.OPEN) {
+  useEffect(()=>{
+  if (socketRef.current?.readyState !== WebSocket.OPEN) return;
+    // query chats and put it in user[]
+    
+    chats.forEach(chat => {
+      if (!chat) return;
+      const userId = chat.users[0].id;
+      if (watchedUsersRef.current.has(userId)) return;
+      watchedUsersRef.current.add(userId);
       socketRef.current?.send(JSON.stringify({
             type : "watch",
-            id : "babeu"
+            id : userId
           }));
-    }
-          
-
-  }, [loading])
+    })
+  }, [charging])
 
   useEffect(() =>{
     setLoading(true);
@@ -140,14 +142,32 @@ useEffect(() => {
     
     
     socketRef.current.onmessage = (event) => {
-      console.log("bah alors ????");
       const data = JSON.parse(event.data);
-       if (loading == true){
+      if (loading == true){
         if (data.type == "auth_err") setError('no');
-          setLoading(false);
-        }
+        setLoading(false);
+      }
+      if (data.type === "status") {
+          console.log("bah alors ???? : ", data);
+          const statusUserId = data.userId || data.id;
+            setChats(prev =>
+              prev.map(chat =>
+                chat.users[0].id === statusUserId
+                  ? {
+                      ...chat,
+                      users: [{
+                        ...chat.users[0],
+                        isOnline: data.status === "online",
+                      }]
+                    }
+                  : chat
+              )
+            );
+}
+
         if (data.type == "rec_message"){
-          console.log("en plus c'est un message");
+          if (!event.data) return;
+          const data = JSON.parse(event.data);
           const toad = {
             id : "2",
             message : data.message,
@@ -155,13 +175,10 @@ useEffect(() => {
             createdAt : new Date()
           }
           setLastMessage(toad);
-        }
       }
-          
-    socketRef.current.close = () => {
-      console.log("closed");
     }
-  
+          
+
     return () => {
       socketRef.current?.close();
 };
@@ -241,14 +258,14 @@ useEffect(() => {
     <div className="flex h-full">
       <div className={`${selectedChat ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-col border-r border-gray-200 dark:border-gray-700`}>
         <ChatList
-          users={chats}
+          chats={chats}
           selectedUserId={selectedChat?.users[0].id}
           onSelectedChat={setSelectedChat}
         />
       </div>
       <div className={`${!selectedChat ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gray-50 dark:bg-gray-900/50`}>
         {selectedChat ? (
-          <ChatWindow chat={selectedChat} onBack={() => setSelectedChat(null)} socketRef={socketRef.current || null} setLastMessage={setLastMessage} />
+          <ChatWindow chat={selectedChat} onBack={() => setSelectedChat(null)} socketRef={socketRef.current || null} lastMessage={lastMessage} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">
             Select a conversation to start chatting
