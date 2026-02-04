@@ -58,6 +58,7 @@ services:
     volumes:
       - ./prometheus:/etc/prometheus
       - prom-data:/prometheus
+      - ./secrets:/secrets
     networks:
       - postgres-network
 
