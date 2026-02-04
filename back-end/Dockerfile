@@ -12,6 +12,8 @@ RUN npm install
 # Copy the rest of the application files
 COPY . .
 
+RUN rm -rf websocket
+
 RUN mv .env.docker .env
 
 # Command to run the application

@@ -1,14 +1,14 @@
 all: ssl-check
-	@echo "🚀 Démarrage de l'application avec reverse proxy..."
+	@echo "🚀 Démarrage de tft ..."
 	docker compose up --build -d
 	@echo ""
-	@echo "✅ Application démarrée!"
+	@echo "✅ Tft démarrée!"
 	@echo "   → Frontend: https://localhost:8443"
 	@echo "   → API:      https://localhost:8443/api"
 	@echo "   → WebSocket: wss://localhost:8443/ws"
 
 ssl-check:
-	@if [ ! -f nginx/ssl/private-key.pem ] || [ ! -f nginx/ssl/public-certificate.pem ]; then \
+	@if [ ! -f back-end/nginx/ssl/private-key.pem ] || [ ! -f back-end/nginx/ssl/public-certificate.pem ]; then \
 		echo "🔐 Génération des certificats SSL..."; \
 		chmod +x generate-ssl.sh && ./generate-ssl.sh; \
 	else \
@@ -22,46 +22,8 @@ down:
 	@echo "🛑 Arrêt de l'application..."
 	docker compose down
 
-logs:
-	docker compose logs -f
-
-logs-nginx:
-	docker compose logs -f nginx
-
-logs-api:
-	docker compose logs -f core-api
-
-logs-front:
-	docker compose logs -f transcendence-front
-
-logs-ws:
-	docker compose logs -f socket-chat
-	
-frontend-up:
-	@echo Running 'frontend-up'...
-	docker compose -f front-end/docker-compose.yml up --build -d
-
-frontend-down:
-	@echo Running 'frontend-down'...
-	docker compose -f front-end/docker-compose.yml down
-
-backend-up:
-	@echo Running 'backend-up'...
-	docker compose -f back-end/docker-compose.yml up --build -d
-
-chat-up:
-	@echo Running 'chat-up'...
-	docker compose -f websocket/docker-compose.yml up --build -d
-
-chat-down:
-	@echo Running 'chat-down'...
-	docker compose -f websocket/docker-compose.yml down
-
-
-
-backend-down:
-	@echo Running 'backend-down'...
-	docker compose -f back-end/docker-compose.yml down
+up:
+	docker compose up -d
 
 clean: backend-down frontend-down chat-down
 	@echo Running 'clean'...

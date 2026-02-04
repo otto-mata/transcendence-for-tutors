@@ -17,3 +17,5 @@ services:
 networks:
   default:
     driver: bridge
+  back-end_postgres_data:
+    external: true
