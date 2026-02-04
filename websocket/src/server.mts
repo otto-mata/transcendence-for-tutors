@@ -1,50 +1,57 @@
 import { WebSocketServer } from 'ws';
 import type WebSocket from 'ws';
 import { handler, sendUpdate } from './messages.handler.mjs';
+import https from 'https';
+import fs from 'fs';
 
-const server = new WebSocketServer({
-  port: process.env.WS_PORT ? + process.env.WS_PORT : 8090,
+const server_https = https.createServer({
+	key: fs.readFileSync('/ssl/private-key.pem'),
+	cert: fs.readFileSync('/ssl/public-certificate.pem')
 });
+
+const server = new WebSocketServer({ server: server_https });
 
 export const users = new Map<string, Set<WebSocket>>(); // int userid : Set of socket linked to this userId
 export const sockets = new Map<WebSocket, string>(); // socket : userid
 export const watchers = new Map<string, Set<WebSocket>>(); // int userId: set of socket that watchs this userId
 
 const show_connections = () => {
-  console.clear();
-  console.log("Currents Connections\n\n");
-  for (const i of users) {
-    console.log(i[0], ": ", i[1].size, " Connected");
-  }
-  return;
+	console.clear();
+	console.log("Currents Connections\n\n");
+	for (const i of users) {
+		console.log(i[0], ": ", i[1].size, " Connected");
+	}
+	return;
 }
 
 server.on('connection', (socket) => {
-  socket.on('message', (data) => {
-    handler(socket, data);
-  });
+	socket.on('message', (data) => {
+		handler(socket, data);
+	});
 
-  socket.on('close', () => {
-    const userId = sockets.get(socket);
-    if (!userId)
-      return;
-    const curr_user = users.get(userId);
-    if (!curr_user)
-      return;
-    curr_user.delete(socket);
-    sockets.delete(socket);
-    if (curr_user.size == 0) {
-      users.delete(userId);
-      sendUpdate(userId, 'offline');
-    }
-    for (const i of watchers) {
-      if (i[1].has(socket))
-        i[1].delete(socket);
-      if (i[1].size == 0)
-        watchers.delete(i[0]);
-    }
-    //show_connections()
-  });
+	socket.on('close', () => {
+		const userId = sockets.get(socket);
+		if (!userId)
+			return;
+		const curr_user = users.get(userId);
+		if (!curr_user)
+			return;
+		curr_user.delete(socket);
+		sockets.delete(socket);
+		if (curr_user.size == 0) {
+			users.delete(userId);
+			sendUpdate(userId, 'offline');
+		}
+		for (const i of watchers) {
+			if (i[1].has(socket))
+				i[1].delete(socket);
+			if (i[1].size == 0)
+				watchers.delete(i[0]);
+		}
+		//show_connections()
+	});
 });
 
 //show_connections();
+const port = process.env.WS_PORT ? + process.env.WS_PORT : 8090;
+server_https.listen(port);
