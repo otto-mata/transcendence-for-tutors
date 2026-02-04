@@ -128,7 +128,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
 
   useEffect(() =>{
     setLoading(true);
-    socketRef.current = new WebSocket("http://localhost:8090");
+    socketRef.current = new WebSocket("https://localhost:8090");
 
     socketRef.current.onopen = () => {
       console.log("connected");

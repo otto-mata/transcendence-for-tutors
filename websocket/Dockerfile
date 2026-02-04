@@ -3,6 +3,8 @@ FROM node:${NODE_VERSION}
 
 COPY ./ /server/
 
+COPY ./secrets/ /ssl/
+
 WORKDIR /server/
 
 RUN npm i && npm run build
