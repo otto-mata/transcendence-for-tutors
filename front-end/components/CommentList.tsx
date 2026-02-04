@@ -35,7 +35,7 @@ export const OneComment = ({comment} : {comment : CommentResponseDto}) => {
 		>
 			<div className="p-4">
 				<div className="flex items-center gap-3 mb-3">
-					<Link href={`profile/${comment.author?.username} `} className="shrink-0">
+					<Link href={`/profile/${comment.author?.username} `} className="shrink-0">
 						{comment.author?.avatarUrl ? (
 							<img 
 								src={getMediaUrl(comment.author.avatarUrl)} 
@@ -47,7 +47,7 @@ export const OneComment = ({comment} : {comment : CommentResponseDto}) => {
 						)}
 					</Link>
 					<div>
-						<Link href={`profile/${comment.author?.username} `}>
+						<Link href={`/profile/${comment.author?.username} `}>
 							<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-50">
 								{comment.author?.username ? comment.author?.username : "charging"}
 							</h4>

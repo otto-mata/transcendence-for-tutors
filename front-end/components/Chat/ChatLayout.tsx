@@ -5,51 +5,9 @@ import { ChatWindow } from "./ChatWindow";
 import { CharginPage } from "../CharginPage";
 import { ErrorPage } from "../ErrorPage";
 import { Backend } from "@/client/TransClient";
-import { ChatDto, ChatUserDto } from '@/client/message.dto';
-
-const MOCK_USERS: ChatDto[] = [
-  {
-    id : "1",
-    users : [{
-      id: "1",
-    username: "Sarah Anderson",
-      }],
-      messages : [{
-        id : "1",
-        message : "hi dude",
-        createdAt : new Date(),
-        senderID : "1",
-      }],
-  }
-  ,
-  {
-    id : "2",
-    users : [{
-      id: "2",
-    username: "Mike Horn",
-      }],
-      messages : [{
-        id : "2",
-        message : "hop on !",
-        createdAt : new Date(),
-        senderID : "2",
-      }],
-      unread : true,
-  },
-  {
-    id : "3",
-    users : [{
-      id: "3",
-    username: "Felis Andre",
-      }],
-      messages : [{
-        id : "3",
-        message : "Wsh mon khey",
-        createdAt : new Date(),
-        senderID : "3",
-      }],
-  }
-];
+import { ChatDto, ChatUserDto, Message } from '@/client/message.dto';
+import { isLogged } from "@/client/common.mock";
+import { UserResponseDto } from "@/client/profile.dto";
 
 export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const [isLoading, setIsLoading] = useState(false);
@@ -63,16 +21,18 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const client = Backend.getInstance();
   const sentinelRef = useRef<HTMLDivElement>(null)
   const [change, setChange] = useState(false);
-
+  const [lastMessage, setLastMessage ] = useState<Message | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserResponseDto >();
 
   // Fetch user from API if initialUserId is provided
-  useEffect(() => {
-    const fetchInitialUser = async () => {
+  const fetchInitialUser = async () => {
       if (!initialUserId) { return; }
 
       // Check if user already exists in the list
       const existingUser = chats.find(u => u.id === initialUserId);
+      console.log("not here");
       if (existingUser) {
+        console.log("not here");
         setSelectedChat(existingUser);
         return;
       }
@@ -93,12 +53,13 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
             // status: "online",
             messages : [{
               id : "1",
-              message : "yes yes verry much",
-              senderID : userData.id,
+              message : "",
+              senderId : userData.id,
               createdAt : new Date(),
             }],
             unread : true,
           };
+          console.log("ca vas donc la ? ");
           setChats([newUser, ...chats]);
           setSelectedChat(newUser);
         }
@@ -109,9 +70,46 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
       }
     };
 
-    fetchInitialUser();
-    }, [initialUserId]);
+useEffect(() => {
+  if (!lastMessage || !currentUser) return;
 
+  if (!chats[0]){
+    console.log("AAAAAAAAAAAAAAAAH")
+    initialUserId = lastMessage.senderId;
+     fetchInitialUser();
+  }
+
+  setChats(prevChats =>
+    prevChats.map(chat => {
+      // message envoyé par moi
+      if (
+        selectedChat &&
+        chat.id === selectedChat.id &&
+        lastMessage.senderId === currentUser.id
+      ) {
+        return {
+          ...chat,
+          messages: [lastMessage, ...chat.messages.slice(1)],
+        };
+      }
+
+      // message reçu
+      if (chat.users[0].id === lastMessage.senderId) {
+        return {
+          ...chat,
+          messages: [lastMessage, ...chat.messages.slice(1)],
+        };
+      }
+      if (lastMessage.senderId === currentUser.id) return chat;
+      initialUserId = lastMessage.senderId;
+      fetchInitialUser();
+      return chat;
+    })
+  );
+}, [lastMessage]);
+
+
+  
   useEffect(() => {
 
     // querry chats and put it in user[]
@@ -131,19 +129,32 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
     socketRef.current = new WebSocket("https://localhost:8090");
 
     socketRef.current.onopen = () => {
+      if (socketRef.current?.readyState !== WebSocket.OPEN) return;
       console.log("connected");
-      const tosend  = JSON.stringify({
+      socketRef.current?.send(JSON.stringify({
                 type : "auth",
                 token : localStorage.getItem("access_token")
       })
-      socketRef.current?.send(tosend);
+      );
     }
     
+    
     socketRef.current.onmessage = (event) => {
+      console.log("bah alors ????");
       const data = JSON.parse(event.data);
        if (loading == true){
         if (data.type == "auth_err") setError('no');
           setLoading(false);
+        }
+        if (data.type == "rec_message"){
+          console.log("en plus c'est un message");
+          const toad = {
+            id : "2",
+            message : data.message,
+            senderId : data.from,
+            createdAt : new Date()
+          }
+          setLastMessage(toad);
         }
       }
           
@@ -186,6 +197,25 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
 	}, [chats]);
 
     useEffect(() => {
+      const fetchCurrentUser = async () => {
+        try {
+          if (!await isLogged()){
+                setError('You must be logged in to view this page.');
+                return;
+              }
+          const client = Backend.getInstance();
+          const result = await client.me.get();
+          if (result.ok) {
+            const data = typeof result.value === 'string' 
+              ? JSON.parse(result.value) 
+              : result.value;
+            setCurrentUser(data);
+          }
+        } catch (err) {
+          console.error('Failed to fetch current user:', err);
+        }
+      };
+     
 	  const run = async() => {
 		const res = await client.chat.get({limit : 10, page : page});
 		if (!res.ok){
@@ -198,7 +228,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
 		// observer.observe(sentinelRef);
 	  
 	  }
-	  run();
+    fetchCurrentUser().then(run).then(fetchInitialUser);
 	}, [change]);
   
   if(loading)
@@ -218,7 +248,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
       </div>
       <div className={`${!selectedChat ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-gray-50 dark:bg-gray-900/50`}>
         {selectedChat ? (
-          <ChatWindow chat={selectedChat} onBack={() => setSelectedChat(null)} socketRef={socketRef.current || null} />
+          <ChatWindow chat={selectedChat} onBack={() => setSelectedChat(null)} socketRef={socketRef.current || null} setLastMessage={setLastMessage} />
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-500">
             Select a conversation to start chatting

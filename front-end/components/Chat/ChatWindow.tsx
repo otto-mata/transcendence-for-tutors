@@ -1,54 +1,13 @@
 "use client"
 import { ArrowLeft, MoreVertical, Phone, Video, Send, Paperclip, Smile } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { ChatDto, ChatUserDto  } from "@/client/message.dto";
+import { ChatDto, ChatUserDto, ChatWindowProps, Message  } from "@/client/message.dto";
 import { Backend } from "@/client/TransClient";
 import { UserResponseDto } from "@/client/profile.dto";
 import { isLogged } from "@/client/common.mock";
 import { getMediaUrl } from "@/client/utils";
 
-interface ChatWindowProps {
-  chat : ChatDto;
-  onBack: () => void;
-  showBackAlways?: boolean;
-  socketRef : WebSocket | null;
-}
-
-export interface Message {
-  id : string,
-  message : string,
-  createdAt : Date,
-  senderId : string  
-}
-
-const MOCK_MESSAGES: Message[] = [
-  {
-    id : "1",
-    message : "J'adore les pates",
-    senderId : "2",
-    createdAt : new Date()
-  },
-  {
-    id : "2",
-    message : "Pitain mais la meme de mon cote",
-    senderId : "1",
-    createdAt : new Date()
-  },
-  {
-    id : "3",
-    message : "La coincidence de fou malade !! :DDDDD",
-    senderId : "2",
-    createdAt : new Date()
-  },
-  {
-    id : "4",
-    message : "La coincidence de fou malade !! :DDDDD, La coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDDLa coincidence de fou malade !! :DDDDD",
-    senderId : "1",
-    createdAt : new Date()
-  },
-]
-
-export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWindowProps) {
+export function ChatWindow({ chat, onBack, showBackAlways, socketRef, setLastMessage }: ChatWindowProps) {
   const [inputMessage, setInputMessage] = useState("");
   const [messages, setMessages ] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,6 +22,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
   const [currentUser, setCurrentUser] = useState<UserResponseDto>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  var idToad = 1;
 
   function loadOlderMessages() {
     if (charging) return;
@@ -88,6 +48,14 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
       containerRef.current.scrollTop = newScrollHeight - oldScrollHeight;
     }
   };
+
+  useEffect(() => {
+    setSkip(0);
+    setCharging(true);
+    setMessages([]);
+    idToad = 1;
+    setChange(!change);
+  }, [chat])
 
     useEffect(() => {
         const fetchCurrentUser = async () => {
@@ -141,22 +109,26 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
   if (socketRef != null) {
     socketRef.onmessage = (event) => {
       const data = JSON.parse(event.data);
+      if (data.type == "rec_message"){
+        setSkip(prev => prev + 1);
       const toad = {
-        id : (messages.length + 1).toString(),
+        id : (messages.length + idToad).toString(),
         message : data.message,
         senderId : data.from,
         createdAt : new Date()
       }
-      if (data.type == "rec_message") setMessages([...messages, toad]);
-      setSkip(skip + 1);
+      setLastMessage(toad);
+      if (toad.senderId != currentUser?.id && toad.senderId != chatUser?.id) return;
+      idToad += 1;
+      setMessages([...messages, toad]);
       setDoScroll(true);
+    }
     }
   }
 
   async function sendInputMessage(){
-    if (!chatUser)
+    if (!chatUser || !currentUser || !inputMessage)
         return;
-    if (!currentUser) return;
     const toSend = {
       type : "message",
       id : chat.users[0].id ,
@@ -175,7 +147,7 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef }: ChatWind
   }
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900 break-all">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between bg-white dark:bg-gray-800">
         <div className="flex items-center gap-3">

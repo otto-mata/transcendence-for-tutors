@@ -39,6 +39,7 @@ export class ChatController {
 		@Res({ passthrough: true }) res?: Response,
 	): Promise<String> {
 		try {
+			if (!content) return (JSON.stringify({error : "empty string"}));
 			await this.chatService.createMessage(user, username, content.message);
 			return (JSON.stringify({ message: `Ok !` }));
 		} catch (e) {
