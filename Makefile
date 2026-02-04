@@ -1,9 +1,3 @@
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Makefile avec Reverse Proxy Nginx
-# ═══════════════════════════════════════════════════════════════════════════════
-
-# Mode unifié avec reverse proxy (recommandé)
 all: ssl-check
 	@echo "🚀 Démarrage de l'application avec reverse proxy..."
 	docker compose up --build -d
@@ -13,7 +7,6 @@ all: ssl-check
 	@echo "   → API:      https://localhost:8443/api"
 	@echo "   → WebSocket: wss://localhost:8443/ws"
 
-# Génère les certificats SSL s'ils n'existent pas
 ssl-check:
 	@if [ ! -f nginx/ssl/private-key.pem ] || [ ! -f nginx/ssl/public-certificate.pem ]; then \
 		echo "🔐 Génération des certificats SSL..."; \
@@ -43,11 +36,7 @@ logs-front:
 
 logs-ws:
 	docker compose logs -f socket-chat
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# Mode legacy (services séparés) - conservé pour compatibilité
-# ═══════════════════════════════════════════════════════════════════════════════
-
+	
 frontend-up:
 	@echo Running 'frontend-up'...
 	docker compose -f front-end/docker-compose.yml up --build -d

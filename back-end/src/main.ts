@@ -3,7 +3,6 @@ import { AppModule } from '@/app.module';
 import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
-	// Plus besoin de HTTPS ici - le reverse proxy Nginx gère le SSL
 	const app = await NestFactory.create(AppModule);
 	
 	app.useGlobalPipes(
@@ -14,7 +13,6 @@ async function bootstrap() {
 	);
 	app.enableShutdownHooks();
 	
-	// CORS configuré pour accepter les requêtes du proxy
 	app.enableCors({
 		origin: process.env.ALLOWED_ORIGINS || 'https://localhost',
 		credentials: true,
