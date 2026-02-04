@@ -58,7 +58,7 @@ export class GoogleOauthService {
             email: email,
             username: username,
             displayName: `${user.firstName} ${user.lastName}`,
-            avatarUrl: user.picture,
+            avatarUrl: undefined, // Use default avatar instead of Google picture (can expire)
             passwordHash: '', // No password for OAuth users
             oauthProvider: 'google',
             oauthId: user.id,
