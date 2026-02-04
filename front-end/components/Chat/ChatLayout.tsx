@@ -24,21 +24,25 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const [change, setChange] = useState(false);
   const [lastMessage, setLastMessage ] = useState<Message | null>(null);
   const [currentUser, setCurrentUser] = useState<UserResponseDto >();
+  const [socketReady, setSocketReady] = useState(false);
 
   // Fetch user from API if initialUserId is provided
-  const fetchInitialUser = async () => {
+  const fetchInitialUser = async (currentChats: ChatDto[]) => {
       if (!initialUserId) { return; }
 
-      // Check if user already exists in the list
-      const existingUser = chats.find(u => u.id === initialUserId);
+      // Check if user already exists in the list (check by user id, not chat id)
+      const existingChat = currentChats.find(chat => 
+        chat.users.some(u => u.id === initialUserId)
+      );
       console.log("not here");
-      if (existingUser) {
-        console.log("not here");
-        setSelectedChat(existingUser);
+      if (existingChat) {
+        console.log("found existing chat for initial user");
+        setSelectedChat(existingChat);
         return;
       }
 
       setIsLoading(true);
+      setCharging(true);
       try {
         const client = Backend.getInstance();
         const result = await client.users.$({ id: initialUserId }).get();
@@ -50,6 +54,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
               id: userData.id,
               username: userData.username,
               avatarUrl: userData.avatarUrl || undefined,
+              isOnline: false, // Default to offline, will be updated by websocket
             }],
             // status: "online",
             messages : [{
@@ -61,23 +66,34 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
             unread : true,
           };
           console.log("ca vas donc la ? ");
-          setChats([newUser, ...chats]);
+          setChats([newUser, ...currentChats]);
           setSelectedChat(newUser);
+          
+          // Request status update from websocket for this user
+          if (socketRef.current?.readyState === WebSocket.OPEN) {
+            watchedUsersRef.current.add(userData.id);
+            socketRef.current.send(JSON.stringify({
+              type: "watch",
+              id: userData.id
+            }));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
       } finally {
         setIsLoading(false);
+        setCharging(false);
       }
     };
 
 useEffect(() => {
   if (!lastMessage || !currentUser) return;
+  var found = false;
 
   if (!chats[0]){
     console.log("AAAAAAAAAAAAAAAAH")
     initialUserId = lastMessage.senderId;
-     fetchInitialUser();
+     fetchInitialUser(chats);
   }
 
   setChats(prevChats =>
@@ -88,6 +104,7 @@ useEffect(() => {
         chat.id === selectedChat.id &&
         lastMessage.senderId === currentUser.id
       ) {
+        found = true;
         return {
           ...chat,
           messages: [lastMessage, ...chat.messages.slice(1)],
@@ -96,6 +113,7 @@ useEffect(() => {
 
       // message reçu
       if (chat.users[0].id === lastMessage.senderId) {
+        found = true;
         return {
           ...chat,
           messages: [lastMessage, ...chat.messages.slice(1)],
@@ -103,7 +121,7 @@ useEffect(() => {
       }
       if (lastMessage.senderId === currentUser.id) return chat;
       initialUserId = lastMessage.senderId;
-      fetchInitialUser();
+      fetchInitialUser(prevChats);
       return chat;
     })
   );
@@ -111,7 +129,7 @@ useEffect(() => {
 
 
   useEffect(()=>{
-  if (socketRef.current?.readyState !== WebSocket.OPEN) return;
+    if (socketRef.current?.readyState !== WebSocket.OPEN) return;
     // query chats and put it in user[]
     
     chats.forEach(chat => {
@@ -126,6 +144,18 @@ useEffect(() => {
     })
   }, [charging])
 
+  // Watch the initial user once socket is ready
+  useEffect(() => {
+    if (!socketReady || !selectedChat) return;
+    const userId = selectedChat.users[0].id;
+    if (watchedUsersRef.current.has(userId)) return;
+    watchedUsersRef.current.add(userId);
+    socketRef.current?.send(JSON.stringify({
+      type: "watch",
+      id: userId
+    }));
+  }, [socketReady, selectedChat])
+
   useEffect(() =>{
     setLoading(true);
     // Utilise la variable d'environnement ou fallback vers le proxy local
@@ -134,7 +164,6 @@ useEffect(() => {
 
     socketRef.current.onopen = () => {
       if (socketRef.current?.readyState !== WebSocket.OPEN) return;
-      console.log("connected");
       socketRef.current?.send(JSON.stringify({
                 type : "auth",
                 token : localStorage.getItem("access_token")
@@ -149,8 +178,10 @@ useEffect(() => {
         if (data.type == "auth_err") setError('no');
         setLoading(false);
       }
+      if (data.type === "auth_ok") {
+        setSocketReady(true);
+      }
       if (data.type === "status") {
-          console.log("bah alors ???? : ", data);
           const statusUserId = data.userId || data.id;
             setChats(prev =>
               prev.map(chat =>
@@ -165,11 +196,22 @@ useEffect(() => {
                   : chat
               )
             );
+            // Also update selectedChat if it matches
+            setSelectedChat(prev => {
+              if (prev && prev.users[0].id === statusUserId) {
+                return {
+                  ...prev,
+                  users: [{
+                    ...prev.users[0],
+                    isOnline: data.status === "online",
+                  }]
+                };
+              }
+              return prev;
+            });
 }
 
         if (data.type == "rec_message"){
-          if (!event.data) return;
-          const data = JSON.parse(event.data);
           const toad = {
             id : "2",
             message : data.message,
@@ -239,15 +281,16 @@ useEffect(() => {
 		const res = await client.chat.get({limit : 10, page : page});
 		if (!res.ok){
 			setError(res.error.message);
-			return;
+			return [];
 		}
 		const data = JSON.parse(res?.value);
-    setChats([...chats, ...data]);
+    const newChats = [...chats, ...data];
+    setChats(newChats);
 		setCharging(false);
 		// observer.observe(sentinelRef);
-	  
+	  return newChats;
 	  }
-    fetchCurrentUser().then(run).then(fetchInitialUser);
+    fetchCurrentUser().then(run).then((fetchedChats) => fetchInitialUser(fetchedChats || []));
 	}, [change]);
   
   if(loading)

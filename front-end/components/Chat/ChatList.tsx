@@ -11,9 +11,6 @@ interface ChatListProps {
 }
 
 export function ChatList({ chats,  selectedUserId, onSelectedChat, hideTitle }: ChatListProps) {
-  useEffect(() => {
-    console.log("thoses are chats : ", chats);
-}, [chats]);
   return (
     <div className="flex flex-col h-full bg-white dark:bg-gray-800">
       <div className="flex-1 overflow-y-auto">
