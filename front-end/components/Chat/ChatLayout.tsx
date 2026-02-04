@@ -39,6 +39,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
       }
 
       setIsLoading(true);
+      setCharging(true);
       try {
         const client = Backend.getInstance();
         const result = await client.users.$({ id: initialUserId }).get();
@@ -68,6 +69,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
         console.error("Failed to fetch user:", error);
       } finally {
         setIsLoading(false);
+        setCharging(false);
       }
     };
 
@@ -75,7 +77,6 @@ useEffect(() => {
   if (!lastMessage || !currentUser) return;
 
   if (!chats[0]){
-    console.log("AAAAAAAAAAAAAAAAH")
     initialUserId = lastMessage.senderId;
      fetchInitialUser();
   }
@@ -166,8 +167,6 @@ useEffect(() => {
 }
 
         if (data.type == "rec_message"){
-          if (!event.data) return;
-          const data = JSON.parse(event.data);
           const toad = {
             id : "2",
             message : data.message,
