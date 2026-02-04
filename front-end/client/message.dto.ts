@@ -2,6 +2,7 @@ export interface ChatUserDto{
 		id : string;
 		username : string;
 		avatarUrl? : string;
+    isOnline ? : boolean;
 	}
 
 export interface ChatDto{
@@ -18,7 +19,7 @@ export interface ChatWindowProps {
   onBack: () => void;
   showBackAlways?: boolean;
   socketRef : WebSocket | null;
-  setLastMessage : (arg0 : Message) => void;
+  lastMessage :  Message | null;
 }
 
 export interface Message {
