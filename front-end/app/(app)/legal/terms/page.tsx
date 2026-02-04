@@ -37,7 +37,7 @@ export default function TermsOfServicePage() {
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Welcome to ft_transcendence</h2>
             <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
               These Terms of Service ("Terms") govern your access to and use of ft_transcendence, a social 
-              dating platform designed to help people connect, share moments, and build meaningful relationships. 
+              platform designed to help people connect, share moments, and build meaningful relationships. 
               By creating an account or using our service, you agree to be bound by these Terms.
             </p>
             <div className="mt-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
@@ -66,7 +66,7 @@ export default function TermsOfServicePage() {
             </ul>
             <div className="mt-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4">
               <p className="text-red-800 dark:text-red-200 font-medium">
-                ⚠️ This is an adult dating platform. Users under 18 are strictly prohibited.
+                ⚠️ Users under 18 are strictly prohibited.
               </p>
             </div>
           </section>
@@ -211,8 +211,7 @@ export default function TermsOfServicePage() {
             </div>
             <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-6 space-y-4">
               <p className="text-gray-600 dark:text-gray-300">
-                <strong>No Guarantees:</strong> We do not guarantee that you will find matches, dates, or 
-                relationships through our service.
+                <strong>No Guarantees:</strong> We do not guarantee any specific outcomes through our service.
               </p>
               <p className="text-gray-600 dark:text-gray-300">
                 <strong>User Conduct:</strong> We are not responsible for the behavior of other users. 
