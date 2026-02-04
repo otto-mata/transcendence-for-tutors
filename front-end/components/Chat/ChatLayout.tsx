@@ -24,6 +24,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
   const [change, setChange] = useState(false);
   const [lastMessage, setLastMessage ] = useState<Message | null>(null);
   const [currentUser, setCurrentUser] = useState<UserResponseDto >();
+  const [socketReady, setSocketReady] = useState(false);
 
   // Fetch user from API if initialUserId is provided
   const fetchInitialUser = async (currentChats: ChatDto[]) => {
@@ -52,6 +53,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
               id: userData.id,
               username: userData.username,
               avatarUrl: userData.avatarUrl || undefined,
+              isOnline: false, // Default to offline, will be updated by websocket
             }],
             // status: "online",
             messages : [{
@@ -65,6 +67,15 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
           console.log("ca vas donc la ? ");
           setChats([newUser, ...currentChats]);
           setSelectedChat(newUser);
+          
+          // Request status update from websocket for this user
+          if (socketRef.current?.readyState === WebSocket.OPEN) {
+            watchedUsersRef.current.add(userData.id);
+            socketRef.current.send(JSON.stringify({
+              type: "watch",
+              id: userData.id
+            }));
+          }
         }
       } catch (error) {
         console.error("Failed to fetch user:", error);
@@ -128,6 +139,18 @@ useEffect(() => {
     })
   }, [charging])
 
+  // Watch the initial user once socket is ready
+  useEffect(() => {
+    if (!socketReady || !selectedChat) return;
+    const userId = selectedChat.users[0].id;
+    if (watchedUsersRef.current.has(userId)) return;
+    watchedUsersRef.current.add(userId);
+    socketRef.current?.send(JSON.stringify({
+      type: "watch",
+      id: userId
+    }));
+  }, [socketReady, selectedChat])
+
   useEffect(() =>{
     setLoading(true);
     // Utilise la variable d'environnement ou fallback vers le proxy local
@@ -151,6 +174,9 @@ useEffect(() => {
         if (data.type == "auth_err") setError('no');
         setLoading(false);
       }
+      if (data.type === "auth_ok") {
+        setSocketReady(true);
+      }
       if (data.type === "status") {
           console.log("bah alors ???? : ", data);
           const statusUserId = data.userId || data.id;
@@ -167,6 +193,19 @@ useEffect(() => {
                   : chat
               )
             );
+            // Also update selectedChat if it matches
+            setSelectedChat(prev => {
+              if (prev && prev.users[0].id === statusUserId) {
+                return {
+                  ...prev,
+                  users: [{
+                    ...prev.users[0],
+                    isOnline: data.status === "online",
+                  }]
+                };
+              }
+              return prev;
+            });
 }
 
         if (data.type == "rec_message"){

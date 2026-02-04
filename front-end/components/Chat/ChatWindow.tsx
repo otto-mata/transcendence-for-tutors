@@ -108,18 +108,22 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef, lastMessag
 
   useEffect(() => {
     if (!lastMessage) return;
-      setSkip(prev => prev + 1);
-      if (lastMessage.senderId != currentUser?.id && lastMessage.senderId != chatUser?.id) return;
-      const toad = {
-            id : (messages.length + idToad).toString(),
-            message : lastMessage.message,
-            senderId : lastMessage.senderId,
-            createdAt : new Date()
-          }
-          
-      idToad += 1;
-      setMessages([...messages, toad]);
-      setDoScroll(true);
+    // Ignore messages from current user - they are already added in sendInputMessage
+    if (lastMessage.senderId === currentUser?.id) return;
+    // Only process messages from the current chat user
+    if (lastMessage.senderId !== chatUser?.id) return;
+    
+    setSkip(prev => prev + 1);
+    const toad = {
+          id : (messages.length + idToad).toString(),
+          message : lastMessage.message,
+          senderId : lastMessage.senderId,
+          createdAt : new Date()
+        }
+        
+    idToad += 1;
+    setMessages([...messages, toad]);
+    setDoScroll(true);
   }, [lastMessage])
 
 
@@ -132,12 +136,16 @@ export function ChatWindow({ chat, onBack, showBackAlways, socketRef, lastMessag
       message : inputMessage
     };
     socketRef?.send(JSON.stringify(toSend));
-    const data = {
+    const data: Message = {
+      id: (messages.length + idToad).toString(),
       message : inputMessage,
       senderId : currentUser.id,
       createdAt : new Date()
     }
-    // setMessages([...messages, data]);
+    idToad += 1;
+    setMessages([...messages, data]);
+    setDoScroll(true);
+    setSkip(prev => prev + 1);
     client.chat.post(chatUser?.username, inputMessage);
     setInputMessage('');
 
