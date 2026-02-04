@@ -51,6 +51,8 @@ export const handler = (socket: WebSocket, data: WebSocket.RawData) => {
       const { id, message } = msg;
       if (!sockets.has(socket))
         return (socket.send(JSON.stringify({ type: 'mess_err', error: 'Not logged in !' })));
+      if (!message)
+        return;
       for (let i of users.get(id) ?? []) {
         i.send(JSON.stringify({ type: 'rec_message', from: sockets.get(socket), message: message }));
       }

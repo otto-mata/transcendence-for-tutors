@@ -1,6 +1,7 @@
 import { ChatDto } from "@/client/message.dto";
 import { UserResponseDto } from "@/client/profile.dto";
 import { getMediaUrl } from "@/client/utils";
+import { useEffect } from "react";
 
 interface ChatListProps {
   users: ChatDto[];
