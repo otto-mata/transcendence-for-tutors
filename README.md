@@ -14,6 +14,11 @@ This project uses Docker and Docker Compose to simplify setup and ensure a consi
 - Tech Lead: bzaidi
 - Developers: ijaber, ncrombez, flturbou
 
+The product owner is responsible of making sure the product is following the specifications ofthe subject.
+His role is to guide the developers on the business ogic and to ensure compliance. To do this, the product owner creates issues and follow the life-cycle of the application during its development stage.
+The technical lead has authority over the developers. It is his role to staff the developers on tasks and issues, making sure the assignments are in accordance with the capabilities and backlog of each member of the development team.
+The developers then implements the different features, following the specification described by the product owner. They are the most important members of the project, along with the tech lead, since they are the ones that bring to life the business idea into a concrete application. 
+
 ### Prerequisites
 
 Make sure you have the following installed on your machine:
@@ -43,6 +48,7 @@ Once the containers are running, the application will be available at https://lo
  - [Prisma](https://www.prisma.io/docs)
 
 ## Project Management
+
 The team organized the development process using a ticket-based workflow managed through Linear.
 
 Each feature or bug fix is created as a ticket, which is then associated with a dedicated Git branch. Developers implement their changes on their own branch and submit a pull request once the work is complete.
