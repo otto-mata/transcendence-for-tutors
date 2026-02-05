@@ -67,7 +67,7 @@ export class CreateUserDto {
 	@IsString()
 	@MaxLength(100)
 	@IsOptional()
-	displayName?: string;
+	displayName: string;
 }
 
 export class RefreshTokenDto {

@@ -2,6 +2,6 @@
 
 npx prisma generate
 npm run build
-npx prisma migrate dev --name dev
+npx prisma migrate deploy
 
 exec node dist/src/main

@@ -44,14 +44,7 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
-			const userData: AuthUserRegistration = {
-				displayName:
-					data.displayName === undefined
-						? data.username
-						: data.displayName,
-				...data,
-			};
-			await this.authService.createUser(userData);
+			await this.authService.createUser(data);
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify({ message: 'Registered successfully' });
 		} catch (e) {

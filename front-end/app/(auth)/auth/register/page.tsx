@@ -15,7 +15,7 @@ export default function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ login?: string; password?: string; general?: string; email?: string }>({});
+  const [errors, setErrors] = useState<{ login?: string; password?: string; general?: string; email?: string ; name?: string }>({});
 
   useEffect(() => {
     const run = async() => {
@@ -31,6 +31,7 @@ export default function RegisterPage() {
     const e: typeof errors = {};
     if (!emailRegex.test(email)) e.email = 'Please enter a valid email address';
     if (!login) e.login = 'Username is required';
+    if (!name) e.name = 'DisplayName is required';
     if (password.length < 8) e.password = 'Password must be at least 8 characters';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -197,6 +198,7 @@ export default function RegisterPage() {
                     placeholder="Display name"
                     className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
+                  {errors.name && <p className="mt-1 text-sm text-red-400">{errors.name}</p>}
                 </div>
               </div>
 
