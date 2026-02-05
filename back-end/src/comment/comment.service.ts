@@ -52,6 +52,13 @@ export class CommentService {
 	}
 
 	async create(postId : string, data: Prisma.CommentCreateInput): Promise<Comment> {
+		const post = await this.prisma.post.findUnique({
+			where: { id: postId },
+		});
+		if (!post) {
+			throw new Error('Post not found or has been deleted');
+		}
+		
 		await this.prisma.post.update({
 			where: { id: postId },
 			data: { replyCount: { increment: 1 } },

@@ -85,8 +85,13 @@ export class CommentController {
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify(comment);
 		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+			if (errorMessage === 'Post not found or has been deleted') {
+				res.status(HttpStatus.NOT_FOUND);
+				return JSON.stringify({ message: 'Post not found or has been deleted' });
+			}
 			res.status(HttpStatus.BAD_REQUEST);
-			return JSON.stringify({ message: 'Error creating comment', error });
+			return JSON.stringify({ message: 'Error creating comment', error: errorMessage });
 		}
 	}
 
