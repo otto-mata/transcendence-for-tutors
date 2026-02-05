@@ -10,11 +10,11 @@ datasource db {
 
 model User {
   id                          String     @id @default(cuid())
-  username                    String     @unique
-  displayName                 String?
+  username                    String     @unique @db.VarChar(16)
+  displayName                 String?    @db.VarChar(30)
   email                       String     @unique
   passwordHash                String
-  bio                         String?
+  bio                         String?    @db.VarChar(160)
   avatarUrl                   String?
   coverImageUrl               String?
   website                     String?
@@ -53,7 +53,7 @@ model User {
 model Post {
   id           String     @id @default(cuid())
   authorId     String
-  content      String
+  content      String     @db.VarChar(256)
   mediaUrl     String?
   likeCount    Int        @default(0)
   commentCount Int        @default(0)
@@ -79,7 +79,7 @@ model Post {
 
 model Comment {
   id              String    @id @default(cuid())
-  content         String
+  content         String    @db.VarChar(132)
   authorId        String
   postId          String
   likeCount       Int       @default(0)

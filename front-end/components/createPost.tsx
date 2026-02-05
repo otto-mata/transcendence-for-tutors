@@ -57,6 +57,8 @@ export const CreatePost = (params : {goto : boolean}) => {
     }, []);
 
     async function PostIt(goto : boolean){
+      if (!PostInput)
+        return;
         const res = await client.posts.post({content : PostInput, ...(postFile && {file : postFile})});
         setPostInput('');
         if (!res.ok) throw res.error;
@@ -101,6 +103,7 @@ export const CreatePost = (params : {goto : boolean}) => {
             <input
               value={PostInput}
               onChange={e => setPostInput(e.target.value)}
+              maxLength={255}
               type="text"
               placeholder="What's happening?"
               className="w-full bg-transparent border-none focus:ring-0 text-lg placeholder-gray-500 dark:placeholder-gray-400"
@@ -112,10 +115,11 @@ export const CreatePost = (params : {goto : boolean}) => {
 								onClick={() => postInputRef.current?.click()} className="w-5 h-5" />
                 <input
 								ref={postInputRef}
-								type="file"
+                type="file"
 								accept="image/*"
 								onChange={handlePostChange}
 								className="hidden"
+
 							/>
                 </button>
               </div>

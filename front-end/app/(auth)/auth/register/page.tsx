@@ -165,6 +165,7 @@ export default function RegisterPage() {
                 <input
                   value={email}
                   onChange={e => setEmail(e.target.value)}
+                  maxLength={50}
                   type="email"
                   placeholder="Enter your email"
                   className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
@@ -177,6 +178,7 @@ export default function RegisterPage() {
                   <label className="block text-sm font-medium text-gray-300 mb-1.5">Username</label>
                   <input
                     value={login}
+                    maxLength={15}
                     onChange={e => setLogin(e.target.value)}
                     type="text"
                     placeholder="Username"
@@ -189,6 +191,7 @@ export default function RegisterPage() {
                   <label className="block text-sm font-medium text-gray-300 mb-1.5">Display Name</label>
                   <input
                     value={name}
+                    maxLength={30}
                     onChange={e => setName(e.target.value)}
                     type="text"
                     placeholder="Display name"
@@ -201,6 +204,7 @@ export default function RegisterPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
                 <input
                   value={password}
+                  maxLength={128}
                   onChange={e => setPassword(e.target.value)}
                   type="password"
                   placeholder="Min. 8 characters"

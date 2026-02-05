@@ -74,6 +74,7 @@ export class CommentController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			if (!data.content) throw new Error("no content");
 			const comment = await this.commentService.create(
 				postId, 
 				{
