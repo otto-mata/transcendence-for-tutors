@@ -41,6 +41,7 @@ export default function PostPage({ params }: { params: { id : string } }) {
 	});
 
 	async function commentIt(post : PostResponseDto){
+		if (!CommentInput) return;
 		await client.posts.$(post.id).comments.post(CommentInput);
 		setCommentInput('');
 		setChange(!change);
@@ -143,6 +144,7 @@ export default function PostPage({ params }: { params: { id : string } }) {
 			)}
 			<div className="flex-1">
 				<input
+				maxLength={130}
 				value={CommentInput}
 				onChange={e => setCommentInput(e.target.value)}
 				type="text"

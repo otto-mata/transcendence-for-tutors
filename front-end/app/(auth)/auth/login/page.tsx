@@ -152,6 +152,7 @@ export default function LoginPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Username</label>
                 <input
                   value={login}
+                  maxLength={15}
                   onChange={e => setLogin(e.target.value)}
                   type="text"
                   placeholder="Enter your username"
@@ -164,6 +165,7 @@ export default function LoginPage() {
                 <label className="block text-sm font-medium text-gray-300 mb-1.5">Password</label>
                 <input
                   value={password}
+                  maxLength={128}
                   onChange={e => setPassword(e.target.value)}
                   type="password"
                   placeholder="Enter your password"

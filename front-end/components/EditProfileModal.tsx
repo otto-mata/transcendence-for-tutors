@@ -207,6 +207,7 @@ export default function EditProfileModal({ onClose, user, onUpdate }: EditProfil
 						<input
 							type="text"
 							value={formData.displayName}
+							maxLength={30}
 							onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
 							placeholder="Your display name"
 							className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-600 transition-all text-gray-900 dark:text-gray-100"
