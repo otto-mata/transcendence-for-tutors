@@ -29,8 +29,8 @@ export default function RegisterPage() {
 
   function validate() {
     const e: typeof errors = {};
-    if (!emailRegex.test(email)) e.email = 'Please enter a valid email address';
-    if (!login) e.login = 'Username is required';
+    if (!emailRegex.test(email) || email.indexOf(' ') !== -1) e.email = 'Please enter a valid email address';
+    if (!login || login.indexOf(' ') !== -1) e.login = 'Username is required';
     if (!name) e.name = 'DisplayName is required';
     if (password.length < 8) e.password = 'Password must be at least 8 characters';
     setErrors(e);
@@ -86,6 +86,7 @@ export default function RegisterPage() {
       });
       if (!res.ok) throw res.error;
       const data = res?.value;
+      if ( data.error) throw new Error(data.message);
       if (data?.access_token) localStorage.setItem('access_token', data.access_token);
       router.push('/');
     } catch (err: any) {

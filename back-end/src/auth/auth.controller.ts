@@ -44,6 +44,8 @@ export class AuthController {
 		@Res({ passthrough: true }) res: Response,
 	): Promise<string> {
 		try {
+			if (data.username.indexOf(" ") !== -1) throw new Error("Spaces in username");
+			if (data.email.indexOf(" ") !== -1) throw new Error("Spaces in email");
 			await this.authService.createUser(data);
 			res.status(HttpStatus.CREATED);
 			return JSON.stringify({ message: 'Registered successfully' });

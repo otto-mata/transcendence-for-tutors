@@ -1,6 +1,6 @@
 all: ssl-check
 	@echo "Démarrage de tft ..."
-	docker compose up --build
+	docker compose up
 	@echo ""
 	@echo "Démarré!"
 	@echo "   → Frontend: https://localhost:8443"
