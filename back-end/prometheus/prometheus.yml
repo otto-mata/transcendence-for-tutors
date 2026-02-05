@@ -27,9 +27,10 @@ scrape_configs:
   #    - targets:
   #        - localhost:8080
   - job_name: 'nestjs-monitoring'
-    metrics_path: '/metrics'
+    metrics_path: '/api/metrics'
     scheme: https
     static_configs:
-      - targets: ['core-api:3000']
+      - targets: ['nginx-proxy:8443']
     tls_config:
+      ca_file: /etc/prometheus/ssl/public-certificate.pem
       insecure_skip_verify: true

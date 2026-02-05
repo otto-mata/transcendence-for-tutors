@@ -54,6 +54,7 @@ services:
     volumes:
       - ./back-end/prometheus:/etc/prometheus
       - prom-data:/prometheus
+      - ./nginx/ssl:/etc/prometheus/ssl:ro
     networks:
       - postgres-network
 
