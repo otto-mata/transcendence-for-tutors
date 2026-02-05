@@ -15,8 +15,8 @@ This project uses Docker and Docker Compose to simplify setup and ensure a consi
 - Developers: ijaber, ncrombez, flturbou
 
 The product owner is responsible of making sure the product is following the specifications ofthe subject.
-His role is to guide the developers on the business ogic and to ensure compliance. To do this, the product owner creates issues and follow the life-cycle of the application during its development stage.
-The technical lead has authority over the developers. It is his role to staff the developers on tasks and issues, making sure the assignments are in accordance with the capabilities and backlog of each member of the development team.
+His role is to guide the developers on the business ogic and to ensure compliance. To do this, the product owner creates issues and follow the life-cycle of the application during its development stage.  
+The technical lead has authority over the developers. It is his role to staff the developers on tasks and issues, making sure the assignments are in accordance with the capabilities and backlog of each member of the development team.  
 The developers then implements the different features, following the specification described by the product owner. They are the most important members of the project, along with the tech lead, since they are the ones that bring to life the business idea into a concrete application. 
 
 ### Prerequisites
