@@ -1,15 +1,15 @@
 all: ssl-check
-	@echo "🚀 Démarrage de tft ..."
+	@echo "Démarrage de tft ..."
 	docker compose up --build -d
 	@echo ""
-	@echo "✅ Tft démarrée!"
+	@echo "Démarré!"
 	@echo "   → Frontend: https://localhost:8443"
 	@echo "   → API:      https://localhost:8443/api"
 	@echo "   → WebSocket: wss://localhost:8443/ws"
 
 ssl-check:
 	@if [ ! -f back-end/nginx/ssl/private-key.pem ] || [ ! -f back-end/nginx/ssl/public-certificate.pem ]; then \
-		echo "🔐 Génération des certificats SSL..."; \
+		echo "Génération des certificats SSL..."; \
 		chmod +x generate-ssl.sh && ./generate-ssl.sh; \
 	else \
 		echo "✅ Certificats SSL trouvés"; \
@@ -25,7 +25,7 @@ down:
 up:
 	docker compose up -d
 
-clean: backend-down frontend-down chat-down
+clean:
 	@echo Running 'clean'...
 	if [ $(shell docker ps -q | wc -l) -ne 0 ]; then \
 		docker stop $(shell docker ps -q); \

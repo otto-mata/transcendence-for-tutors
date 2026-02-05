@@ -43,7 +43,6 @@ export class ChatController {
 			await this.chatService.createMessage(user, username, content.message);
 			return (JSON.stringify({ message: `Ok !` }));
 		} catch (e) {
-			if (res) res.status(HttpStatus.INTERNAL_SERVER_ERROR);
 			return (JSON.stringify({error: "An error occured"}));
 		}
 	}

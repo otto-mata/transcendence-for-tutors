@@ -5,7 +5,7 @@ SSL_DIR="./nginx/ssl/"
 mkdir -p "$SSL_DIR"
 
 if [ -f "$SSL_DIR/private-key.pem" ] && [ -f "$SSL_DIR/public-certificate.pem" ]; then
-  echo "✅ Certificats SSL existants trouvés dans $SSL_DIR"
+  echo "Certificat deja existant $SSL_DIR"
   read -p "Voulez-vous les régénérer ? (y/N) " -n 1 -r
   echo
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
@@ -14,7 +14,7 @@ if [ -f "$SSL_DIR/private-key.pem" ] && [ -f "$SSL_DIR/public-certificate.pem" ]
   fi
 fi
 
-echo "🔐 Génération des certificats SSL auto-signés..."
+echo "Certificat SSL"
 
 openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
   -keyout "$SSL_DIR/private-key.pem" \
