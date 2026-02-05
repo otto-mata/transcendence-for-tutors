@@ -69,8 +69,6 @@ export class AuthController {
 							'User with this username or email already exists',
 					});
 				}
-				else
-					console.log(e);
 			}
 			return JSON.stringify({ error: 'Registration failed', message: (e as any)?.message ?? 'Unknown error' });
 		}

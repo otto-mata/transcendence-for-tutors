@@ -34,9 +34,7 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
       const existingChat = currentChats.find(chat => 
         chat.users.some(u => u.id === initialUserId)
       );
-      console.log("not here");
       if (existingChat) {
-        console.log("found existing chat for initial user");
         setSelectedChat(existingChat);
         return;
       }
@@ -65,7 +63,6 @@ export function ChatLayout({ initialUserId }: {initialUserId? : string}) {
             }],
             unread : true,
           };
-          console.log("ca vas donc la ? ");
           setChats([newUser, ...currentChats]);
           setSelectedChat(newUser);
           
@@ -91,7 +88,6 @@ useEffect(() => {
   var found = false;
 
   if (!chats[0]){
-    console.log("AAAAAAAAAAAAAAAAH")
     initialUserId = lastMessage.senderId;
      fetchInitialUser(chats);
   }

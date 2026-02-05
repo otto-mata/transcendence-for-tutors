@@ -12,8 +12,7 @@ export const OneComment = ({comment} : {comment : CommentResponseDto}) => {
 	const client = Backend.getInstance();
 	const [Liked, setLiked] = useState(comment.liked);
 
-	console.log("comment : ", comment);
-  	async function LikeComment(comment : CommentResponseDto){
+	async function LikeComment(comment : CommentResponseDto){
 
 		if (!Liked){
 			const res  = await client.posts.$(comment.postId).comments.$(comment.id).like();
