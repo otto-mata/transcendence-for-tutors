@@ -155,7 +155,7 @@ useEffect(() => {
   useEffect(() =>{
     setLoading(true);
     // Utilise la variable d'environnement ou fallback vers le proxy local
-    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || 'wss://localhost:8443/ws';
+    const wsUrl = process.env.NEXT_PUBLIC_WS_URL || '/ws';
     socketRef.current = new WebSocket(wsUrl);
 
     socketRef.current.onopen = () => {

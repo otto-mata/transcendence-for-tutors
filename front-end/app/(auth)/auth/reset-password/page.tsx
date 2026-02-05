@@ -52,7 +52,7 @@ function ResetPasswordPageClient() {
 
     setLoading(true);
     try {
-      const api = process.env.NEXT_PUBLIC_API_URL ?? 'https://localhost:8443/api';
+      const api = process.env.NEXT_PUBLIC_API_URL ?? '/api';
       const res = await fetch(`${api}/auth/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
