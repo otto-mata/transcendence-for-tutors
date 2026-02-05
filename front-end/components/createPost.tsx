@@ -71,7 +71,7 @@ export const CreatePost = (params : {goto : boolean}) => {
     
 
     return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl p-4 shadow-sm border border-gray-200 dark:border-gray-700 mb-6 break-all">
       <div 
 								className="relative fill rounded-xl overflow-hidden cursor-pointer group mb-4"
 								onClick={() => {setPostPreview(null), setPostFile(null)}}

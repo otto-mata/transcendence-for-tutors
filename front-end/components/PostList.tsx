@@ -155,7 +155,7 @@ export const OnePost = (params : {post : PostResponseDto, charging : boolean, on
 									)}
 								</div>
 							</Link>
-								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{params.post.content}</p>
+								<p className="text-gray-700 dark:text-gray-300 text-sm mb-3 break-all">{params.post.content}</p>
 								<div className="flex items-center justify-between text-gray-500">
 									<div className="flex gap-4 text-sm">
 										<button onClick={() => LikePost(params.post)} className={ Liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>

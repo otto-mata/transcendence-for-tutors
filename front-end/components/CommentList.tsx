@@ -54,7 +54,7 @@ export const OneComment = ({comment} : {comment : CommentResponseDto}) => {
 						<p className="text-xs text-gray-500">{comment.author?.displayName ? comment.author?.displayName : "charging"}</p>
 					</div>
 				</div>
-				<p className="text-gray-700 dark:text-gray-300 text-sm mb-3">{comment.content}</p>
+				<p className="break-all text-gray-700 dark:text-gray-300 text-sm mb-3">{comment.content}</p>
 				<div className="flex items-center justify-between text-gray-500">
 					<div className="flex gap-4 text-sm">
 						<button onClick={() => LikeComment(comment)} className={ Liked ? ' text-red-500 hover:text-gray-700 dar:hover:text-gray-300 transition-colors cursor-pointer' : 'hover:text-red-500 transition-colors cursor-pointer' }>

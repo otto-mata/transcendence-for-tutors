@@ -412,7 +412,7 @@ export default function ProfilePageClient({ username, isOwnProfile, initialUser 
 					<p className="text-gray-500 mb-3">@{user.username}</p>
 
 					{user.bio && (
-						<p className="text-gray-700 dark:text-gray-300 mb-4 max-w-2xl">
+						<p className="text-gray-700 dark:text-gray-300 mb-4 max-w-2xl break-all">
 							{user.bio}
 						</p>
 					)}
